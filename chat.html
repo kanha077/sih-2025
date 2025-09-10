@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Chat Platform</title>
+    <title>Anonymous AI Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -30,20 +30,16 @@
         <div id="chat-container" class="h-full w-full max-w-3xl flex flex-col bg-white rounded-xl shadow-lg">
             <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-bold text-gray-800">Real-time Chat</h1>
-                    <p id="chat-header-subtitle" class="text-sm text-gray-500">Powered by Supabase</p>
+                    <h1 class="text-xl font-bold text-gray-800">Anonymous Chat</h1>
+                    <p id="chat-header-subtitle" class="text-sm text-gray-500">This conversation is not saved.</p>
                 </div>
-                <button id="auth-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">Logout</button>
+                <div>
+                    <button id="clear-chat-btn" class="text-sm text-gray-500 hover:text-gray-800 font-semibold mr-4">Clear Chat</button>
+                    <a href="/login.html" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">Login to Save Chats</a>
+                </div>
             </header>
 
             <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4">
-                <!-- Loading Spinner -->
-                <div id="loading-spinner" class="flex justify-center items-center h-full">
-                    <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
                 <!-- Chat messages will be appended here -->
             </div>
             
@@ -58,169 +54,96 @@
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-        
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    <script>
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
         const chatMessages = document.getElementById('chat-messages');
-        const authBtn = document.getElementById('auth-btn');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const chatHeaderSubtitle = document.getElementById('chat-header-subtitle');
         const sendButton = document.getElementById('send-button');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
 
-        let currentUser = null;
-        let userProfileCache = new Map();
-        
-        async function initializeChat() {
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                currentUser = session.user;
-                authBtn.textContent = 'Logout';
-            } else {
-                authBtn.textContent = 'Login';
-                chatHeaderSubtitle.textContent = 'Anonymous Session';
-                messageInput.placeholder = 'Please log in to send a message.';
-                messageInput.disabled = true;
-                sendButton.disabled = true;
-            }
-
-            // --- FIX START: Fetch messages and profiles in two steps ---
-
-            // Step 1: Fetch all messages
-            const { data: messages, error: messagesError } = await supabase
-                .from('messages')
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (messagesError) {
-                console.error("Error fetching messages:", messagesError);
-                loadingSpinner.classList.add('hidden');
-                return;
-            }
-            
-            // Step 2: Get unique user IDs from the messages
-            const userIds = [...new Set(messages.map(msg => msg.user_id).filter(id => id))];
-
-            // Step 3: Fetch profiles for those unique users
-            if (userIds.length > 0) {
-                const { data: profiles, error: profilesError } = await supabase
-                    .from('profiles')
-                    .select('id, first_name')
-                    .in('id', userIds);
-
-                if (profilesError) {
-                    console.error("Error fetching profiles:", profilesError);
-                } else {
-                    // Populate the cache with fetched profiles
-                    profiles.forEach(profile => {
-                        userProfileCache.set(profile.id, profile.first_name || 'Guest');
-                    });
-                }
-            }
-
-            loadingSpinner.classList.add('hidden');
-            
-            // Step 4: Display the initial messages using the now-populated cache
-            messages.forEach(message => {
-                addMessage(message);
-            });
-            
-            // --- FIX END ---
-
-            // Listen for new messages in real-time
-            supabase
-                .channel('public:messages')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                    addMessage(payload.new);
-                })
-                .subscribe();
+        function initializeChat() {
+            addMessage('assistant', 'Hello! I am an AI assistant. How can I help you today?');
         }
 
-        chatForm.addEventListener('submit', async (e) => {
+        chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (!currentUser) return;
+            const userInput = messageInput.value.trim();
+            if (!userInput) return;
 
-            const content = messageInput.value.trim();
-            if (!content) return;
-
-            const { error } = await supabase
-                .from('messages')
-                .insert([{ content, user_id: currentUser.id }]);
+            addMessage('user', userInput);
+            messageInput.value = '';
             
-            if (error) {
-                console.error("Error sending message:", error);
-            } else {
-                messageInput.value = '';
-            }
+            showTypingIndicator();
+            getBotResponse(userInput);
         });
 
-        // --- FIX START: Made addMessage async to fetch profiles if needed ---
-        async function addMessage(message) {
+        clearChatBtn.addEventListener('click', () => {
+            chatMessages.innerHTML = '';
+            initializeChat();
+        });
+
+        function getBotResponse(userInput) {
+            // Simulate a bot response after a short delay to make the typing indicator visible
+            setTimeout(() => {
+                hideTypingIndicator();
+                let botResponse = "I'm not sure how to respond to that. Can you please rephrase?";
+                const lowerCaseInput = userInput.toLowerCase();
+
+                if (lowerCaseInput.includes('hello') || lowerCaseInput.includes('hi')) {
+                    botResponse = 'Hello there! How can I assist you?';
+                } else if (lowerCaseInput.includes('how are you')) {
+                    botResponse = 'I am just a set of algorithms, but I am functioning perfectly! Thanks for asking.';
+                } else if (lowerCaseInput.includes('help')) {
+                    botResponse = 'Of course, I am here to help. What do you need assistance with?';
+                } else if (lowerCaseInput.includes('bye')) {
+                    botResponse = 'Goodbye! Have a great day.';
+                }
+                addMessage('assistant', botResponse);
+            }, 1200);
+        }
+
+        function addMessage(sender, text) {
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('flex', 'flex-col', 'w-full');
-            
-            const isCurrentUser = currentUser && message.user_id === currentUser.id;
-
-            if (!isCurrentUser) {
-                let senderName = userProfileCache.get(message.user_id);
-                
-                // If the sender's name is not in the cache, fetch it
-                if (!senderName && message.user_id) {
-                    const { data: profile, error } = await supabase
-                        .from('profiles')
-                        .select('first_name')
-                        .eq('id', message.user_id)
-                        .single();
-
-                    if (error) {
-                        console.error('Error fetching profile for new message:', error);
-                        senderName = 'Guest';
-                    } else {
-                        senderName = profile.first_name || 'Guest';
-                    }
-                    userProfileCache.set(message.user_id, senderName);
-                }
-
-                const nameElement = document.createElement('span');
-                nameElement.classList.add('text-xs', 'text-gray-500', 'mb-1', 'ml-1');
-                nameElement.textContent = senderName || 'Guest';
-                messageContainer.appendChild(nameElement);
-            }
 
             const bubbleElement = document.createElement('div');
             bubbleElement.classList.add('max-w-[75%]', 'p-3', 'rounded-lg', 'break-words', 'w-fit');
             
-            if (isCurrentUser) {
+            if (sender === 'user') {
                 messageContainer.classList.add('items-end');
                 bubbleElement.classList.add('bg-blue-500', 'text-white');
-            } else {
+            } else { // 'assistant'
                 messageContainer.classList.add('items-start');
                 bubbleElement.classList.add('bg-gray-200', 'text-gray-800');
             }
             
-            bubbleElement.textContent = message.content;
+            bubbleElement.textContent = text;
             messageContainer.appendChild(bubbleElement);
             
             chatMessages.appendChild(messageContainer);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        // --- FIX END ---
         
-        authBtn.addEventListener('click', async () => {
-            if (currentUser) {
-                await supabase.auth.signOut();
-                window.location.reload();
-            } else {
-                window.location.href = window.location.origin + '/login.html';
+        function showTypingIndicator() {
+            const typingIndicatorHTML = `
+                <div id="typing-indicator" class="flex items-center space-x-2 p-3">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.3s;"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.15s;"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                </div>`;
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('flex', 'flex-col', 'w-full', 'items-start');
+            messageContainer.innerHTML = typingIndicatorHTML;
+            chatMessages.appendChild(messageContainer);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.parentElement.remove();
             }
-        });
+        }
         
         initializeChat();
     </script>
