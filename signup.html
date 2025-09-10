@@ -10,9 +10,6 @@
             font-family: 'Inter', sans-serif;
         }
         form { max-width: 400px; margin: auto; }
-        input, textarea { width: 100%; margin: 8px 0; padding: 10px; }
-        button { padding: 10px; background: #2d89ef; color: white; border: none; cursor: pointer; }
-        button:hover { background: #1d5fa7; }
         .or-divider {
             display: flex;
             align-items: center;
@@ -32,20 +29,72 @@
             margin-left: .5em;
         }
     </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Create Your Account</h2>
+        <form id="signupForm" class="space-y-4">
+            <input type="text" id="firstName" placeholder="First Name" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="lastName" placeholder="Last Name" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <!-- *** FIXED ID HERE *** -->
+            <input type="date" id="date_of_birth" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date of Birth">
+            <input type="tel" id="phone" placeholder="Phone Number" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <textarea id="address" placeholder="Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" id="signupBtn" class="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">Sign Up</button>
+        </form>
+        <div class="or-divider my-6 font-medium text-xs text-gray-400 uppercase">OR</div>
+        <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 p-3 bg-white text-gray-700 font-semibold border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <svg class="w-5 h-5" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 170.8 58.2L373.2 120.9C341.3 94.3 300.2 80 248 80c-82.6 0-150.2 67.6-150.2 150.2S165.4 406.4 248 406.4c91.1 0 134.3-64.4 139.3-98.5H248v-61.6h239.2c1.4 12.3 2.8 24.5 2.8 37.6z"></path></svg>
+            Sign up with Google
+        </button>
+        <p class="mt-6 text-center text-sm text-gray-600">Already have an account? <a href="login.html" class="font-semibold text-blue-600 hover:text-blue-700">Login</a></p>
+    </div>
+
+    <!-- Modal for showing messages -->
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-sm text-center">
+        <h3 id="modalTitle" class="text-lg font-bold mb-4 text-gray-800"></h3>
+        <p id="modalMessage" class="mb-4 text-gray-600"></p>
+        <button onclick="closeModal()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">OK</button>
+      </div>
+    </div>
+
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        // Supabase project credentials (replace with your own)
         const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const signupForm = document.getElementById("signupForm");
+        const signupBtn = document.getElementById("signupBtn");
+
+        // Modal functions
+        function showModal(title, message) {
+            document.getElementById("modalTitle").innerText = title;
+            document.getElementById("modalMessage").innerText = message;
+            document.getElementById("modal").classList.remove("hidden");
+            document.getElementById("modal").classList.add("flex");
+        }
+
+        function closeModal() {
+            document.getElementById("modal").classList.add("hidden");
+            document.getElementById("modal").classList.remove("flex");
+        }
+        window.closeModal = closeModal;
+
+
         async function signup(e) {
             e.preventDefault();
+            signupBtn.disabled = true;
+            signupBtn.innerText = "Signing up...";
 
             const firstName = document.getElementById("firstName").value;
             const lastName = document.getElementById("lastName").value;
-            const dob = document.getElementById("dob").value;
+            // *** FIXED ID HERE ***
+            const date_of_birth = document.getElementById("date_of_birth").value;
             const phone = document.getElementById("phone").value;
             const address = document.getElementById("address").value;
             const email = document.getElementById("email").value;
@@ -58,60 +107,36 @@
                     data: {
                         first_name: firstName,
                         last_name: lastName,
-                        dob,
-                        phone,
-                        address
+                        // *** FIXED KEY HERE ***
+                        date_of_birth: date_of_birth,
+                        phone: phone,
+                        address: address
                     }
                 }
             });
 
             if (error) {
+                showModal("Signup Failed", error.message);
                 console.error("Signup failed: " + error.message);
-                // In a production app, you would display this to the user in a custom modal or message box.
             } else {
-                window.location.href = "confirmation.html";
+                showModal("Success!", "Please check your email to confirm your account.");
+                signupForm.reset(); // Clear the form
             }
+            signupBtn.disabled = false;
+            signupBtn.innerText = "Sign Up";
         }
+        signupForm.addEventListener('submit', signup);
 
         async function signInWithGoogle() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
             });
             if (error) {
+                showModal('Error', error.message);
                 console.error('Error signing in with Google:', error.message);
             }
         }
-
-        window.signup = signup;
         window.signInWithGoogle = signInWithGoogle;
     </script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create Your Account</h2>
-        <form onsubmit="signup(event)">
-            <input type="text" id="firstName" placeholder="First Name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4">
-            <input type="text" id="lastName" placeholder="Last Name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4">
-            <input type="date" id="dob" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4">
-            <input type="tel" id="phone" placeholder="Phone Number" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4">
-            <textarea id="address" placeholder="Address" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4"></textarea>
-            <input type="email" id="email" placeholder="Email Address" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4">
-            <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mb-4">
-            <button type="submit" class="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition-colors">Sign Up</button>
-        </form>
-        <div class="or-divider my-6 text-gray-400">OR</div>
-        <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-2 p-3 bg-white text-gray-700 font-semibold border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-            <svg class="h-5 w-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M44.5 20H24v8.5h11.8c-1.2 5.2-6.1 8.8-11.8 8.8-6.9 0-12.5-5.6-12.5-12.5s5.6-12.5 12.5-12.5c3.3 0 6.2 1.3 8.4 3.4l6-6c-3.6-3.4-8.5-5.4-14.4-5.4-11.1 0-20.1 9-20.1 20.1s9 20.1 20.1 20.1c10.5 0 17.5-7.3 17.5-16.5 0-1.1-.1-2.2-.3-3.2z" fill="#4285F4"/>
-                <path d="M6.3 20c-1.1 3.2-1.7 6.6-1.7 10s.6 6.8 1.7 10l8.7-6.7c-.5-1.5-.8-3.1-.8-4.9s.3-3.4.8-4.9l-8.7-6.7z" fill="#F4B400"/>
-                <path d="M24 6.7c3.2 0 6 1.1 8.2 3.1l6-6c-3.4-3.4-8.1-5.6-14.2-5.6-11 0-20.1 9-20.1 20.1s9 20.1 20.1 20.1c5.9 0 10.6-2.2 14.2-5.6l-6-6c-2.2 1.9-5 3.1-8.2 3.1-6.9 0-12.5-5.6-12.5-12.5s5.6-12.5 12.5-12.5z" fill="#DB4437"/>
-                <path d="M44.5 20H24v8.5h11.8c-.5 2.1-1.8 3.9-3.4 5.2.4-.2.8-.5 1.2-.8l6-6c-1.6-1.6-2.9-3.5-3.9-5.6z" fill="#DB4437"/>
-                <path d="M24 6.7c3.3 0 6.2 1.3 8.4 3.4l6-6c-3.6-3.4-8.5-5.4-14.4-5.4-11.1 0-20.1 9-20.1 20.1s9 20.1 20.1 20.1c10.5 0 17.5-7.3 17.5-16.5 0-1.1-.1-2.2-.3-3.2z" fill="#4285F4"/>
-                <path d="M24 35.8c-6.9 0-12.5-5.6-12.5-12.5s5.6-12.5 12.5-12.5c3.3 0 6.2 1.3 8.4 3.4l6-6c-3.6-3.4-8.5-5.4-14.4-5.4-11.1 0-20.1 9-20.1 20.1s9 20.1 20.1 20.1c10.5 0 17.5-7.3 17.5-16.5 0-1.1-.1-2.2-.3-3.2z" fill="#0F9D58"/>
-            </svg>
-            Sign up with Google
-        </button>
-        <p class="mt-4 text-center text-sm text-gray-500">Already have an account? <a href="login.html" class="font-semibold text-blue-600 hover:text-blue-700">Login</a></p>
-    </div>
 </body>
 </html>
