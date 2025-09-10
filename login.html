@@ -1,109 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-        // Supabase project credentials (replace with your own)
-        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Function to handle email/password login
-        async function loginWithEmail(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const messageDiv = document.getElementById('message');
-
-            messageDiv.textContent = '';
-            messageDiv.classList.add('hidden');
-
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                messageDiv.textContent = 'Login failed: ' + error.message;
-                messageDiv.classList.remove('hidden');
-                messageDiv.classList.add('bg-red-100', 'text-red-700');
-                console.error('Login failed:', error.message);
-            } else {
-                window.location.href = '/user.html'; // Redirect to user.html
-            }
-        }
-
-        // Function to handle Google authentication
-        async function signInWithGoogle() {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${window.location.origin}/user.html` // Redirect to user.html
-                }
-            });
-
-            if (error) {
-                messageDiv.textContent = 'Google login failed: ' + error.message;
-                messageDiv.classList.remove('hidden');
-                messageDiv.classList.add('bg-red-100', 'text-red-700');
-                console.error('Google login failed:', error.message);
-            }
-        }
-
-        // Expose functions to global scope
-        window.loginWithEmail = loginWithEmail;
-        window.signInWithGoogle = signInWithGoogle;
-    </script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Login to Your Account</h2>
-        
-        <form id="login-form" onsubmit="loginWithEmail(event)">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="Enter your email" required 
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            
-            <label for="password" class="block text-sm font-medium text-gray-700 mt-4">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required 
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-
-            <div class="flex justify-end mt-2">
-                <a href="/forgot_password.html" class="text-sm font-medium text-blue-500 hover:text-blue-600">Forgot password?</a>
-            </div>
-
-            <button type="submit"
-                    class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                Login
-            </button>
-        </form>
-
-        <div id="message" role="alert" class="mt-4 p-3 text-sm rounded-lg hidden"></div>
-
-        <div class="relative flex py-5 items-center">
-            <div class="flex-grow border-t border-gray-400"></div>
-            <span class="flex-shrink mx-4 text-gray-400 text-sm">OR</span>
-            <div class="flex-grow border-t border-gray-400"></div>
-        </div>
-
-        <button onclick="signInWithGoogle()"
-                class="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-            <svg class="h-5 w-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M44.5,20H24v8.5h11.8C34.7,31.7,32.6,35,28.8,37.2c-3.2,1.8-7.2,2.8-11.2,2.8c-10.2,0-18.7-8.5-18.7-18.7S7.4,2,17.7,2c5.2,0,9.7,2.1,13.1,5.5l6-6C33.1,1,28,0,22.7,0C12,0,3,9,3,19.7S12,39.4,22.7,39.4c9.1,0,16.5-5.9,19.2-14.7H44.5L44.5,20z" fill="#4285f4"></path>
-                <path d="M22.7,39.4c-5.1,0-9.8-2-13.3-5.3l-5.6,5.1C8,44,15,47.4,22.7,47.4c10.7,0,19.7-9,19.7-19.7H22.7z" fill="#34a853"></path>
-                <path d="M5.4,19.7c0-2.9,0.7-5.8,1.9-8.4l-5.8-4.5C0.3,10.6,0,14.9,0,19.7s0.3,9.1,1.5,13.2l5.8-4.5C6.1,25.5,5.4,22.6,5.4,19.7z" fill="#fbbc05"></path>
-                <path d="M22.7,0C15,0,8,3.4,2.4,8.6l5.6,5.1c3.5-3.3,8.2-5.3,13.3-5.3c3.8,0,7.2,1.4,9.8,3.7l5.9-5.7C39.2,2.3,31.5,0,22.7,0z" fill="#ea4335"></path>
-            </svg>
-            Sign in with Google
-        </button>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+</style>
+<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Login</h2>
+    <form id="loginForm" onsubmit="login(event)" class="space-y-4">
+      <input type="email" id="email" placeholder="Email Address" required
+        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="password" id="password" placeholder="Password" required
+        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button type="submit" id="loginBtn"
+        class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-md hover:bg-blue-700 transition-colors duration-300">
+        Log In
+      </button>
+    </form>
+    <div class="mt-6 flex items-center justify-between">
+      <span class="border-b w-1/4 lg:w-1/3"></span>
+      <span class="text-xs text-center text-gray-500 uppercase">Or log in with</span>
+      <span class="border-b w-1/4 lg:w-1/3"></span>
     </div>
-</body>
-</html>
+    <div class="mt-4 flex flex-col space-y-3">
+      <button onclick="signInWithGoogle()"
+        class="w-full bg-gray-800 text-white font-semibold py-3 px-4 rounded-md hover:bg-gray-900 transition-colors duration-300 flex items-center justify-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google" viewBox="0 0 16 16">
+          <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.81-.893 5.927-2.923 7.91-2.029 2.0-4.791 3.003-7.587 3.003-3.692 0-6.79-2.09-6.79-5.856s3.098-5.857 6.79-5.857c1.786 0 3.292.68 4.545 1.936l-1.956 1.956c-.958-.87-2.298-1.4-3.79-1.4-2.81 0-5.119 2.03-5.119 4.856 0 2.827 2.309 4.856 5.119 4.856 2.453 0 4.225-1.578 4.791-3.619h-4.79v-2.128h7.936z"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </button>
+    </div>
+    <p class="mt-4 text-center text-sm text-gray-600">
+      Don't have an account? <a href="/signup.html" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-300">Sign Up</a>
+    </p>
+    <p class="mt-2 text-center text-sm text-gray-600">
+      <a href="/forgot_password.html" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-300">Forgot password?</a>
+    </p>
+  </div>
+</div>
+
+<div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-sm">
+    <h3 id="modalTitle" class="text-lg font-bold mb-4 text-gray-800"></h3>
+    <p id="modalMessage" class="mb-4 text-gray-600"></p>
+    <div class="flex justify-end">
+      <button onclick="closeModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">OK</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+  function showModal(title, message) {
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalMessage").innerText = message;
+    document.getElementById("modal").classList.remove("hidden");
+    document.getElementById("modal").classList.add("flex");
+  }
+
+  function closeModal() {
+    document.getElementById("modal").classList.remove("flex");
+    document.getElementById("modal").classList.add("hidden");
+  }
+
+  async function login(e) {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const loginBtn = document.getElementById("loginBtn");
+    loginBtn.disabled = true;
+    loginBtn.innerText = "Logging in...";
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showModal("Login Failed", error.message);
+      loginBtn.disabled = false;
+      loginBtn.innerText = "Log In";
+    } else {
+      window.location.href = "user.html";
+    }
+  }
+
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://sih-2025-xi.vercel.app/user.html'
+      }
+    });
+
+    if (error) {
+      showModal("Google Sign-in Failed", error.message);
+    }
+  }
+
+  window.login = login;
+  window.signInWithGoogle = signInWithGoogle;
+  window.closeModal = closeModal;
+</script>
