@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // Supabase project credentials (replace with your own)
+        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Function to check auth and fetch user profile
+        async function loadUser() {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            const messageDiv = document.getElementById('message');
+
+            if (sessionError || !session) {
+                // If not logged in, redirect to the login page
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const userId = session.user.id;
+            
+            // Fetch profile details for the logged-in user
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (profileError) {
+                messageDiv.textContent = 'Error fetching profile: ' + profileError.message;
+                messageDiv.classList.remove('hidden');
+                messageDiv.classList.add('bg-red-100', 'text-red-700');
+                console.error('Profile fetch failed:', profileError.message);
+                return;
+            }
+
+            // Update the UI with the user's profile information
+            const userName = profile.first_name || 'User';
+            document.getElementById('welcome-message').textContent = `Welcome, ${userName}!`;
+            document.getElementById('email-display').textContent = profile.email || 'Email not available';
+        }
+
+        // Function to log the user out
+        async function logout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout failed:', error.message);
+            } else {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Call the function on page load
+        window.onload = loadUser;
+        window.logout = logout;
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-lg text-center">
+        <h2 id="welcome-message" class="text-3xl font-bold text-gray-800 mb-2"></h2>
+        <p class="text-sm text-gray-500 mb-6">You are logged in.</p>
+        
+        <div class="text-left bg-gray-50 p-6 rounded-lg mb-6">
+            <h3 class="text-xl font-semibold mb-2">Profile Details</h3>
+            <p class="text-gray-700 mb-1"><strong>Email:</strong> <span id="email-display"></span></p>
+        </div>
+        
+        <div id="message" role="alert" class="p-3 text-sm rounded-lg hidden"></div>
+        
+        <div class="space-y-4">
+            <button onclick="alert('Chatbot functionality coming soon!');"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Chat with AI
+            </button>
+            <button onclick="alert('Talk to Doctor functionality coming soon!');"
+                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Talk to Doctor
+            </button>
+            <button onclick="alert('Test talk functionality coming soon!');"
+                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Test Talk
+            </button>
+        </div>
+        
+        <button onclick="logout()"
+                class="mt-8 text-sm font-medium text-red-500 hover:text-red-600 transition-colors">
+            Logout
+        </button>
+    </div>
+</body>
+</html>
