@@ -7,7 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -18,27 +20,42 @@
         <div class="text-left bg-gray-50 p-6 rounded-lg mb-6">
             <h3 class="text-xl font-semibold mb-2">Profile Details</h3>
             <p class="text-gray-700 mb-1"><strong>Email:</strong> <span id="email-display">Loading...</span></p>
-            <p class="text-gray-700 mb-1"><strong>First Name:</strong> <span id="firstname-display">Loading...</span></p>
-            <p class="text-gray-700"><strong>User ID:</strong> <span id="userid-display" class="text-xs break-all">Loading...</span></p>
+        </div>
+        
+        <div id="message" role="alert" class="p-3 text-sm rounded-lg hidden"></div>
+        
+        <div class="space-y-4">
+            <button onclick="window.location.href='/chat.html'"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Open Real-time Chat
+            </button>
+            <button onclick="alert('Talk to Doctor functionality coming soon!');"
+                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Talk to Doctor
+            </button>
+            <button onclick="alert('Test talk functionality coming soon!');"
+                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Test Talk
+            </button>
         </div>
         
         <button onclick="logout()"
-            class="mt-8 text-sm font-medium text-red-500 hover:text-red-600 transition-colors">
+                class="mt-8 text-sm font-medium text-red-500 hover:text-red-600 transition-colors">
             Logout
         </button>
     </div>
 
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQc7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+
+        // --- IMPORTANT: REPLACE WITH YOUR SUPABASE CREDENTIALS ---
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co'; // Your Supabase Project URL
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ'; // Your Supabase Anon Key
+        
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- Function to fetch profile data ---
+        // Function to fetch and display user profile
         async function fetchUserProfile(user) {
-            document.getElementById('email-display').textContent = user.email;
-            document.getElementById('userid-display').textContent = user.id;
-
             const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('first_name')
@@ -46,37 +63,38 @@
                 .single();
 
             if (error) {
-                console.warn('Could not fetch profile:', error.message);
-                // This can happen if a user signs in with Google before having a profile.
-                // It's not a critical error. We can try to get the name from the user object.
-                const fallbackName = user.user_metadata?.full_name || 'User';
-                document.getElementById('welcome-message').textContent = `Welcome, ${fallbackName}!`;
-                document.getElementById('firstname-display').textContent = fallbackName;
-
+                console.error('Error fetching profile:', error);
+                document.getElementById('welcome-message').textContent = `Welcome!`;
             } else if (profile) {
                 const userName = profile.first_name || 'User';
                 document.getElementById('welcome-message').textContent = `Welcome, ${userName}!`;
-                document.getElementById('firstname-display').textContent = userName;
             }
+            document.getElementById('email-display').textContent = user.email || 'Email not available';
         }
 
-        // --- Core Logic: Listen for user session and protect the page ---
+        // Use onAuthStateChange to manage user session
         supabase.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
-                // User is signed in, fetch their data
+                // User is signed in
                 fetchUserProfile(session.user);
             } else {
-                // User is not signed in, redirect to login using a full URL
-                window.location.href = `${window.location.origin}/login.html`;
+                // User is not signed in, redirect to login
+                window.location.href = window.location.origin + '/login.html';
             }
         });
         
-        // --- Logout Function ---
+        // Function to log the user out
         async function logout() {
-            await supabase.auth.signOut();
-            // The onAuthStateChange listener above will handle the redirect.
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout failed:', error.message);
+            }
+            // The onAuthStateChange listener will handle the redirect to login automatically.
         }
+
+        // Expose logout function to the global scope
         window.logout = logout;
     </script>
 </body>
 </html>
+
