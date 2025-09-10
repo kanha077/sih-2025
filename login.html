@@ -56,6 +56,14 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
+  // Listen for authentication state changes and redirect accordingly
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      // User is logged in, redirect to the user dashboard
+      window.location.href = "/user.html";
+    }
+  });
+
   function showModal(title, message) {
     document.getElementById("modalTitle").innerText = title;
     document.getElementById("modalMessage").innerText = message;
@@ -83,7 +91,7 @@
       loginBtn.disabled = false;
       loginBtn.innerText = "Log In";
     } else {
-      window.location.href = "user.html";
+      // Redirection is now handled by the onAuthStateChange listener
     }
   }
 
