@@ -99,7 +99,7 @@
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://sih-2025-xi.vercel.app/user.html'
+        redirectTo: `${window.location.origin}/user.html`
       }
     });
 
