@@ -1,100 +1,45 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Sign up</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    /* Minimal styling (same look as earlier pages) */
-    body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f9;display:flex;align-items:center;justify-content:center;height:100vh}
-    .card{background:#fff;padding:24px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.08);width:360px}
-    label{display:block;margin-top:10px;font-weight:600}
-    input{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #ddd}
-    button{width:100%;padding:12px;margin-top:14px;border-radius:8px;border:0;background:#007bff;color:#fff;font-weight:700;cursor:pointer}
-    .google{display:flex;align-items:center;justify-content:center;border:1px solid #ccc;background:#fff;padding:10px;border-radius:8px;cursor:pointer;margin-top:10px}
-    .divider{margin:14px 0;text-align:center;color:#666}
-  </style>
+  <meta charset="UTF-8">
+  <title>Signup</title>
 </head>
 <body>
+<h2>Signup</h2>
+<form id="signup-form">
+  <input id="email" type="email" placeholder="Email" required><br>
+  <input id="password" type="password" placeholder="Password" required><br>
+  <input id="username" type="text" placeholder="Username"><br>
+  <input id="full_name" type="text" placeholder="Full Name"><br>
+  <button type="submit">Signup</button>
+</form>
 
-<div class="card">
-  <h2>Create account</h2>
+<script type="module">
+  import { supabase } from "./js/supabaseClient.js";  <!-- ✅ relative path -->
 
-  <form id="signup-form">
-    <label>Username</label>
-    <input id="username" placeholder="choose a username" required>
-
-    <label>Full name</label>
-    <input id="full_name" placeholder="Your full name">
-
-    <label>Email</label>
-    <input id="email" type="email" placeholder="you@example.com" required>
-
-    <label>Password</label>
-    <input id="password" type="password" placeholder="Create a password" required>
-
-    <label>Confirm password</label>
-    <input id="confirm_password" type="password" placeholder="Confirm password" required>
-
-    <button type="submit">Sign up</button>
-  </form>
-
-  <div class="divider">OR</div>
-
-  <p style="text-align:center;margin-top:12px">Already have an account? <a href="login.html">Log in</a></p>
-</div>
-
-<!-- Supabase CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // --- CONFIG: replace these with your project's values ---
-  const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-
-  // Create client (CDN exposes 'supabase' global; extract createClient)
-  const { createClient } = supabase;
-  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // Signup handler
-  document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  document.getElementById("signup-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const full_name = document.getElementById('full_name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const confirm = document.getElementById('confirm_password').value;
 
-    if (password !== confirm) {
-      alert('Passwords do not match');
-      return;
-    }
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const username = document.getElementById("username").value;
+    const fullName = document.getElementById("full_name").value;
 
-    // Sign up (stores metadata which our trigger can read)
-    const { data, error } = await supabaseClient.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: {
-          username,
-          full_name,
-          email
-        }
+        data: { username, full_name: fullName }
       }
     });
 
     if (error) {
-      alert('Sign up error: ' + error.message);
-      console.error(error);
-      return;
+      alert("Signup failed: " + error.message);
+    } else {
+      alert("Signup successful!");
+      window.location.href = "/login.html";  
     }
-
-    // If you have email confirmations enabled, the user will need to confirm via email.
-    // Otherwise, redirect to dashboard (or show check-your-email page).
-    alert('Sign up successful — check your email if confirmation is enabled.');
-    window.location.href = 'dashboard.html';
   });
-
-
 </script>
 </body>
 </html>
