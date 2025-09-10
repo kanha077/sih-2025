@@ -31,9 +31,9 @@
             <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold text-gray-800">Real-time Chat</h1>
-                    <p class="text-sm text-gray-500">Powered by Supabase</p>
+                    <p id="chat-header-subtitle" class="text-sm text-gray-500">Powered by Supabase</p>
                 </div>
-                <button id="logout-btn" class="text-sm text-red-600 hover:text-red-800 font-semibold">Logout</button>
+                <button id="auth-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">Logout</button>
             </header>
 
             <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4">
@@ -61,51 +61,78 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        // --- IMPORTANT: REPLACE WITH YOUR SUPABASE CREDENTIALS ---
-        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co'; // Your Supabase Project URL
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ'; // Your Supabase Anon Key
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
         
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // DOM Elements
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
         const chatMessages = document.getElementById('chat-messages');
-        const logoutBtn = document.getElementById('logout-btn');
+        const authBtn = document.getElementById('auth-btn');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const chatHeaderSubtitle = document.getElementById('chat-header-subtitle');
+        const sendButton = document.getElementById('send-button');
 
         let currentUser = null;
         let userProfileCache = new Map();
         
-        // Check user session and load messages
         async function initializeChat() {
             const { data: { session } } = await supabase.auth.getSession();
             
-            if (!session) {
-                window.location.href = window.location.origin + '/login.html';
+            if (session) {
+                currentUser = session.user;
+                authBtn.textContent = 'Logout';
+            } else {
+                authBtn.textContent = 'Login';
+                chatHeaderSubtitle.textContent = 'Anonymous Session';
+                messageInput.placeholder = 'Please log in to send a message.';
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+            }
+
+            // --- FIX START: Fetch messages and profiles in two steps ---
+
+            // Step 1: Fetch all messages
+            const { data: messages, error: messagesError } = await supabase
+                .from('messages')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (messagesError) {
+                console.error("Error fetching messages:", messagesError);
+                loadingSpinner.classList.add('hidden');
                 return;
             }
-            currentUser = session.user;
-
-            // Fetch initial messages with user profiles
-            const { data: messages, error } = await supabase
-                .from('messages')
-                .select('*, profiles(first_name)')
-                .order('created_at', { ascending: true });
             
-            loadingSpinner.classList.add('hidden');
+            // Step 2: Get unique user IDs from the messages
+            const userIds = [...new Set(messages.map(msg => msg.user_id).filter(id => id))];
 
-            if (error) {
-                console.error("Error fetching messages:", error);
-            } else {
-                messages.forEach(message => {
-                    // Populate the cache with user profiles
-                    if (message.profiles && !userProfileCache.has(message.user_id)) {
-                        userProfileCache.set(message.user_id, message.profiles.first_name || 'Guest');
-                    }
-                    addMessage(message);
-                });
+            // Step 3: Fetch profiles for those unique users
+            if (userIds.length > 0) {
+                const { data: profiles, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('id, first_name')
+                    .in('id', userIds);
+
+                if (profilesError) {
+                    console.error("Error fetching profiles:", profilesError);
+                } else {
+                    // Populate the cache with fetched profiles
+                    profiles.forEach(profile => {
+                        userProfileCache.set(profile.id, profile.first_name || 'Guest');
+                    });
+                }
             }
+
+            loadingSpinner.classList.add('hidden');
+            
+            // Step 4: Display the initial messages using the now-populated cache
+            messages.forEach(message => {
+                addMessage(message);
+            });
+            
+            // --- FIX END ---
 
             // Listen for new messages in real-time
             supabase
@@ -116,9 +143,10 @@
                 .subscribe();
         }
 
-        // Handle chat form submission
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!currentUser) return;
+
             const content = messageInput.value.trim();
             if (!content) return;
 
@@ -133,19 +161,36 @@
             }
         });
 
-        // Function to add a message to the chat display
-        function addMessage(message) {
+        // --- FIX START: Made addMessage async to fetch profiles if needed ---
+        async function addMessage(message) {
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('flex', 'flex-col', 'w-full');
             
-            const isCurrentUser = message.user_id === currentUser.id;
+            const isCurrentUser = currentUser && message.user_id === currentUser.id;
 
-            // Create and add the sender's name element for other users
             if (!isCurrentUser) {
-                const senderName = message.profiles?.first_name || userProfileCache.get(message.user_id) || 'Guest';
+                let senderName = userProfileCache.get(message.user_id);
+                
+                // If the sender's name is not in the cache, fetch it
+                if (!senderName && message.user_id) {
+                    const { data: profile, error } = await supabase
+                        .from('profiles')
+                        .select('first_name')
+                        .eq('id', message.user_id)
+                        .single();
+
+                    if (error) {
+                        console.error('Error fetching profile for new message:', error);
+                        senderName = 'Guest';
+                    } else {
+                        senderName = profile.first_name || 'Guest';
+                    }
+                    userProfileCache.set(message.user_id, senderName);
+                }
+
                 const nameElement = document.createElement('span');
                 nameElement.classList.add('text-xs', 'text-gray-500', 'mb-1', 'ml-1');
-                nameElement.textContent = senderName;
+                nameElement.textContent = senderName || 'Guest';
                 messageContainer.appendChild(nameElement);
             }
 
@@ -166,15 +211,19 @@
             chatMessages.appendChild(messageContainer);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+        // --- FIX END ---
         
-        // Handle logout
-        logoutBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = window.location.origin + '/login.html';
+        authBtn.addEventListener('click', async () => {
+            if (currentUser) {
+                await supabase.auth.signOut();
+                window.location.reload();
+            } else {
+                window.location.href = window.location.origin + '/login.html';
+            }
         });
         
-        // Start the chat application
         initializeChat();
     </script>
 </body>
 </html>
+
