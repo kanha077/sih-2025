@@ -3,43 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>Signup</title>
+  <script type="module">
+    import { supabase } from "./js/supabaseClient.js";
+
+    async function signup(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const { error } = await supabase.auth.signUp({ email, password });
+
+      if (error) {
+        alert("Signup failed: " + error.message);
+      } else {
+        alert("Signup successful! Please login.");
+        window.location.href = "login.html";
+      }
+    }
+
+    window.signup = signup;
+  </script>
 </head>
 <body>
-<h2>Signup</h2>
-<form id="signup-form">
-  <input id="email" type="email" placeholder="Email" required><br>
-  <input id="password" type="password" placeholder="Password" required><br>
-  <input id="username" type="text" placeholder="Username"><br>
-  <input id="full_name" type="text" placeholder="Full Name"><br>
-  <button type="submit">Signup</button>
-</form>
-
-<script type="module">
-  import { supabase } from "./js/supabaseClient.js";  <!-- ✅ relative path -->
-
-  document.getElementById("signup-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const username = document.getElementById("username").value;
-    const fullName = document.getElementById("full_name").value;
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { username, full_name: fullName }
-      }
-    });
-
-    if (error) {
-      alert("Signup failed: " + error.message);
-    } else {
-      alert("Signup successful!");
-      window.location.href = "/login.html";  
-    }
-  });
-</script>
+  <h2>Signup</h2>
+  <form onsubmit="signup(event)">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Sign Up</button>
+  </form>
+  <p>Already have an account? <a href="login.html">Login</a></p>
 </body>
 </html>
