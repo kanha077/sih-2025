@@ -1,95 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Landing Page</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  <meta charset="UTF-8">
+  <title>Landing Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    body {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f1f5f9;
-    }
-    header {
-        background: #fff;
-        padding: 1rem 2rem;
-        color: #1e293b;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    header h1 {
-        margin: 0;
-        font-weight: 700;
-        font-size: 1.5rem;
-    }
-    nav a {
-        margin-left: 20px;
-        color: #475569;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.3s;
-        font-size: 0.9rem;
-    }
-    nav a:hover {
-        color: #0f172a;
-    }
-    main {
-        text-align: center;
-        padding: 100px 20px;
-    }
-    main h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #1e293b;
-    }
-    main p {
-        font-size: 1.1rem;
-        color: #475569;
-        margin-top: 1rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .chat-button {
-        background-color: #3b82f6;
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        margin-top: 2rem;
-        transition: background-color 0.3s;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    }
-    .chat-button:hover {
-        background-color: #2563eb;
-    }
-  </style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f1f5f9;
+    }
+    header {
+      background: #fff;
+      padding: 1rem 2rem;
+      color: #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+    nav a {
+      margin-left: 20px;
+      color: #475569;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+      font-size: 0.9rem;
+    }
+    nav a:hover {
+      color: #0f172a;
+    }
+    main {
+      text-align: center;
+      padding: 100px 20px;
+    }
+    main h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    main p {
+      font-size: 1.1rem;
+      color: #475569;
+      margin-top: 1rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .chat-button {
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .chat-button:hover {
+      background-color: #2563eb;
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <h1>MyApp</h1>
-    <nav>
-      <a href="login.html">Login</a>
-      <a href="signup.html">Signup</a>
-    </nav>
-  </header>
+  <!-- Header -->
+  <header>
+    <h1>MyApp</h1>
+    <nav>
+      <a href="login.html">Login</a>
+      <a href="signup.html">Signup</a>
+    </nav>
+  </header>
 
-  <!-- Main Content -->
-  <main>
-    <h2>Welcome to MyApp 🚀</h2>
-    <p>Your personalized dashboard awaits. Please login or signup to continue, or chat with our AI assistant anonymously.</p>
-    <button onclick="window.location.href='chat.html'" class="chat-button">
-        Talk to AI Anonymously
-    </button>
-  </main>
+  <!-- Main Content -->
+  <main>
+    <h2>Welcome to MyApp 🚀</h2>
+    <p>Your personalized dashboard awaits. Please login or signup to continue, or chat with our AI assistant anonymously.</p>
+    <button onclick="window.location.href='chat.html'" class="chat-button">
+        Talk to AI Anonymously
+    </button>
+  </main>
 </body>
 </html>
