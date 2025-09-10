@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Chat Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background-color: #94a3b8;
+            border-radius: 10px;
+            border: 2px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen flex-col items-center justify-center p-4">
+        
+        <!-- Chat Interface -->
+        <div id="chat-container" class="h-full w-full max-w-3xl flex flex-col bg-white rounded-xl shadow-lg">
+            <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Real-time Chat</h1>
+                    <p class="text-sm text-gray-500">Powered by Supabase</p>
+                </div>
+                <button id="logout-btn" class="text-sm text-red-600 hover:text-red-800 font-semibold">Logout</button>
+            </header>
+
+            <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4">
+                <!-- Loading Spinner -->
+                <div id="loading-spinner" class="flex justify-center items-center h-full">
+                    <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <!-- Chat messages will be appended here -->
+            </div>
+            
+            <div class="p-4 bg-white border-t border-gray-200 rounded-b-xl">
+                <form id="chat-form" class="flex items-center space-x-4">
+                    <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off" required class="flex-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" id="send-button" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // --- IMPORTANT: REPLACE WITH YOUR SUPABASE CREDENTIALS ---
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co'; // Your Supabase Project URL
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ'; // Your Supabase Anon Key
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // DOM Elements
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        let currentUser = null;
+        let userProfileCache = new Map();
+        
+        // Check user session and load messages
+        async function initializeChat() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                window.location.href = window.location.origin + '/login.html';
+                return;
+            }
+            currentUser = session.user;
+
+            // Fetch initial messages with user profiles
+            const { data: messages, error } = await supabase
+                .from('messages')
+                .select('*, profiles(first_name)')
+                .order('created_at', { ascending: true });
+            
+            loadingSpinner.classList.add('hidden');
+
+            if (error) {
+                console.error("Error fetching messages:", error);
+            } else {
+                messages.forEach(message => {
+                    // Populate the cache with user profiles
+                    if (message.profiles && !userProfileCache.has(message.user_id)) {
+                        userProfileCache.set(message.user_id, message.profiles.first_name || 'Guest');
+                    }
+                    addMessage(message);
+                });
+            }
+
+            // Listen for new messages in real-time
+            supabase
+                .channel('public:messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                    addMessage(payload.new);
+                })
+                .subscribe();
+        }
+
+        // Handle chat form submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = messageInput.value.trim();
+            if (!content) return;
+
+            const { error } = await supabase
+                .from('messages')
+                .insert([{ content, user_id: currentUser.id }]);
+            
+            if (error) {
+                console.error("Error sending message:", error);
+            } else {
+                messageInput.value = '';
+            }
+        });
+
+        // Function to add a message to the chat display
+        function addMessage(message) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('flex', 'flex-col', 'w-full');
+            
+            const isCurrentUser = message.user_id === currentUser.id;
+
+            // Create and add the sender's name element for other users
+            if (!isCurrentUser) {
+                const senderName = message.profiles?.first_name || userProfileCache.get(message.user_id) || 'Guest';
+                const nameElement = document.createElement('span');
+                nameElement.classList.add('text-xs', 'text-gray-500', 'mb-1', 'ml-1');
+                nameElement.textContent = senderName;
+                messageContainer.appendChild(nameElement);
+            }
+
+            const bubbleElement = document.createElement('div');
+            bubbleElement.classList.add('max-w-[75%]', 'p-3', 'rounded-lg', 'break-words', 'w-fit');
+            
+            if (isCurrentUser) {
+                messageContainer.classList.add('items-end');
+                bubbleElement.classList.add('bg-blue-500', 'text-white');
+            } else {
+                messageContainer.classList.add('items-start');
+                bubbleElement.classList.add('bg-gray-200', 'text-gray-800');
+            }
+            
+            bubbleElement.textContent = message.content;
+            messageContainer.appendChild(bubbleElement);
+            
+            chatMessages.appendChild(messageContainer);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Handle logout
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = window.location.origin + '/login.html';
+        });
+        
+        // Start the chat application
+        initializeChat();
+    </script>
+</body>
+</html>
