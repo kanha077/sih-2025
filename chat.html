@@ -1,152 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonymous AI Chat</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        #chat-messages::-webkit-scrollbar {
-            width: 8px;
-        }
-        #chat-messages::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        #chat-messages::-webkit-scrollbar-thumb {
-            background-color: #94a3b8;
-            border-radius: 10px;
-            border: 2px solid #f1f5f9;
-        }
-    </style>
-</head>
-<body class="bg-gray-100">
-    <div class="flex h-screen flex-col items-center justify-center p-4">
-        
-        <!-- Chat Interface -->
-        <div id="chat-container" class="h-full w-full max-w-3xl flex flex-col bg-white rounded-xl shadow-lg">
-            <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl flex justify-between items-center">
-                <div>
-                    <h1 class="text-xl font-bold text-gray-800">Anonymous Chat</h1>
-                    <p id="chat-header-subtitle" class="text-sm text-gray-500">This conversation is not saved.</p>
-                </div>
-                <div>
-                    <button id="clear-chat-btn" class="text-sm text-gray-500 hover:text-gray-800 font-semibold mr-4">Clear Chat</button>
-                    <a href="/login.html" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">Login to Save Chats</a>
-                </div>
-            </header>
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-            <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4">
-                <!-- Chat messages will be appended here -->
-            </div>
-            
-            <div class="p-4 bg-white border-t border-gray-200 rounded-b-xl">
-                <form id="chat-form" class="flex items-center space-x-4">
-                    <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off" required class="flex-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button type="submit" id="send-button" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
-                        Send
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+  // Supabase client
+    const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzM0NzYxNiwiZXhwIjoyMDcyOTIzNjE2fQ.ziJb9DPVnWQnXwk1yNg-4YPwMi01cjlQx9lp-y72ELk";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <script>
-        const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message-input');
-        const chatMessages = document.getElementById('chat-messages');
-        const sendButton = document.getElementById('send-button');
-        const clearChatBtn = document.getElementById('clear-chat-btn');
+  // AI agent config
+  const AI_API_URL = "https://your-ai-agent.com/api/chat"; // ⚠️ Replace
+  const AI_API_KEY = "YOUR_AI_AGENT_KEY"; // ⚠️ Replace
 
-        function initializeChat() {
-            addMessage('assistant', 'Hello! I am an AI assistant. How can I help you today?');
-        }
+  const chatForm = document.getElementById("chat-form");
+  const messageInput = document.getElementById("message-input");
+  const chatMessages = document.getElementById("chat-messages");
 
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const userInput = messageInput.value.trim();
-            if (!userInput) return;
+  let currentUser = null; // null = anonymous
 
-            addMessage('user', userInput);
-            messageInput.value = '';
-            
-            showTypingIndicator();
-            getBotResponse(userInput);
-        });
+  // Check session on load
+  async function checkSession() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      currentUser = data.session.user;
+      console.log("Logged in as:", currentUser.email);
+    } else {
+      console.log("Anonymous user");
+    }
+  }
+  await checkSession();
 
-        clearChatBtn.addEventListener('click', () => {
-            chatMessages.innerHTML = '';
-            initializeChat();
-        });
+  async function saveMessage(role, text) {
+    if (!currentUser) {
+      console.log("Anonymous mode: message not saved to Supabase");
+      return;
+    }
+    const { error } = await supabase.from("chats").insert([
+      { role, message: text, user_id: currentUser.id }
+    ]);
+    if (error) console.error("Error saving message:", error);
+  }
 
-        function getBotResponse(userInput) {
-            // Simulate a bot response after a short delay to make the typing indicator visible
-            setTimeout(() => {
-                hideTypingIndicator();
-                let botResponse = "I'm not sure how to respond to that. Can you please rephrase?";
-                const lowerCaseInput = userInput.toLowerCase();
+  function addMessage(sender, text) {
+    const container = document.createElement("div");
+    container.classList.add("flex", "flex-col", "w-full");
 
-                if (lowerCaseInput.includes('hello') || lowerCaseInput.includes('hi')) {
-                    botResponse = 'Hello there! How can I assist you?';
-                } else if (lowerCaseInput.includes('how are you')) {
-                    botResponse = 'I am just a set of algorithms, but I am functioning perfectly! Thanks for asking.';
-                } else if (lowerCaseInput.includes('help')) {
-                    botResponse = 'Of course, I am here to help. What do you need assistance with?';
-                } else if (lowerCaseInput.includes('bye')) {
-                    botResponse = 'Goodbye! Have a great day.';
-                }
-                addMessage('assistant', botResponse);
-            }, 1200);
-        }
+    const bubble = document.createElement("div");
+    bubble.classList.add("max-w-[75%]", "p-3", "rounded-lg", "break-words", "w-fit");
 
-        function addMessage(sender, text) {
-            const messageContainer = document.createElement('div');
-            messageContainer.classList.add('flex', 'flex-col', 'w-full');
+    if (sender === "user") {
+      container.classList.add("items-end");
+      bubble.classList.add("bg-blue-500", "text-white");
+    } else {
+      container.classList.add("items-start");
+      bubble.classList.add("bg-gray-200", "text-gray-800");
+    }
 
-            const bubbleElement = document.createElement('div');
-            bubbleElement.classList.add('max-w-[75%]', 'p-3', 'rounded-lg', 'break-words', 'w-fit');
-            
-            if (sender === 'user') {
-                messageContainer.classList.add('items-end');
-                bubbleElement.classList.add('bg-blue-500', 'text-white');
-            } else { // 'assistant'
-                messageContainer.classList.add('items-start');
-                bubbleElement.classList.add('bg-gray-200', 'text-gray-800');
-            }
-            
-            bubbleElement.textContent = text;
-            messageContainer.appendChild(bubbleElement);
-            
-            chatMessages.appendChild(messageContainer);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        function showTypingIndicator() {
-            const typingIndicatorHTML = `
-                <div id="typing-indicator" class="flex items-center space-x-2 p-3">
-                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.3s;"></div>
-                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.15s;"></div>
-                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                </div>`;
-            const messageContainer = document.createElement('div');
-            messageContainer.classList.add('flex', 'flex-col', 'w-full', 'items-start');
-            messageContainer.innerHTML = typingIndicatorHTML;
-            chatMessages.appendChild(messageContainer);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    bubble.textContent = text;
+    container.appendChild(bubble);
+    chatMessages.appendChild(container);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
-        function hideTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) {
-                indicator.parentElement.remove();
-            }
-        }
-        
-        initializeChat();
-    </script>
-</body>
-</html>
+  async function sendToAI(userInput) {
+    try {
+      const response = await fetch(AI_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${AI_API_KEY}`
+        },
+        body: JSON.stringify({ message: userInput })
+      });
+      const data = await response.json();
+      return data.reply || "⚠️ No response from AI";
+    } catch (err) {
+      console.error("AI API Error:", err);
+      return "⚠️ Error contacting AI service.";
+    }
+  }
 
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userInput = messageInput.value.trim();
+    if (!userInput) return;
+
+    // Show user message
+    addMessage("user", userInput);
+    await saveMessage("user", userInput);
+    messageInput.value = "";
+
+    // Typing placeholder
+    addMessage("assistant", "Typing...");
+
+    // AI response
+    const botReply = await sendToAI(userInput);
+
+    // Remove "Typing..."
+    chatMessages.lastChild.remove();
+
+    // Show AI response
+    addMessage("assistant", botReply);
+    await saveMessage("assistant", botReply);
+  });
+</script>
