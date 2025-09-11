@@ -44,6 +44,7 @@
         </p>
     </div>
 
+    <!-- Modal for messages -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-sm">
             <h3 id="modalTitle" class="text-lg font-bold mb-4 text-gray-800"></h3>
@@ -57,35 +58,48 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        // --- CORRECTED API KEYS ---
         const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
-        // This is the public 'anon' key, which is safe for browser use.
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Check session immediately on page load (Google redirect fix)
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                handleRedirect(session.user.id);
+            }
+        })();
+
+        // Listen for auth changes
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session) {
-                const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('phone')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (error && error.code !== 'PGRST116') {
-                    console.error('Error fetching profile:', error);
-                }
-                
-                if (!profile || !profile.phone) {
-                    window.location.href = window.location.origin + '/complete-profile.html';
-                } else {
-                    window.location.href = window.location.origin + '/user.html';
-                }
+                handleRedirect(session.user.id);
             }
         });
 
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', login);
+        // Redirect logic
+        async function handleRedirect(userId) {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('phone, role')
+                .eq('id', userId)
+                .single();
 
+            if (error && error.code !== 'PGRST116') {
+                console.error('Error fetching profile:', error);
+                return;
+            }
+
+            if (profile?.role === 'admin') {
+                window.location.href = window.location.origin + '/admin.html';
+            } else if (!profile || !profile.phone) {
+                window.location.href = window.location.origin + '/complete-profile.html';
+            } else {
+                window.location.href = window.location.origin + '/user.html';
+            }
+        }
+
+        // Modal functions
         function showModal(title, message) {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalMessage').innerText = message;
@@ -97,6 +111,10 @@
             document.getElementById('modal').classList.add('hidden');
         }
         window.closeModal = closeModal;
+
+        // Email/password login
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', login);
 
         async function login(e) {
             e.preventDefault();
@@ -115,11 +133,12 @@
             }
         }
 
+        // Google login
         async function signInWithGoogle() {
             const { error } = await supabase.auth.signInWithOAuth({ 
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/login.html'
+                    redirectTo: window.location.origin + '/login.html' // redirect back here
                 }
             });
             if (error) {
@@ -130,4 +149,3 @@
     </script>
 </body>
 </html>
-
