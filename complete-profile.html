@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Complete Your Profile</h2>
+        <p class="text-center text-gray-500 mb-6">Please provide a few more details to continue.</p>
+        <form id="profileForm" class="space-y-4">
+            <input type="text" id="firstName" placeholder="First Name" required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="lastName" placeholder="Last Name" required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="date" id="date_of_birth" required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date of Birth">
+            <input type="tel" id="phone" placeholder="Phone Number" required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" id="submitBtn"
+                class="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                Save Profile
+            </button>
+        </form>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-sm text-center">
+            <h3 id="modalTitle" class="text-lg font-bold mb-4 text-gray-800"></h3>
+            <p id="modalMessage" class="mb-4 text-gray-600"></p>
+            <button onclick="closeModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">OK</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+
+        // Check session and pre-fill form
+        async function initializeForm() {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = window.location.origin + '/login.html';
+                return;
+            }
+            currentUser = session.user;
+
+            // Pre-fill names from Google account if available
+            const userMetadata = currentUser.user_metadata;
+            if (userMetadata) {
+                document.getElementById('firstName').value = userMetadata.full_name?.split(' ')[0] || '';
+                document.getElementById('lastName').value = userMetadata.full_name?.split(' ').slice(1).join(' ') || '';
+            }
+        }
+
+        // Handle form submission
+        const profileForm = document.getElementById('profileForm');
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Saving...";
+
+            const updates = {
+                id: currentUser.id,
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                date_of_birth: document.getElementById('date_of_birth').value,
+                phone: document.getElementById('phone').value,
+                // The email is already set in the auth.users table.
+            };
+
+            const { error } = await supabase.from('profiles').update(updates).eq('id', currentUser.id);
+
+            if (error) {
+                showModal('Error', 'Failed to save profile: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Save Profile";
+            } else {
+                // On success, redirect to the user dashboard.
+                window.location.href = window.location.origin + '/user.html';
+            }
+        });
+
+        function showModal(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('modal').classList.add('flex');
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+        window.closeModal = closeModal;
+
+        // Run initialization on page load
+        initializeForm();
+    </script>
+</body>
+</html>
+
