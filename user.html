@@ -1,100 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-lg text-center">
-        <h2 id="welcome-message" class="text-3xl font-bold text-gray-800 mb-2">Loading...</h2>
-        <p class="text-sm text-gray-500 mb-6">You are logged in.</p>
-        
-        <div class="text-left bg-gray-50 p-6 rounded-lg mb-6">
-            <h3 class="text-xl font-semibold mb-2">Profile Details</h3>
-            <p class="text-gray-700 mb-1"><strong>Email:</strong> <span id="email-display">Loading...</span></p>
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-2xl">
+    <h2 id="welcome-message" class="text-3xl font-bold text-gray-800 mb-2">Loading...</h2>
+    <p class="text-sm text-gray-500 mb-6">You are logged in.</p>
+    
+    <!-- Profile Section -->
+    <div class="text-left bg-gray-50 p-6 rounded-xl mb-6">
+      <h3 class="text-xl font-semibold mb-4">Profile Details</h3>
+      <form id="profile-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Full Name</label>
+          <input type="text" id="full_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2" placeholder="Enter full name"/>
         </div>
-        
-        <div id="message" role="alert" class="p-3 text-sm rounded-lg hidden"></div>
-        
-        <div class="space-y-4">
-            <button onclick="window.location.href='/chat.html'"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                Open Real-time Chat
-            </button>
-            <button onclick="alert('Talk to Doctor functionality coming soon!');"
-                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                Talk to Doctor
-            </button>
-            <button onclick="window.location.href='/screening.html'"
-                    class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                Start Screening Test
-            </button>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2 bg-gray-100" disabled/>
         </div>
-        
-        <button onclick="logout()"
-                class="mt-8 text-sm font-medium text-red-500 hover:text-red-600 transition-colors">
-            Logout
-        </button>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+          <input type="text" id="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2" placeholder="Enter phone number"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <input type="date" id="dob" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Account Created</label>
+          <input type="text" id="created_at" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100" disabled/>
+        </div>
+        <button type="submit" class="w-full py-3 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium shadow transition">Save Profile</button>
+      </form>
     </div>
 
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    <div id="message" role="alert" class="p-3 text-sm rounded-lg hidden"></div>
 
-        // --- IMPORTANT: REPLACE WITH YOUR SUPABASE CREDENTIALS ---
-        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co'; // Your Supabase Project URL
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ'; // Your Supabase Anon Key
-        
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- Actions -->
+    <div class="space-y-4">
+      <button onclick="window.location.href='/chat.html'"
+              class="w-full py-3 px-4 rounded-md text-lg font-medium text-white bg-green-500 hover:bg-green-600 shadow transition">
+        Open Real-time Chat
+      </button>
+      <button onclick="alert('Talk to Doctor functionality coming soon!');"
+              class="w-full py-3 px-4 rounded-md text-lg font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 shadow transition">
+        Talk to Doctor
+      </button>
+      <button onclick="window.location.href='/screening.html'"
+              class="w-full py-3 px-4 rounded-md text-lg font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 shadow transition">
+        Start Screening Test
+      </button>
+    </div>
 
-        // Function to fetch and display user profile
-        async function fetchUserProfile(user) {
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('first_name')
-                .eq('id', user.id)
-                .single();
+    <button onclick="logout()" class="mt-8 text-sm font-medium text-red-500 hover:text-red-600 transition">
+      Logout
+    </button>
+  </div>
 
-            if (error) {
-                console.error('Error fetching profile:', error);
-                document.getElementById('welcome-message').textContent = `Welcome!`;
-            } else if (profile) {
-                const userName = profile.first_name || 'User';
-                document.getElementById('welcome-message').textContent = `Welcome, ${userName}!`;
-            }
-            document.getElementById('email-display').textContent = user.email || 'Email not available';
-        }
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        // Use onAuthStateChange to manage user session
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                // User is signed in
-                fetchUserProfile(session.user);
-            } else {
-                // User is not signed in, redirect to login
-                window.location.href = window.location.origin + '/login.html';
-            }
-        });
-        
-        // Function to log the user out
-        async function logout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error('Logout failed:', error.message);
-            }
-            // The onAuthStateChange listener will handle the redirect to login automatically.
-        }
+    // --- Replace with your Supabase credentials ---
+    const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Expose logout function to the global scope
-        window.logout = logout;
-    </script>
+    let currentUser = null;
+
+    // Fetch and display user profile
+    async function fetchUserProfile(user) {
+      currentUser = user;
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("full_name, phone, dob, created_at")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+      }
+
+      // Prefill fields
+      document.getElementById("welcome-message").textContent = `Welcome, ${profile?.full_name || "User"}!`;
+      document.getElementById("full_name").value = profile?.full_name || "";
+      document.getElementById("email").value = user.email || "";
+      document.getElementById("phone").value = profile?.phone || "";
+      document.getElementById("dob").value = profile?.dob || "";
+      document.getElementById("created_at").value = profile?.created_at || user.created_at || "N/A";
+    }
+
+    // Save profile
+    document.getElementById("profile-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const updates = {
+        id: currentUser.id,
+        full_name: document.getElementById("full_name").value,
+        phone: document.getElementById("phone").value,
+        dob: document.getElementById("dob").value
+      };
+
+      const { error } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
+      const msgBox = document.getElementById("message");
+
+      if (error) {
+        msgBox.textContent = "Failed to update profile!";
+        msgBox.className = "p-3 text-sm rounded-lg bg-red-100 text-red-700 mt-4";
+        msgBox.classList.remove("hidden");
+      } else {
+        msgBox.textContent = "Profile updated successfully!";
+        msgBox.className = "p-3 text-sm rounded-lg bg-green-100 text-green-700 mt-4";
+        msgBox.classList.remove("hidden");
+      }
+    });
+
+    // Auth listener
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        fetchUserProfile(session.user);
+      } else {
+        window.location.href = "/login.html";
+      }
+    });
+
+    // Logout
+    async function logout() {
+      await supabase.auth.signOut();
+    }
+    window.logout = logout;
+  </script>
 </body>
 </html>
-
