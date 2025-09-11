@@ -91,54 +91,79 @@
     let currentUser = null;
 
     // Fetch and display user profile
-    async function fetchUserProfile(user) {
-      currentUser = user;
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("first_name, last_name, phone, address, date_of_birth, created_at")
-        .eq("id", user.id)
-        .single();
+async function fetchUserProfile(user) {
+  currentUser = user;
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-      }
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("first_name, last_name, phone, address, date_of_birth, created_at")
+    .eq("id", user.id)
+    .single();
 
-      document.getElementById("welcome-message").textContent =
-        `Welcome, ${profile?.first_name || "User"}!`;
+  if (error) {
+    console.error("Error fetching profile:", error);
+  }
 
-      document.getElementById("first_name").value = profile?.first_name || "";
-      document.getElementById("last_name").value = profile?.last_name || "";
-      document.getElementById("phone").value = profile?.phone || "";
-      document.getElementById("address").value = profile?.address || "";
-      document.getElementById("date_of_birth").value = profile?.date_of_birth || "";
-      document.getElementById("created_at").value = profile?.created_at || "N/A";
+  // Format DOB for <input type="date"> (needs YYYY-MM-DD)
+  let formattedDob = "";
+  if (profile?.date_of_birth) {
+    formattedDob = new Date(profile.date_of_birth).toISOString().split("T")[0];
+  }
+
+  document.getElementById("welcome-message").textContent =
+    `Welcome, ${profile?.first_name || "User"}!`;
+
+  document.getElementById("first_name").value = profile?.first_name || "";
+  document.getElementById("last_name").value = profile?.last_name || "";
+  document.getElementById("phone").value = profile?.phone || "";
+  document.getElementById("address").value = profile?.address || "";
+  document.getElementById("date_of_birth").value = formattedDob || "";
+  document.getElementById("created_at").value =
+    profile?.created_at || user.created_at || "N/A";
+}
+
+
+   // Save profile
+document.getElementById("profile-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // Convert DOB to YYYY-MM-DD format if needed
+  let rawDob = document.getElementById("date_of_birth").value;
+  let formattedDob = null;
+  if (rawDob) {
+    // if user typed DD-MM-YYYY → convert it
+    if (rawDob.includes("-") && rawDob.split("-")[0].length === 2) {
+      let [dd, mm, yyyy] = rawDob.split("-");
+      formattedDob = `${yyyy}-${mm}-${dd}`;
+    } else {
+      formattedDob = rawDob; // already in YYYY-MM-DD
     }
+  }
 
-    // Save profile
-    document.getElementById("profile-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const updates = {
-        id: currentUser.id,
-        first_name: document.getElementById("first_name").value,
-        last_name: document.getElementById("last_name").value,
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("address").value,
-        date_of_birth: document.getElementById("date_of_birth").value
-      };
+  const updates = {
+    id: currentUser.id,
+    first_name: document.getElementById("first_name").value,
+    last_name: document.getElementById("last_name").value,
+    phone: document.getElementById("phone").value,
+    address: document.getElementById("address").value,
+    date_of_birth: formattedDob
+  };
 
-      const { error } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
-      const msgBox = document.getElementById("message");
+  const { error } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
+  const msgBox = document.getElementById("message");
 
-      if (error) {
-        msgBox.textContent = "Failed to update profile!";
-        msgBox.className = "p-3 text-sm rounded-lg bg-red-100 text-red-700 mt-4";
-        msgBox.classList.remove("hidden");
-      } else {
-        msgBox.textContent = "Profile updated successfully!";
-        msgBox.className = "p-3 text-sm rounded-lg bg-green-100 text-green-700 mt-4";
-        msgBox.classList.remove("hidden");
-      }
-    });
+  if (error) {
+    console.error("Update error:", error);
+    msgBox.textContent = "Failed to update profile!";
+    msgBox.className = "p-3 text-sm rounded-lg bg-red-100 text-red-700 mt-4";
+    msgBox.classList.remove("hidden");
+  } else {
+    msgBox.textContent = "Profile updated successfully!";
+    msgBox.className = "p-3 text-sm rounded-lg bg-green-100 text-green-700 mt-4";
+    msgBox.classList.remove("hidden");
+  }
+});
+
 
     // Auth listener
     supabase.auth.onAuthStateChange((event, session) => {
