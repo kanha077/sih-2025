@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">Almost there!</h2>
+        <p class="text-gray-600 mb-6 text-center">Please complete your profile to continue.</p>
+
+        <form id="profile-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                    <input type="text" id="firstName" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <input type="text" id="lastName" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div>
+                <label for="date_of_birth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                <input type="date" id="date_of_birth" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input type="tel" id="phone" placeholder="Your phone number" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                <textarea id="address" placeholder="Your address" required rows="3" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <button type="submit" id="submit-btn" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                Save and Continue
+            </button>
+        </form>
+        <p id="error-message" class="text-red-500 text-center mt-4 hidden"></p>
+    </div>
+
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzM0NzYxNiwiZXhwIjoyMDcyOTIzNjE2fQ.ziJb9DPVnWQnXwk1yNg-4YPwMi01cjlQx9lp-y72ELk";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const profileForm = document.getElementById('profile-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const errorMessage = document.getElementById('error-message');
+        let currentUser = null;
+
+        // Check auth state and pre-fill form
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session && session.user) {
+                currentUser = session.user;
+                // Pre-fill name from Google data if available
+                const userMetadata = currentUser.user_metadata;
+                if (userMetadata.full_name) {
+                    const [firstName, ...lastNameParts] = userMetadata.full_name.split(' ');
+                    document.getElementById('firstName').value = firstName || '';
+                    document.getElementById('lastName').value = lastNameParts.join(' ') || '';
+                }
+            } else {
+                // If no user is logged in, redirect to login page
+                window.location.href = '/login.html';
+            }
+        });
+
+        // Handle form submission
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMessage.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Saving...';
+
+            const updates = {
+                id: currentUser.id,
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                date_of_birth: document.getElementById('date_of_birth').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+            };
+
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', currentUser.id);
+
+            if (error) {
+                console.error('Error updating profile:', error);
+                errorMessage.innerText = 'Error saving profile: ' + error.message;
+                errorMessage.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Save and Continue';
+            } else {
+                // Redirect to the main user dashboard after successful update
+                window.location.href = '/user.html';
+            }
+        });
+    </script>
+</body>
+</html>
