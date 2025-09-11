@@ -69,12 +69,7 @@
   </div>
 
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-    // --- Replace with your Supabase credentials ---
-    const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import { supabase } from "./supBaseClient.js";  // ✅ use shared client
 
     let currentUser = null;
 
