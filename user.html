@@ -1,90 +1,68 @@
 <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  import { supabase } from "./supBaseClient.js";
 
-  // --- Replace with your Supabase credentials ---
-  const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-  const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  document.addEventListener("DOMContentLoaded", () => {
+    let currentUser = null;
 
-  let currentUser = null;
+    // Fetch and display user profile
+    async function fetchUserProfile(user) {
+      currentUser = user;
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("full_name, phone, dob, created_at")
+        .eq("id", user.id)
+        .single();
 
-  // Fetch and display user profile
-  async function fetchUserProfile(user) {
-    currentUser = user;
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("full_name, phone, dob, created_at")
-      .eq("id", user.id)
-      .single();
+      if (error) {
+        console.error("Error fetching profile:", error);
+      }
 
-    if (error) {
-      console.error("Error fetching profile:", error);
+      document.getElementById("welcome-message").textContent = `Welcome, ${profile?.full_name || "User"}!`;
+      document.getElementById("full_name").value = profile?.full_name || "";
+      document.getElementById("email").value = user.email || "";
+      document.getElementById("phone").value = profile?.phone || "";
+      document.getElementById("dob").value = profile?.dob || "";
+      document.getElementById("created_at").value = profile?.created_at || user.created_at || "N/A";
     }
 
-    // Prefill fields
-    document.getElementById("welcome-message").textContent = `Welcome, ${profile?.full_name || "User"}!`;
-    document.getElementById("full_name").value = profile?.full_name || "";
-    document.getElementById("email").value = user.email || "";
-    document.getElementById("phone").value = profile?.phone || "";
-    document.getElementById("dob").value = profile?.dob || "";
-    document.getElementById("created_at").value = profile?.created_at || user.created_at || "N/A";
-  }
+    // Save profile
+    const profileForm = document.getElementById("profile-form");
+    profileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const updates = {
+        id: currentUser.id,
+        full_name: document.getElementById("full_name").value,
+        phone: document.getElementById("phone").value,
+        dob: document.getElementById("dob").value
+      };
 
-  // Save profile
-  document.getElementById("profile-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const updates = {
-      id: currentUser.id,
-      full_name: document.getElementById("full_name").value,
-      phone: document.getElementById("phone").value,
-      dob: document.getElementById("dob").value
-    };
+      const { error } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
+      const msgBox = document.getElementById("message");
 
-    const { error } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
-    const msgBox = document.getElementById("message");
+      if (error) {
+        msgBox.textContent = "Failed to update profile!";
+        msgBox.className = "p-3 text-sm rounded-lg bg-red-100 text-red-700 mt-4";
+        msgBox.classList.remove("hidden");
+      } else {
+        msgBox.textContent = "Profile updated successfully!";
+        msgBox.className = "p-3 text-sm rounded-lg bg-green-100 text-green-700 mt-4";
+        msgBox.classList.remove("hidden");
+      }
+    });
 
-    if (error) {
-      msgBox.textContent = "Failed to update profile!";
-      msgBox.className = "p-3 text-sm rounded-lg bg-red-100 text-red-700 mt-4";
-      msgBox.classList.remove("hidden");
-    } else {
-      msgBox.textContent = "Profile updated successfully!";
-      msgBox.className = "p-3 text-sm rounded-lg bg-green-100 text-green-700 mt-4";
-      msgBox.classList.remove("hidden");
+    // Auth listener
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        fetchUserProfile(session.user);
+      } else {
+        window.location.href = "/login.html";
+      }
+    });
 
-      // 🔹 Send email copy to admin
-      sendProfileEmail(updates);
+    // Logout
+    async function logout() {
+      await supabase.auth.signOut();
     }
+    window.logout = logout;
   });
-
-  // Send profile details to backend for emailing
-  async function sendProfileEmail(updates) {
-    try {
-      await fetch("/send-profile-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: document.getElementById("email").value,
-          ...updates
-        })
-      });
-    } catch (err) {
-      console.error("Failed to send profile email:", err);
-    }
-  }
-
-  // Auth listener
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      fetchUserProfile(session.user);
-    } else {
-      window.location.href = "/login.html";
-    }
-  });
-
-  // Logout
-  async function logout() {
-    await supabase.auth.signOut();
-  }
-  window.logout = logout;
 </script>
