@@ -56,96 +56,108 @@
     </div>
 
     <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Check session immediately on page load (Google redirect fix)
-        (async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                handleRedirect(session.user.id);
-            }
-        })();
+    // Check session immediately on page load
+    (async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            // CHANGED: Pass the entire user object
+            handleRedirect(session.user);
+        }
+    })();
 
-        // Listen for auth changes
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === "SIGNED_IN" && session) {
-                handleRedirect(session.user.id);
+    // Listen for auth changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+            // CHANGED: Pass the entire user object
+            handleRedirect(session.user);
+        }
+    });
+
+    // --- NEW REDIRECT LOGIC ---
+    // CHANGED: Function now accepts the full 'user' object
+    async function handleRedirect(user) {
+        // First, check the authentication metadata for an admin role
+        if (user.app_metadata?.role === 'admin') {
+            window.location.href = window.location.origin + '/admin.html';
+            return; // Admin is redirected, stop here.
+        }
+
+        // For non-admins, check the profiles table to see if their profile is complete
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('phone') // We only need to check for the phone now
+            .eq('id', user.id) // Use user.id from the passed object
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 means no row was found, which is fine
+            console.error('Error fetching profile:', error);
+            return;
+        }
+
+        // If no profile exists or the phone number is missing, redirect to complete it
+        if (!profile || !profile.phone) {
+            window.location.href = window.location.origin + '/complete-profile.html';
+        } else {
+            // Otherwise, redirect to the standard user page
+            window.location.href = window.location.origin + '/user.html';
+        }
+    }
+
+    // Modal functions (no changes here)
+    function showModal(title, message) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalMessage').innerText = message;
+        document.getElementById('modal').classList.remove('hidden');
+        document.getElementById('modal').classList.add('flex');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.add('hidden');
+    }
+    window.closeModal = closeModal;
+
+    // Email/password login (no changes here)
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', login);
+
+    async function login(e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const loginBtn = document.getElementById("loginBtn");
+        loginBtn.disabled = true;
+        loginBtn.innerText = "Logging in...";
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            showModal("Login Failed", error.message);
+            loginBtn.disabled = false;
+            loginBtn.innerText = "Log In";
+        }
+    }
+
+    // Google login (no changes here)
+    async function signInWithGoogle() {
+        const { error } = await supabase.auth.signInWithOAuth({ 
+            provider: 'google',
+            options: {
+                // IMPORTANT: The redirect here should just bring the user back to the app.
+                // Our handleRedirect function will route them to the correct final page.
+                redirectTo: window.location.origin 
             }
         });
-
-        // Redirect logic
-        async function handleRedirect(userId) {
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('phone, role')
-                .eq('id', userId)
-                .single();
-
-            if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching profile:', error);
-                return;
-            }
-
-            if (profile?.role === 'admin') {
-                window.location.href = window.location.origin + '/admin.html';
-            } else if (!profile || !profile.phone) {
-                window.location.href = window.location.origin + '/complete-profile.html';
-            } else {
-                window.location.href = window.location.origin + '/user.html';
-            }
+        if (error) {
+            showModal("Google Sign-in Failed", error.message);
         }
-
-        // Modal functions
-        function showModal(title, message) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMessage').innerText = message;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-        window.closeModal = closeModal;
-
-        // Email/password login
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', login);
-
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const loginBtn = document.getElementById("loginBtn");
-            loginBtn.disabled = true;
-            loginBtn.innerText = "Logging in...";
-
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                showModal("Login Failed", error.message);
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Log In";
-            }
-        }
-
-        // Google login
-        async function signInWithGoogle() {
-            const { error } = await supabase.auth.signInWithOAuth({ 
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/user.html' // redirect back here
-                }
-            });
-            if (error) {
-                showModal("Google Sign-in Failed", error.message);
-            }
-        }
-        window.signInWithGoogle = signInWithGoogle;
-    </script>
+    }
+    window.signInWithGoogle = signInWithGoogle;
+</script>
 </body>
 </html>
