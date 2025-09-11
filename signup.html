@@ -36,12 +36,22 @@
         <form id="signupForm" class="space-y-4">
             <input type="text" id="firstName" placeholder="First Name" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <input type="text" id="lastName" placeholder="Last Name" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <!-- *** FIXED ID HERE *** -->
-            <input type="date" id="date_of_birth" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date of Birth">
+            
+            <div>
+              <input type="date" id="date_of_birth" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date of Birth">
+              <p class="text-xs text-gray-500 mt-1 pl-1">Please use YYYY-MM-DD format.</p>
+            </div>
+
             <input type="tel" id="phone" placeholder="Phone Number" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <textarea id="address" placeholder="Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
             <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="password" id="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            
+            <div>
+                <input type="password" id="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- *** ADDED THIS HELPER TEXT *** -->
+                <p class="text-xs text-gray-500 mt-1 pl-1">Must be at least 6 characters and contain letters and digits.</p>
+            </div>
+
             <button type="submit" id="signupBtn" class="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">Sign Up</button>
         </form>
         <div class="or-divider my-6 font-medium text-xs text-gray-400 uppercase">OR</div>
@@ -93,7 +103,6 @@
 
             const firstName = document.getElementById("firstName").value;
             const lastName = document.getElementById("lastName").value;
-            // *** FIXED ID HERE ***
             const date_of_birth = document.getElementById("date_of_birth").value;
             const phone = document.getElementById("phone").value;
             const address = document.getElementById("address").value;
@@ -107,7 +116,6 @@
                     data: {
                         first_name: firstName,
                         last_name: lastName,
-                        // *** FIXED KEY HERE ***
                         date_of_birth: date_of_birth,
                         phone: phone,
                         address: address
