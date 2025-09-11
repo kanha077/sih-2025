@@ -57,32 +57,28 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzM0NzYxNiwiZXhwIjoyMDcyOTIzNjE2fQ.ziJb9DPVnWQnXwk1yNg-4YPwMi01cjlQx9lp-y72ELk";
+        // --- CORRECTED API KEYS ---
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+        // This is the public 'anon' key, which is safe for browser use.
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- REDIRECT LOGIC ---
-        // Checks if a user's profile is complete after they sign in.
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session) {
                 const { data: profile, error } = await supabase
                     .from('profiles')
-                    .select('phone') // Check for a field that indicates a complete profile
+                    .select('phone')
                     .eq('id', session.user.id)
                     .single();
 
-                // PGRST116 means no profile was found, which is expected for new users.
                 if (error && error.code !== 'PGRST116') {
                     console.error('Error fetching profile:', error);
                 }
                 
-                // If the profile is missing or doesn't have a phone number,
-                // redirect to the complete-profile page.
                 if (!profile || !profile.phone) {
-                    window.location.href = '/complete-profile.html';
+                    window.location.href = window.location.origin + '/complete-profile.html';
                 } else {
-                    // Otherwise, send them to the main user dashboard.
-                    window.location.href = '/user.html';
+                    window.location.href = window.location.origin + '/user.html';
                 }
             }
         });
@@ -117,15 +113,18 @@
                 loginBtn.disabled = false;
                 loginBtn.innerText = "Log In";
             }
-            // Successful login is handled by the onAuthStateChange listener.
         }
 
         async function signInWithGoogle() {
-            const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+            const { error } = await supabase.auth.signInWithOAuth({ 
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/login.html'
+                }
+            });
             if (error) {
                 showModal("Google Sign-in Failed", error.message);
             }
-            // Successful Google sign-in is handled by the onAuthStateChange listener.
         }
         window.signInWithGoogle = signInWithGoogle;
     </script>
