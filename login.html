@@ -57,27 +57,22 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+        // --- CORRECTED API KEYS ---
         const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+        // This is the public 'anon' key, which is safe for browser use.
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session) {
-                // ⭐ Fetch role also
                 const { data: profile, error } = await supabase
                     .from('profiles')
-                    .select('phone, role')
+                    .select('phone')
                     .eq('id', session.user.id)
                     .single();
 
                 if (error && error.code !== 'PGRST116') {
                     console.error('Error fetching profile:', error);
-                }
-
-                if (profile && profile.role === 'admin') {
-                    // ⭐ Redirect to admin page
-                    window.location.href = window.location.origin + '/admin.html';
-                    return;
                 }
                 
                 if (!profile || !profile.phone) {
@@ -135,3 +130,4 @@
     </script>
 </body>
 </html>
+
