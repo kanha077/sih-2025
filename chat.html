@@ -37,7 +37,7 @@
 
       // --- AI Agent Configuration (Frontend Webhook) ---
       // ⚠️ WARNING: While public, ensure you have measures to prevent abuse of your webhook.
-      const AI_WEBHOOK_URL = "https://n8n-classroom1.onrender.com/webhook-test/42544530-25b1-4cf6-b450-953a8415b8f6"; // ⚠️ Replace with your actual webhook URL
+      const AI_WEBHOOK_URL = "https://n8n-classroom1.onrender.com/webhook-test/0a369e9b-89b5-42b2-8f1b-d54215e0d3be"; // ⚠️ Replace with your actual webhook URL
 
       // DOM Elements
       const chatForm = document.getElementById("chat-form");
@@ -54,7 +54,6 @@
       }
       await checkSession();
 
-      // Save a message to the database if the user is logged in
       async function saveMessage(role, text) {
         if (!currentUser) return; // Don't save for anonymous users
         await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
