@@ -3,149 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Login - MindWell</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            padding: 50px;
+            width: 100%;
+            max-width: 500px;
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .back-btn {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(-5px);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .login-header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        .login-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .google-btn {
+            width: 100%;
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .google-btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyLjU2IDEyLjI1QzIyLjU2IDExLjQ3IDIyLjQ5IDEwLjcyIDIyLjM2IDEwSDEyVjE0LjI2SDE3Ljk2QzE3LjY2IDE1LjMgMTYuOTMgMTYuMTEgMTUuOSAxNi41NFYxOS41MkgxOS40MkMyMS40NiAxNy42NiAyMi41NiAxNS4xNCAyMi41NiAxMi4yNVoiIGZpbGw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTEyIDIyQzE1LjE3IDIyIDE3Ljg0IDIwLjk1IDE5LjQyIDE5LjUyTDE1LjkgMTYuNTRDMTQuODQgMTcuMzMgMTMuNDggMTcuOCAxMiAxNy44QzguOSAxNy44IDYuMjcgMTUuOSA1LjMzIDEzLjJIMi4wNVYxNi4zOEM0LjEgMjAuNCA3Ljc4IDIyIDEyIDIyWiIgZmlsbD0iIzM0QTg1MyIvPgo8cGF0aCBkPSJNNS4zMyAxMy4yQzUuMDYgMTIuNCA1LjA2IDExLjYgNS4zMyAxMC44VjcuNjJIMi4wNUM1LjEgMTEuOTYgNi4xIDEyLjA0IDUuMzMgMTMuMloiIGZpbGw9IiNGQkJDMDQiLz4KPHBhdGggZD0iTTEyIDYuMkMxMy41NCA2LjIgMTQuOTEgNi44IDE1LjkgNy43OUwxOC41NSA1LjE0QzE2Ljg0IDMuNDggMTQuODMgMi44IDEyIDIuOEM3Ljc4IDIuOCA0LjEgNC40IDIuMDUgNy42MkwyLjMzIDEwLjhDNi4yNyA2LjEgOC45IDYuMiAxMiA2LjJaIiBmaWxsPSIjRUE0MzM1Ii8+Cjwvc3ZnPgo=') no-repeat center;
+            background-size: contain;
+        }
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            color: #666;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e1e8ed;
+        }
+        .divider span {
+            background: white;
+            padding: 0 20px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .links {
+            text-align: center;
+        }
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        .links p {
+            margin: 15px 0;
+            color: #666;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+            padding: 10px;
+            background: #fdf2f2;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 600px) {
+            .login-container {
+                padding: 30px 25px;
+                margin: 10px;
+            }
+            .login-header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Login</h2>
-        <form id="loginForm" class="space-y-4">
-            <input type="email" id="email" placeholder="Email Address" required
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="password" id="password" placeholder="Password" required
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button type="submit" id="loginBtn"
-                class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-md hover:bg-blue-700 transition-colors duration-300">
-                Log In
-            </button>
-        </form>
-        <div class="mt-6 flex items-center justify-between">
-            <span class="border-b w-1/4 lg:w-1/3"></span>
-            <span class="text-xs text-center text-gray-500 uppercase">Or log in with</span>
-            <span class="border-b w-1/4 lg:w-1/3"></span>
+<body>
+    <div class="login-container">
+        <a href="index.html" class="back-btn">← Back to Home</a>
+        
+        <div class="login-header">
+            <h1>🔑 Welcome Back</h1>
+            <p>Sign in to your MindWell account</p>
         </div>
-        <div class="mt-4 flex flex-col space-y-3">
-            <button onclick="signInWithGoogle()"
-                class="w-full bg-gray-800 text-white font-semibold py-3 px-4 rounded-md hover:bg-gray-900 transition-colors duration-300 flex items-center justify-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google" viewBox="0 0 16 16">
-                    <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.81-.893 5.927-2.923 7.91-2.029 2.0-4.791 3.003-7.587 3.003-3.692 0-6.79-2.09-6.79-5.856s3.098-5.857 6.79-5.857c1.786 0 3.292.68 4.545 1.936l-1.956 1.956c-.958-.87-2.298-1.4-3.79-1.4-2.81 0-5.119 2.03-5.119 4.856 0 2.827 2.309 4.856 5.119 4.856 2.453 0 4.225-1.578 4.791-3.619h-4.79v-2.128h7.936z"/>
-                </svg>
-                <span>Sign in with Google</span>
-            </button>
-        </div>
-        <p class="mt-4 text-center text-sm text-gray-600">
-            Don't have an account? <a href="/signup.html" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-300">Sign Up</a>
-        </p>
-    </div>
 
-    <!-- Modal for messages -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-lg p-6 shadow-xl w-full max-w-sm">
-            <h3 id="modalTitle" class="text-lg font-bold mb-4 text-gray-800"></h3>
-            <p id="modalMessage" class="mb-4 text-gray-600"></p>
-            <div class="flex justify-end">
-                 <button onclick="closeModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">OK</button>
+        <div id="auth-container">
+            <button class="google-btn" onclick="loginWithGoogle()">
+                <div class="google-icon"></div>
+                Continue with Google
+            </button>
+            
+            <div class="divider">
+                <span>or</span>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <div class="error-message" id="password-error"></div>
+                </div>
+                
+                <div class="error-message" id="general-error"></div>
+                
+                <button type="submit" class="btn" id="login-btn">Sign In</button>
+            </form>
+            
+            <div class="links">
+                <p><a href="forgot-password.html">Forgot your password?</a></p>
+                <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+                <p><a href="anonymous.html">Continue as Anonymous</a></p>
             </div>
         </div>
+        
+        <div class="loading" id="login-loading">
+            <div class="spinner"></div>
+            <p>Signing you in...</p>
+        </div>
     </div>
-
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
+    
+    <script>
+        // ============= SUPABASE CONFIGURATION =============
         const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Check session immediately on page load (Google redirect fix)
-        (async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                handleRedirect(session.user.id);
-            }
-        })();
+        // Initialize Supabase client
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Listen for auth changes
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === "SIGNED_IN" && session) {
-                handleRedirect(session.user.id);
-            }
-        });
+        // DOM elements
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const loadingDiv = document.getElementById('login-loading');
+        const authContainer = document.getElementById('auth-container');
+        
+        // Error message elements
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+        const generalError = document.getElementById('general-error');
 
-        // Redirect logic
+        // Utility Functions
+        function hideErrors() {
+            emailError.style.display = 'none';
+            passwordError.style.display = 'none';
+            generalError.style.display = 'none';
+        }
+
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function showLoading() {
+            authContainer.style.display = 'none';
+            loadingDiv.style.display = 'block';
+        }
+
+        function hideLoading() {
+            authContainer.style.display = 'block';
+            loadingDiv.style.display = 'none';
+        }
+        
+        // REDIRECTION LOGIC (from old file)
         async function handleRedirect(userId) {
-            const { data: profile, error } = await supabase
-                .from('profiles')
+            const { data: profile, error } = await _supabase
+                .from('profiles') // Using 'profiles' table from old logic
                 .select('phone, role')
                 .eq('id', userId)
                 .single();
 
-            if (error && error.code !== 'PGRST116') {
+            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
                 console.error('Error fetching profile:', error);
+                // Can't determine where to go, stay here or show an error
+                hideLoading();
+                showError(generalError, "Could not fetch user profile. Please contact support.");
                 return;
             }
 
             if (profile?.role === 'admin') {
                 window.location.href = window.location.origin + '/admin.html';
             } else if (!profile || !profile.phone) {
+                // If profile is missing or phone is not set, go to complete profile page
                 window.location.href = window.location.origin + '/complete-profile.html';
             } else {
+                // Default redirect for regular users
                 window.location.href = window.location.origin + '/user.html';
             }
         }
 
-        // Modal functions
-        function showModal(title, message) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMessage').innerText = message;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
-        }
+        // SESSION HANDLING (from old file)
+        // Check for active session on page load
+        (async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                showLoading(); // Show loading spinner while we redirect
+                await handleRedirect(session.user.id);
+            }
+        })();
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-        window.closeModal = closeModal;
+        // Listen for authentication state changes (e.g., after login)
+        _supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === "SIGNED_IN" && session) {
+                showLoading();
+                await handleRedirect(session.user.id);
+            }
+        });
 
-        // Email/password login
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', login);
-
-        async function login(e) {
+        // HANDLE FORM SUBMISSION
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const loginBtn = document.getElementById("loginBtn");
-            loginBtn.disabled = true;
-            loginBtn.innerText = "Logging in...";
+            hideErrors();
 
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            let hasErrors = false;
+            if (!email) {
+                showError(emailError, 'Email is required');
+                hasErrors = true;
+            } else if (!validateEmail(email)) {
+                showError(emailError, 'Please enter a valid email address');
+                hasErrors = true;
+            }
+
+            if (!password) {
+                showError(passwordError, 'Password is required');
+                hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            showLoading();
+
+            const { error } = await _supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                showModal("Login Failed", error.message);
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Log In";
-            }
-        }
-
-        // Google login
-        async function signInWithGoogle() {
-            const { error } = await supabase.auth.signInWithOAuth({ 
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/user.html' // redirect back here
+                hideLoading();
+                let errorMessage = 'An error occurred during login';
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Please verify your email before signing in.';
                 }
+                showError(generalError, errorMessage);
+            }
+            // On success, the onAuthStateChange listener will handle the redirect.
+        });
+        
+        // LOGIN WITH GOOGLE (from old file)
+        async function loginWithGoogle() {
+            const { error } = await _supabase.auth.signInWithOAuth({ 
+                provider: 'google'
             });
             if (error) {
-                showModal("Google Sign-in Failed", error.message);
+                showError(generalError, `Google Sign-in Failed: ${error.message}`);
             }
+            // On success, the user is redirected to Google, and onAuthStateChange handles it on their return.
         }
-        window.signInWithGoogle = signInWithGoogle;
     </script>
 </body>
 </html>
