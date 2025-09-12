@@ -4,337 +4,215 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Ananda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary-color: #e74c3c;
-            --secondary-color: #f39c12;
-            --dark-bg: #2c3e50;
-            --light-bg: #34495e;
-            --text-color: #ecf0f1;
-        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--light-bg);
-            color: var(--text-color);
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
         }
-        .admin-container {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            min-height: 100vh;
-        }
-        /* Sidebar Styles */
-        .sidebar {
-            background: var(--dark-bg);
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .logo {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 40px; padding-bottom: 20px;
-            border-bottom: 1px solid var(--light-bg);
-        }
-        .logo svg { width: 40px; height: 40px; }
-        .logo h1 {
-            font-size: 1.5rem;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        .text-gradient {
+            background: linear-gradient(90deg, #e74c3c, #f39c12);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .admin-profile {
-            text-align: center; margin-bottom: 30px;
-            padding: 20px; background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #f9e5e3, #fdf3e6);
         }
-        .admin-avatar {
-            width: 70px; height: 70px; border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; font-weight: bold;
-        }
-        .admin-name { font-weight: bold; margin-bottom: 5px; }
-        .admin-role { font-size: 0.9rem; color: var(--secondary-color); }
-        .nav-menu { list-style: none; margin-bottom: 30px; }
-        .nav-item { margin-bottom: 10px; }
-        .nav-link {
-            display: flex; align-items: center; gap: 15px;
-            padding: 15px; color: var(--text-color);
-            text-decoration: none; border-radius: 10px;
+        .btn-red {
+            background-color: #e74c3c;
             transition: all 0.3s ease;
         }
-        .nav-link:hover, .nav-link.active {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white; transform: translateX(5px);
+        .btn-red:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
         }
-        .logout-link { margin-top: auto; }
-        /* Main Content Styles */
-        .main-content { padding: 40px; }
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 40px;
+        .btn-orange {
+            background-color: #f39c12;
+            transition: all 0.3s ease;
         }
-        .header h1 { font-size: 2rem; }
-        .stats-cards {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px; margin-bottom: 40px;
+        .btn-orange:hover {
+            background-color: #e67e22;
+            transform: translateY(-2px);
         }
-        .card {
-            background: var(--dark-bg); padding: 25px;
-            border-radius: 15px; border-left: 5px solid var(--primary-color);
+        .action-card {
+            transition: all 0.3s ease;
         }
-        .card h3 { font-size: 1.1rem; color: #bdc3c7; margin-bottom: 10px; }
-        .card .value { font-size: 2.5rem; font-weight: bold; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
-        .table-container { background: var(--dark-bg); padding: 25px; border-radius: 15px; }
-        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .table-header input {
-            padding: 10px 15px; border-radius: 8px; border: 1px solid var(--light-bg);
-            background: var(--light-bg); color: white; width: 300px;
-        }
-        .user-table { width: 100%; border-collapse: collapse; }
-        .user-table th, .user-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--light-bg); }
-        .user-table th { font-weight: bold; color: #bdc3c7; }
-        .user-table td .btn {
-            padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
-            background: var(--secondary-color); color: white;
-        }
-        /* Modal Styles */
-        .modal {
-            display: none; position: fixed; z-index: 1000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
-            justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: var(--dark-bg); padding: 30px; border-radius: 15px;
-            width: 90%; max-width: 600px; position: relative;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h2 { font-size: 1.5rem; }
-        .close-btn { font-size: 2rem; cursor: pointer; background: none; border: none; color: white; }
-        .modal-body .detail { margin-bottom: 15px; }
-        .modal-body .detail strong { color: #bdc3c7; display: block; margin-bottom: 5px; }
-        @media (max-width: 900px) {
-            .admin-container { grid-template-columns: 1fr; }
-            .sidebar { display: none; } /* Simplified for mobile */
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
     </style>
 </head>
-<body>
-    <div class="admin-container">
-        <div class="sidebar">
-            <div class="logo">
-                <svg viewBox="0 0 100 100" style="fill: #e74c3c;"><path d="M50 20 L40 40 L20 40 L35 55 L30 75 L50 65 L70 75 L65 55 L80 40 L60 40 Z"/></svg>
-                <h1>ANANDA</h1>
-            </div>
-            <div class="admin-profile">
-                <div class="admin-avatar" id="adminAvatar">A</div>
-                <div class="admin-name" id="adminName">Admin User</div>
-                <div class="admin-role">Administrator</div>
-            </div>
-            <nav>
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="#" class="nav-link active" onclick="showSection('dashboard', event)">📊 Dashboard</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('users', event)">👥 User Management</a></li>
-                </ul>
-            </nav>
-            <a href="#" class="nav-link logout-link" onclick="logout()">🚪 Logout</a>
-        </div>
+<body class="antialiased flex flex-col min-h-screen">
 
-        <div class="main-content">
-            <header class="header">
-                <h1 id="headerTitle">Dashboard</h1>
-            </header>
+    <!-- Header Section -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2">
+                <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="h-8 w-auto">
+                <span class="text-xl font-bold text-white-800">ANANDA</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <span class="text-gray-600 font-medium">Admin Portal</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#" onclick="logout()" class="text-gray-600 hover:text-red-600 font-medium">Logout</a>
+            </div>
+        </nav>
+    </header>
 
-            <div class="content-section active" id="dashboard">
-                <div class="stats-cards">
-                    <div class="card">
-                        <h3>Total Users</h3>
-                        <div class="value" id="totalUsersStat">0</div>
+    <!-- Main Content -->
+    <main class="bg-gradient-custom py-20 flex-grow">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mx-auto w-20 h-20 mb-6 bg-red-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+            </div>
+
+            <h1 class="text-4xl font-extrabold text-gray-800">
+                <span class="text-gradient">Administrator Dashboard</span>
+            </h1>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                Welcome, Admin. Manage users and oversee platform activity.
+            </p>
+
+            <!-- Action Cards -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- User Management Card -->
+                <div class="action-card bg-white p-8 rounded-2xl shadow-md text-center">
+                    <div class="mx-auto w-16 h-16 mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
                     </div>
-                    <div class="card">
-                        <h3>Counselors</h3>
-                        <div class="value" id="counselorsStat">0</div>
-                    </div>
-                    <div class="card">
-                        <h3>Active Chats</h3>
-                        <div class="value">N/A</div>
-                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">User Management</h2>
+                    <p class="text-gray-600 mb-6">View, edit, and manage all user accounts on the platform.</p>
+                    <a href="#users" id="viewUsersBtn" class="btn-red text-white font-bold px-8 py-3 rounded-full inline-block">Manage Users</a>
                 </div>
-            </div>
 
-            <div class="content-section" id="users">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2>All Users</h2>
-                        <input type="text" id="searchInput" placeholder="Search by name or email...">
+                <!-- Analytics Card -->
+                <div class="action-card bg-white p-8 rounded-2xl shadow-md text-center">
+                     <div class="mx-auto w-16 h-16 mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
                     </div>
-                    <table class="user-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Joined On</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody">
-                            </tbody>
-                    </table>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Platform Analytics</h2>
+                    <p class="text-gray-600 mb-6">Review key metrics like user sign-ups and platform engagement.</p>
+                    <a href="#" class="btn-orange text-white font-bold px-8 py-3 rounded-full inline-block">View Analytics</a>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="modal" id="userDetailsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">User Details</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+    </main>
+    
+    <!-- User Table Section (Initially hidden) -->
+    <section id="users" class="py-20 bg-white hidden">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">User Management</h2>
+             <input type="text" id="searchInput" placeholder="Search by name, email, or role..." class="w-full max-w-md mx-auto mb-8 p-3 border border-gray-300 rounded-lg block">
+            <div class="overflow-x-auto bg-white rounded-lg shadow">
+                 <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Name</th>
+                            <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Email</th>
+                            <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Role</th>
+                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Joined On</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700" id="userTableBody">
+                        <!-- User rows will be injected here -->
+                    </tbody>
+                </table>
             </div>
-            <div class="modal-body" id="modalBody">
-                </div>
         </div>
-    </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        let allUsers = []; // To store all fetched users for searching
+        let allUsers = [];
 
-        // 1. CRITICAL: Check for admin access on page load
         document.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
-            if (!session || sessionError) {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
                 window.location.href = '/login.html';
                 return;
             }
 
-            const { data: profile, error: profileError } = await _supabase
+            const { data: profile, error } = await _supabase
                 .from('profiles')
-                .select('role, full_name')
+                .select('role')
                 .eq('id', session.user.id)
                 .single();
 
-            if (profileError || profile?.role !== 'admin') {
+            if (error || profile?.role !== 'admin') {
                 alert("Access Denied: You are not an administrator.");
                 window.location.href = '/login.html';
                 return;
             }
             
-            // If access is granted, load the dashboard
-            document.getElementById('adminName').textContent = profile.full_name || 'Admin';
-            document.getElementById('adminAvatar').textContent = (profile.full_name || 'A').charAt(0);
-            await loadDashboardData();
+            await loadUserData();
         });
 
-        // 2. Load all data for the dashboard
-        async function loadDashboardData() {
+        async function loadUserData() {
             const { data: users, error } = await _supabase.from('profiles').select('*');
             if (error) {
                 console.error("Error fetching users:", error);
                 return;
             }
             allUsers = users;
-
-            // Populate stats
-            document.getElementById('totalUsersStat').textContent = users.length;
-            const counselorCount = users.filter(u => u.role === 'counselor').length;
-            document.getElementById('counselorsStat').textContent = counselorCount;
-
-            // Populate user table
             populateUserTable(users);
         }
 
-        // 3. Populate the user table with data
         function populateUserTable(users) {
             const tableBody = document.getElementById('userTableBody');
-            tableBody.innerHTML = ''; // Clear existing rows
+            tableBody.innerHTML = '';
             
             if (users.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No users found.</td></tr>';
                 return;
             }
 
             users.forEach(user => {
                 const row = `
                     <tr>
-                        <td>${user.full_name || 'N/A'}</td>
-                        <td>${user.email || 'N/A'}</td>
-                        <td>${user.role || 'user'}</td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                        <td><button class="btn" onclick="showUserDetails('${user.id}')">View</button></td>
+                        <td class="text-left py-3 px-4">${user.full_name || 'N/A'}</td>
+                        <td class="text-left py-3 px-4">${user.email || 'N/A'}</td>
+                        <td class="text-left py-3 px-4">${user.role || 'user'}</td>
+                        <td class="text-left py-3 px-4">${new Date(user.created_at).toLocaleDateString()}</td>
                     </tr>
                 `;
                 tableBody.innerHTML += row;
             });
         }
         
-        // 4. Search/Filter functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filteredUsers = allUsers.filter(user => 
                 user.full_name?.toLowerCase().includes(searchTerm) || 
-                user.email?.toLowerCase().includes(searchTerm)
+                user.email?.toLowerCase().includes(searchTerm) ||
+                user.role?.toLowerCase().includes(searchTerm)
             );
             populateUserTable(filteredUsers);
         });
 
-        // 5. Modal functionality
-        function showUserDetails(userId) {
-            const user = allUsers.find(u => u.id === userId);
-            if (!user) return;
-            
-            document.getElementById('modalTitle').textContent = `Details for ${user.full_name}`;
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
-                <div class="detail"><strong>User ID:</strong> ${user.id}</div>
-                <div class="detail"><strong>Full Name:</strong> ${user.full_name || 'N/A'}</div>
-                <div class="detail"><strong>Email:</strong> ${user.email || 'N/A'}</div>
-                <div class="detail"><strong>Role:</strong> ${user.role || 'user'}</div>
-                <div class="detail"><strong>Phone:</strong> ${user.phone || 'N/A'}</div>
-                <div class="detail"><strong>Address:</strong> ${user.address || 'N/A'}</div>
-                <div class="detail"><strong>Date of Birth:</strong> ${user.date_of_birth || 'N/A'}</div>
-                <div class="detail"><strong>Institute:</strong> ${user.institute || 'N/A'}</div>
-                <div class="detail"><strong>Course:</strong> ${user.course || 'N/A'}</div>
-                <div class="detail"><strong>Guardian:</strong> ${user.guardian_name || 'N/A'}</div>
-                <div class="detail"><strong>Joined:</strong> ${new Date(user.created_at).toLocaleString()}</div>
-            `;
-            document.getElementById('userDetailsModal').style.display = 'flex';
-        }
+        document.getElementById('viewUsersBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            const userSection = document.getElementById('users');
+            userSection.classList.remove('hidden');
+            userSection.scrollIntoView({ behavior: 'smooth' });
+        });
         
-        function closeModal() {
-            document.getElementById('userDetailsModal').style.display = 'none';
-        }
-        
-        // 6. Navigation
-        function showSection(sectionId, event) {
-            if(event) event.preventDefault();
-            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            document.querySelector(`.nav-link[onclick*="'${sectionId}'"]`).classList.add('active');
-
-            const title = sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('users', 'User Management');
-            document.getElementById('headerTitle').textContent = title;
-        }
-
-        // 7. Logout
         async function logout() {
-            if(confirm("Are you sure you want to logout?")) {
-                await _supabase.auth.signOut();
-                window.location.href = '/login.html';
-            }
+            await _supabase.auth.signOut();
+            window.location.href = '/login.html';
         }
     </script>
 </body>
