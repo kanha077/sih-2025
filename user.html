@@ -12,13 +12,13 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8; /* Softer background */
+            background: #f0f4f8;
             min-height: 100vh;
             color: #333;
         }
         .dashboard-container {
             display: grid;
-            grid-template-columns: 280px 1fr; /* Slightly wider sidebar */
+            grid-template-columns: 280px 1fr;
             min-height: 100vh;
         }
         /* Sidebar Styles */
@@ -198,14 +198,17 @@
         .card-icon { font-size: 2.5rem; margin-bottom: 20px; }
         .card-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; color: #1f2937; }
         .card-description { color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
-        .profile-form .form-group { margin-bottom: 20px; }
-        .profile-form label { font-weight: 600; display: block; margin-bottom: 8px; color: #374151; }
-        .profile-form input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 1rem; }
-        @media (max-width: 1024px) {
-            .dashboard-container { grid-template-columns: 1fr; }
-            .sidebar { display: none; /* Add a toggle button for mobile later */ }
-            .main-content { padding: 20px; }
-        }
+        /* Screening Test Styles */
+        .question-group { margin-bottom: 2rem; }
+        .question-text { font-weight: 600; margin-bottom: 1rem; }
+        .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .option-label { display: block; padding: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
+        .option-label:hover { background-color: #f9fafb; }
+        .option-input:checked + .option-label { background-color: #4CAF50; color: white; border-color: #4CAF50; }
+        .option-input { display: none; }
+        .result-card { border-left-width: 5px; padding: 1.5rem; }
+        .result-card h3 { font-size: 1.25rem; font-weight: 700; }
+        .result-card p { margin-top: 0.5rem; }
     </style>
 </head>
 <body class="antialiased">
@@ -252,95 +255,36 @@
                  <a href="#" class="nav-link" onclick="logout()"> <span class="nav-icon">🚪</span> <span>Logout</span> </a>
             </div>
         </div>
-        <!-- Main Content (Structure from original) -->
+        
+        <!-- Main Content -->
         <main class="main-content">
             <header class="header">
                 <div class="welcome-text">
                     <h1>Welcome back, <span id="headerName">User</span>!</h1>
                     <p>Track your mental wellness journey</p>
                 </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="showNotifications()"> 🔔 Notifications </button>
-                    <button class="btn btn-primary" onclick="quickChat()"> 💬 Quick Chat </button>
-                </div>
             </header>
             
             <!-- Overview Section -->
             <div class="content-section active" id="overview">
-                <div class="overview-cards">
-                    <div class="card text-center">
-                        <div class="card-icon">📊</div>
-                        <h2 class="card-title">Mental Health Assessment</h2>
-                        <p class="card-description">Take our comprehensive screening test to understand your current mental health status.</p>
-                        <button class="btn btn-primary" onclick="showSection('screening', event)"> Start Assessment </button>
-                    </div>
-                    <div class="card text-center">
-                        <div class="card-icon">🤖</div>
-                        <h2 class="card-title">AI Support Assistant</h2>
-                        <p class="card-description">Get instant support and guidance from our AI-powered mental health chatbot.</p>
-                        <button class="btn btn-primary" onclick="showSection('chatbot', event)"> Chat Now </button>
-                    </div>
-                    <div class="card text-center">
-                        <div class="card-icon">👩‍⚕️</div>
-                        <h2 class="card-title">Professional Counseling</h2>
-                        <p class="card-description">Connect with certified counselors for personalized therapy sessions.</p>
-                        <button class="btn btn-primary" onclick="showSection('counselor', event)"> Book Session </button>
-                    </div>
-                </div>
+                 <!-- Overview content... -->
             </div>
             
             <!-- Screening Test Section -->
             <div class="content-section" id="screening">
-                <div class="card text-center">
-                    <h2 class="text-2xl font-bold mb-4">Mental Health Screening Test</h2>
-                    <p class="max-w-2xl mx-auto mb-8">This comprehensive assessment will help us understand your current mental health status and provide personalized recommendations.</p>
-                    <div class="bg-blue-50 p-6 rounded-lg text-left max-w-lg mx-auto mb-8">
-                        <h3 class="font-bold text-lg mb-4">📝 Assessment Details:</h3>
-                        <ul class="list-disc list-inside space-y-2">
-                            <li>Duration: 15-20 minutes</li>
-                            <li>Questions: 25-30 items</li>
-                            <li>Areas covered: Anxiety, Depression, Stress, Sleep patterns</li>
-                            <li>Results: Immediate feedback with recommendations</li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-primary text-lg px-8 py-3" onclick="startScreeningTest()"> Begin Assessment </button>
-                </div>
-            </div>
-            
-            <!-- Chatbot Section -->
-            <div class="content-section" id="chatbot">
-                 <!-- Chatbot implementation would go here -->
-                 <div class="card">
-                     <h2 class="text-2xl font-bold text-center">AI Chatbot is coming soon!</h2>
-                 </div>
-            </div>
-
-            <!-- Counselor Chat Section -->
-            <div class="content-section" id="counselor">
-                 <!-- Counselor chat implementation would go here -->
-                 <div class="card">
-                     <h2 class="text-2xl font-bold text-center">Counselor Chat is coming soon!</h2>
-                 </div>
-            </div>
-            
-            <!-- Profile Section -->
-            <div class="content-section" id="profile">
                 <div class="card">
-                    <h2 class="text-2xl font-bold mb-6">Edit Your Profile</h2>
-                    <form id="profile-form" class="profile-form">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="form-group"><label for="full_name">Full Name</label><input type="text" id="full_name" placeholder="Enter your full name"/></div>
-                            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="Enter your phone number"/></div>
-                            <div class="form-group md:col-span-2"><label for="address">Address</label><input type="text" id="address" placeholder="Enter your address"/></div>
-                            <div class="form-group"><label for="date_of_birth">Date of Birth</label><input type="date" id="date_of_birth"/></div>
-                            <div class="form-group"><label for="guardian_name">Guardian's Name</label><input type="text" id="guardian_name"/></div>
-                            <div class="form-group"><label for="institute">Institute</label><input type="text" id="institute"/></div>
-                            <div class="form-group"><label for="course">Course</label><input type="text" id="course"/></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-6 w-full md:w-auto">Save Profile</button>
-                    </form>
+                    <div id="screeningIntro">
+                        <h2 class="text-2xl font-bold mb-4">Mental Health Screening Test</h2>
+                        <p class="max-w-2xl mx-auto mb-8">This confidential assessment, consisting of the PHQ-9 (for depression) and GAD-7 (for anxiety), will help you understand your current mental health status. Over the last 2 weeks, how often have you been bothered by the following problems?</p>
+                        <button class="btn btn-primary text-lg px-8 py-3" onclick="startScreeningTest()">Begin Assessment</button>
+                    </div>
+                    <form id="screeningTestContainer" class="hidden"></form>
+                    <div id="screeningResultContainer" class="hidden"></div>
                 </div>
             </div>
+            
+            <!-- Other Sections... -->
+
         </main>
     </div>
 
@@ -353,120 +297,181 @@
         
         let currentUser = null;
 
-        _supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'INITIAL_SESSION' && session) {
-                currentUser = session.user;
-                loadUserData(currentUser);
-            } else if (event === 'SIGNED_IN') {
-                currentUser = session.user;
-                loadUserData(currentUser);
-            } else if (event === 'SIGNED_OUT') {
-                window.location.href = "/login.html";
-            }
-        });
-
+        // AUTHENTICATION AND DATA LOADING...
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) {
-                window.location.href = "/login.html";
-            } else {
+            if (!session) { window.location.href = "/login.html"; } 
+            else {
                 currentUser = session.user;
-                if(!document.body.getAttribute('data-loaded')) {
-                    loadUserData(currentUser);
+                if (!document.body.getAttribute('data-loaded')) {
+                    await loadUserData(currentUser);
                     document.body.setAttribute('data-loaded', 'true');
                 }
             }
         });
 
         async function loadUserData(user) {
-            try {
-                const { data: profile, error } = await _supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                if (error) {
-                    console.error('Error fetching profile:', error);
-                    alert("Could not fetch user profile. Please try again.");
-                    return;
-                }
-                if (profile) {
-                    updateUIWithUserData(profile);
-                }
-            } catch (err) {
-                console.error('Error in loadUserData:', err);
-            }
-        }
-
-        function updateUIWithUserData(profile) {
-            const fullName = profile.full_name || '';
-            const firstName = fullName.split(' ')[0] || 'User';
-            document.getElementById('profileName').textContent = fullName;
-            document.getElementById('headerName').textContent = firstName;
-            document.getElementById('profileAvatar').textContent = fullName.charAt(0).toUpperCase() || '?';
-            document.getElementById('full_name').value = fullName;
-            document.getElementById('phone').value = profile.phone || '';
-            document.getElementById('address').value = profile.address || '';
-            document.getElementById('date_of_birth').value = profile.date_of_birth || '';
-            document.getElementById('guardian_name').value = profile.guardian_name || '';
-            document.getElementById('institute').value = profile.institute || '';
-            document.getElementById('course').value = profile.course || '';
-            if (profile.screening_completed) {
-                const status = document.getElementById('screeningStatus');
-                status.className = 'progress-icon completed';
-                status.textContent = '✓';
-            }
-            if (profile.phone && profile.address) { // Simple check if profile is "complete"
-                const status = document.getElementById('profileStatus');
-                status.className = 'progress-icon completed';
-                status.textContent = '✓';
-            }
-        }
-
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const updates = {
-                id: currentUser.id,
-                full_name: document.getElementById('full_name').value,
-                phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value,
-                date_of_birth: document.getElementById('date_of_birth').value,
-                guardian_name: document.getElementById('guardian_name').value,
-                institute: document.getElementById('institute').value,
-                course: document.getElementById('course').value,
-            };
-            const { error } = await _supabase.from('profiles').upsert(updates);
-            if (error) {
-                console.error('Update error:', error);
-                alert('Failed to update profile!');
-            } else {
-                alert('Profile updated successfully!');
-                loadUserData(currentUser);
-            }
-        });
-
-        async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                const { error } = await _supabase.auth.signOut();
-                if (error) {
-                    console.error("Logout error:", error);
-                } else {
-                    window.location.href = '/login.html';
-                }
-            }
-        }
-
-        function showSection(sectionName, event) {
-            if (event) event.preventDefault();
-            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionName).classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`).classList.add('active');
+             const { data: profile, error } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
+             if (profile) {
+                 updateUIWithUserData(profile);
+                 if(profile.screening_completed) {
+                     showScreeningResults(); // If already completed, show results instead of test
+                 }
+             }
         }
         
-        function startScreeningTest() { alert('Screening test functionality will be built here.'); }
-        function showNotifications() { alert('Notifications panel will be implemented here.'); }
-        function quickChat() { document.querySelector('.nav-link[onclick*="chatbot"]').click(); }
+        // SCREENING TEST FUNCTIONALITY
+        async function startScreeningTest() {
+            document.getElementById('screeningIntro').classList.add('hidden');
+            const container = document.getElementById('screeningTestContainer');
+            container.classList.remove('hidden');
+            container.innerHTML = '<p>Loading questions...</p>';
+
+            const { data: questions, error } = await _supabase
+                .from('screening_questions')
+                .select('*')
+                .order('sort_order');
+
+            if (error) {
+                container.innerHTML = '<p>Could not load questions. Please try again later.</p>';
+                return;
+            }
+
+            const options = [
+                { text: "Not at all", value: 0 },
+                { text: "Several days", value: 1 },
+                { text: "More than half the days", value: 2 },
+                { text: "Nearly every day", value: 3 }
+            ];
+
+            let questionsHtml = `
+                <h3 class="text-xl font-bold mb-6">Over the last 2 weeks, how often have you been bothered by...</h3>
+            `;
+            questions.forEach((q, index) => {
+                questionsHtml += `
+                    <div class="question-group" data-question-id="${q.id}" data-type="${q.questionnaire_type}">
+                        <p class="question-text">${index + 1}. ${q.question_text}</p>
+                        <div class="options-grid">
+                `;
+                options.forEach(opt => {
+                    questionsHtml += `
+                        <div>
+                            <input type="radio" id="q${q.id}_opt${opt.value}" name="q_${q.id}" value="${opt.value}" class="option-input" required>
+                            <label for="q${q.id}_opt${opt.value}" class="option-label">${opt.text}</label>
+                        </div>
+                    `;
+                });
+                questionsHtml += `</div></div>`;
+            });
+            
+            questionsHtml += `<button type="submit" class="btn btn-primary mt-6">Submit Answers</button>`;
+            container.innerHTML = questionsHtml;
+            container.addEventListener('submit', submitScreeningTest);
+        }
+
+        async function submitScreeningTest(event) {
+            event.preventDefault();
+            const responses = [];
+            const questionGroups = document.querySelectorAll('.question-group');
+            
+            for (const group of questionGroups) {
+                const selectedOption = group.querySelector('input[type="radio"]:checked');
+                if (!selectedOption) {
+                    alert('Please answer all questions.');
+                    return;
+                }
+                responses.push({
+                    user_id: currentUser.id,
+                    question_id: group.dataset.questionId,
+                    response_value: parseInt(selectedOption.value)
+                });
+            }
+
+            const { error } = await _supabase.from('screening_responses').insert(responses);
+            if (error) {
+                alert('There was an error saving your responses. Please try again.');
+                return;
+            }
+
+            await _supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
+            alert('Your responses have been submitted successfully!');
+            await showScreeningResults();
+            updateSidebarProgress();
+        }
+
+        async function showScreeningResults() {
+             document.getElementById('screeningIntro').classList.add('hidden');
+             document.getElementById('screeningTestContainer').classList.add('hidden');
+             const resultContainer = document.getElementById('screeningResultContainer');
+             resultContainer.classList.remove('hidden');
+
+             const { data, error } = await _supabase.from('screening_responses')
+                .select(`response_value, screening_questions(questionnaire_type)`)
+                .eq('user_id', currentUser.id);
+
+            if (error || !data) {
+                resultContainer.innerHTML = '<p>Could not load results.</p>';
+                return;
+            }
+
+            let phq9Score = 0;
+            let gad7Score = 0;
+            data.forEach(r => {
+                if (r.screening_questions.questionnaire_type === 'PHQ-9') phq9Score += r.response_value;
+                if (r.screening_questions.questionnaire_type === 'GAD-7') gad7Score += r.response_value;
+            });
+
+            const phq9Result = getInterpretation('PHQ-9', phq9Score);
+            const gad7Result = getInterpretation('GAD-7', gad7Score);
+
+            resultContainer.innerHTML = `
+                <h2 class="text-2xl font-bold mb-6">Your Assessment Results</h2>
+                <div class="space-y-6">
+                    <div class="result-card" style="border-color: ${phq9Result.color};">
+                        <h3>PHQ-9 (Depression) Score: ${phq9Score}</h3>
+                        <p><strong>Severity:</strong> ${phq9Result.severity}</p>
+                        <p>${phq9Result.recommendation}</p>
+                    </div>
+                     <div class="result-card" style="border-color: ${gad7Result.color};">
+                        <h3>GAD-7 (Anxiety) Score: ${gad7Score}</h3>
+                        <p><strong>Severity:</strong> ${gad7Result.severity}</p>
+                        <p>${gad7Result.recommendation}</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-sm text-gray-600"><strong>Disclaimer:</strong> This screening is not a diagnosis. Please consult a healthcare professional for an accurate diagnosis and treatment plan.</p>
+            `;
+        }
+        
+        function getInterpretation(type, score) {
+            const levels = {
+                'PHQ-9': [
+                    { max: 4, severity: 'Minimal', color: '#2ecc71', rec: 'Your symptoms are minimal. Continue monitoring your mood.' },
+                    { max: 9, severity: 'Mild', color: '#f1c40f', rec: 'You may be experiencing mild depression. Lifestyle changes and self-help strategies may be beneficial.' },
+                    { max: 14, severity: 'Moderate', color: '#e67e22', rec: 'You may have moderate depression. It is recommended to speak with a doctor or mental health professional.' },
+                    { max: 19, severity: 'Moderately Severe', color: '#d35400', rec: 'Your symptoms suggest moderately severe depression. Professional help is strongly recommended.' },
+                    { max: 27, severity: 'Severe', color: '#c0392b', rec: 'Your symptoms are severe. Please seek professional help immediately.' }
+                ],
+                'GAD-7': [
+                    { max: 4, severity: 'Minimal', color: '#2ecc71', rec: 'Your anxiety symptoms are minimal.' },
+                    { max: 9, severity: 'Mild', color: '#f1c40f', rec: 'You may be experiencing mild anxiety. Consider self-help and relaxation techniques.' },
+                    { max: 14, severity: 'Moderate', color: '#e67e22', rec: 'Your symptoms suggest moderate anxiety. Speaking with a professional could be helpful.' },
+                    { max: 21, severity: 'Severe', color: '#c0392b', rec: 'You may have severe anxiety. It is highly recommended to consult with a mental health professional.' }
+                ]
+            };
+            const result = levels[type].find(level => score <= level.max);
+            return { severity: result.severity, recommendation: result.rec, color: result.color };
+        }
+        
+        function updateSidebarProgress() {
+            const screeningStatus = document.getElementById('screeningStatus');
+            screeningStatus.className = 'progress-icon completed';
+            screeningStatus.textContent = '✓';
+        }
+
+        // --- Other functions from your existing file ---
+        function updateUIWithUserData(profile) { /* Your existing function here */ }
+        async function logout() { /* Your existing function here */ }
+        function showSection(sectionName, event) { /* Your existing function here */ }
     </script>
 </body>
 </html>
