@@ -1,184 +1,565 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Ananda</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+        /* Sidebar Styles */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e1e1e1;
+        }
+        .logo svg {
+            width: 40px;
+            height: 40px;
+        }
+        .logo h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .profile-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 15px;
+        }
+        .profile-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .profile-role {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .progress-card {
+            background: rgba(76, 175, 80, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(76, 175, 80, 0.2);
+        }
+        .progress-title {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .progress-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .progress-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        .completed {
+            background: #4CAF50;
+            color: white;
+        }
+        .pending {
+            background: #e1e1e1;
+            color: #666;
+        }
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-item {
+            margin-bottom: 10px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            transform: translateX(5px);
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+        /* Main Content Styles */
+        .main-content {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(20px);
+        }
+        .welcome-text h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .welcome-text p {
+            color: #666;
+        }
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: 2px solid #e1e1e1;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        /* Generic Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        /* Dashboard Overview */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .card-icon { font-size: 3rem; margin-bottom: 20px; }
+        .card-title { font-size: 1.3rem; margin-bottom: 10px; color: #333; }
+        .card-description { color: #666; margin-bottom: 20px; }
+        /* Chat Interface */
+        .chat-container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; height: 600px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; padding: 20px; text-align: center; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; }
+        .message { margin-bottom: 15px; display: flex; align-items: flex-start; gap: 10px; }
+        .message.user { flex-direction: row-reverse; }
+        .message-bubble { max-width: 70%; padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .message.bot .message-bubble { background: white; border-bottom-left-radius: 5px; }
+        .message.user .message-bubble { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; border-bottom-right-radius: 5px; }
+        .chat-input { padding: 20px; background: white; border-top: 1px solid #e1e1e1; display: flex; gap: 15px; }
+        .chat-input input { flex: 1; padding: 15px; border: 2px solid #e1e1e1; border-radius: 25px; font-size: 16px; }
+        .chat-input input:focus { outline: none; border-color: #4CAF50; }
+        .send-btn { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* Profile Form Styles */
+        .profile-form .form-group { margin-bottom: 20px; }
+        .profile-form label { font-weight: bold; display: block; margin-bottom: 8px; }
+        .profile-form input { width: 100%; padding: 12px; border: 2px solid #e1e1e1; border-radius: 10px; font-size: 1rem; }
+        @media (max-width: 768px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main-content { padding: 20px; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-2xl">
-    <h2 id="welcome-message" class="text-3xl font-bold text-gray-800 mb-2">Loading...</h2>
-    <p class="text-sm text-gray-500 mb-6">You are logged in.</p>
-    
-    <!-- Profile Section -->
-    <div class="text-left bg-gray-50 p-6 rounded-xl mb-6">
-      <h3 class="text-xl font-semibold mb-4">Profile Details</h3>
-      <form id="profile-form" class="space-y-4">
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" style="fill: #4CAF50;">
+                    <path d="M50 20 L40 40 L20 40 L35 55 L30 75 L50 65 L70 75 L65 55 L80 40 L60 40 Z"/>
+                    <circle cx="50" cy="45" r="8" fill="#FFD700"/>
+                </svg>
+                <h1>ANANDA</h1>
+            </div>
+            <div class="profile-section">
+                <div class="profile-avatar" id="profileAvatar">?</div>
+                <div class="profile-name" id="profileName">Loading...</div>
+                <div class="profile-role">Student</div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-title">Profile Progress</div>
+                <div class="progress-item">
+                    <div class="progress-icon completed">✓</div>
+                    <span>Account Created</span>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-icon pending" id="screeningStatus">○</div>
+                    <span>Screening Test</span>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-icon pending" id="profileStatus">○</div>
+                    <span>Profile Complete</span>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#" class="nav-link active" onclick="showSection('overview', event)"> <span class="nav-icon">🏠</span> <span>Dashboard</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('screening', event)"> <span class="nav-icon">📝</span> <span>Screening Test</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('chatbot', event)"> <span class="nav-icon">💬</span> <span>AI Chatbot</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('counselor', event)"> <span class="nav-icon">👩‍⚕️</span> <span>Counselor Chat</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('profile', event)"> <span class="nav-icon">👤</span> <span>Profile</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="logout()"> <span class="nav-icon">🚪</span> <span>Logout</span> </a> </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div class="welcome-text">
+                    <h1>Welcome back, <span id="headerName">User</span>!</h1>
+                    <p>Track your mental wellness journey</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="showNotifications()"> 🔔 Notifications </button>
+                    <button class="btn btn-primary" onclick="quickChat()"> 💬 Quick Chat </button>
+                </div>
+            </div>
+            <div class="content-section active" id="overview">
+                <div class="overview-cards">
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <div class="card-title">Mental Health Assessment</div>
+                        <div class="card-description">Take our comprehensive screening test to understand your current mental health status</div>
+                        <button class="btn btn-primary" onclick="showSection('screening', event)"> Start Assessment </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🤖</div>
+                        <div class="card-title">AI Support Assistant</div>
+                        <div class="card-description">Get instant support and guidance from our AI-powered mental health chatbot</div>
+                        <button class="btn btn-primary" onclick="showSection('chatbot', event)"> Chat Now </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">👩‍⚕️</div>
+                        <div class="card-title">Professional Counseling</div>
+                        <div class="card-description">Connect with certified counselors for personalized therapy sessions</div>
+                        <button class="btn btn-primary" onclick="showSection('counselor', event)"> Book Session </button>
+                    </div>
+                </div>
+            </div>
+            <div class="content-section" id="screening">
+                <div class="card" style="text-align:center;">
+                    <h2>Mental Health Screening Test</h2>
+                    <p>This comprehensive assessment will help us understand your current mental health status and provide personalized recommendations.</p>
+                    <div style="margin: 30px 0;">
+                        <div style="background: #f0f8ff; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h3>📝 Assessment Details:</h3>
+                            <ul style="margin: 15px 0; text-align: left; padding-left: 20px;">
+                                <li>Duration: 15-20 minutes</li>
+                                <li>Questions: 25-30 items</li>
+                                <li>Areas covered: Anxiety, Depression, Stress, Sleep patterns</li>
+                                <li>Results: Immediate feedback with recommendations</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary" onclick="startScreeningTest()" style="font-size: 1.1rem; padding: 15px 30px;"> Begin Assessment </button>
+                    </div>
+                </div>
+            </div>
+            <div class="content-section" id="chatbot">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h3>AI Mental Health Assistant</h3>
+                        <p>I'm here to listen and provide support 24/7</p>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot">
+                            <div class="message-bubble">
+                                <p>Hello! I'm your AI mental health assistant. How are you feeling today?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Type your message here..." onkeypress="handleEnter(event)">
+                        <button class="send-btn" onclick="sendMessage()">📨</button>
+                    </div>
+                </div>
+            </div>
+            <div class="content-section" id="counselor">
+                <div class="card" style="text-align:center;">
+                    <h2>Connect with a Professional Counselor</h2>
+                    <p>Schedule a session with one of our certified mental health professionals</p>
+                    <div class="overview-cards" style="margin-top: 30px;">
+                        <div class="card">
+                            <div class="card-icon">👨‍⚕️</div>
+                            <div class="card-title">Dr. Sarah Johnson</div>
+                            <div class="card-description">Specializes in anxiety and depression<br>Available: Mon-Fri, 9AM-5PM</div>
+                            <button class="btn btn-primary" onclick="bookSession('Dr. Sarah Johnson')">Book Session</button>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">👩‍⚕️</div>
+                            <div class="card-title">Dr. Michael Brown</div>
+                            <div class="card-description">Specializes in stress management<br>Available: Tue-Sat, 10AM-6PM</div>
+                            <button class="btn btn-primary" onclick="bookSession('Dr. Michael Brown')">Book Session</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-section" id="profile">
+                <div class="card">
+                    <h2>Edit Your Profile</h2>
+                    <form id="profile-form" class="profile-form" style="margin-top: 30px;">
+                        <div class="form-group"><label for="full_name">Full Name</label><input type="text" id="full_name" placeholder="Enter your full name"/></div>
+                        <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="Enter your phone number"/></div>
+                        <div class="form-group"><label for="address">Address</label><input type="text" id="address" placeholder="Enter your address"/></div>
+                        <div class="form-group"><label for="date_of_birth">Date of Birth</label><input type="date" id="date_of_birth"/></div>
+                        <div class="form-group"><label for="guardian_name">Guardian's Name</label><input type="text" id="guardian_name"/></div>
+                        <div class="form-group"><label for="institute">Institute</label><input type="text" id="institute"/></div>
+                        <div class="form-group"><label for="course">Course</label><input type="text" id="course"/></div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
         
-        <!-- First Name -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">First Name</label>
-          <input type="text" id="first_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Enter first name"/>
-        </div>
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        <!-- Last Name -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Last Name</label>
-          <input type="text" id="last_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Enter last name"/>
-        </div>
+        let currentUser = null;
 
-        <!-- Phone -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
-          <input type="text" id="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Enter phone number"/>
-        </div>
+        // AUTHENTICATION CHECK
+        _supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'INITIAL_SESSION' && session) {
+                currentUser = session.user;
+                loadUserData(currentUser);
+            } else if (event === 'SIGNED_IN') {
+                currentUser = session.user;
+                loadUserData(currentUser);
+            } else if (event === 'SIGNED_OUT') {
+                window.location.href = "/login.html";
+            }
+        });
 
-        <!-- Address -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Address</label>
-          <input type="text" id="address" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Enter address"/>
-        </div>
+        // Check for user on initial load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                window.location.href = "/login.html";
+            } else {
+                currentUser = session.user;
+                if(!document.body.getAttribute('data-loaded')) {
+                    loadUserData(currentUser);
+                    document.body.setAttribute('data-loaded', 'true');
+                }
+            }
+        });
 
-        <!-- Date of Birth -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-          <input type="date" id="date_of_birth" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"/>
-        </div>
+        // LOAD USER DATA
+        async function loadUserData(user) {
+            try {
+                const { data: profile, error } = await _supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
 
-        <!-- Created At -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Account Created</label>
-          <input type="text" id="created_at" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100" disabled/>
-        </div>
+                if (error) {
+                    console.error('Error fetching profile:', error);
+                    alert("Could not fetch user profile. Please try again.");
+                    return;
+                }
 
-        <button type="submit" class="w-full py-3 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium shadow transition">Save Profile</button>
-      </form>
-    </div>
+                if (profile) {
+                    updateUIWithUserData(profile);
+                }
+            } catch (err) {
+                console.error('Error in loadUserData:', err);
+            }
+        }
 
-    <div id="message" role="alert" class="p-3 text-sm rounded-lg hidden"></div>
+        // UPDATE UI WITH USER DATA
+        function updateUIWithUserData(profile) {
+            const fullName = profile.full_name || '';
+            const firstName = fullName.split(' ')[0];
+            
+            // Sidebar and Header
+            document.getElementById('profileName').textContent = fullName;
+            document.getElementById('headerName').textContent = firstName;
+            document.getElementById('profileAvatar').textContent = fullName.charAt(0).toUpperCase() || '?';
 
-    <!-- Actions -->
-    <div class="space-y-4">
-      <button onclick="window.location.href='/chat.html'"
-              class="w-full py-3 px-4 rounded-md text-lg font-medium text-white bg-green-500 hover:bg-green-600 shadow transition">
-        Open Real-time Chat
-      </button>
-      <button onclick="alert('Talk to Doctor functionality coming soon!');"
-              class="w-full py-3 px-4 rounded-md text-lg font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 shadow transition">
-        Talk to Doctor
-      </button>
-      <button onclick="window.location.href='/screening.html'"
-              class="w-full py-3 px-4 rounded-md text-lg font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 shadow transition">
-        Start Screening Test
-      </button>
-    </div>
+            // Profile Form
+            document.getElementById('full_name').value = fullName;
+            document.getElementById('phone').value = profile.phone || '';
+            document.getElementById('address').value = profile.address || '';
+            document.getElementById('date_of_birth').value = profile.date_of_birth || '';
+            document.getElementById('guardian_name').value = profile.guardian_name || '';
+            document.getElementById('institute').value = profile.institute || '';
+            document.getElementById('course').value = profile.course || '';
 
-    <button onclick="logout()" class="mt-8 text-sm font-medium text-red-500 hover:text-red-600 transition">
-      Logout
-    </button>
-  </div>
+            // Progress Indicators (Example logic)
+            if (profile.screening_completed) {
+                document.getElementById('screeningStatus').className = 'progress-icon completed';
+                document.getElementById('screeningStatus').textContent = '✓';
+            }
+            if (profile.phone && profile.address) { // Simple check if profile is "complete"
+                document.getElementById('profileStatus').className = 'progress-icon completed';
+                document.getElementById('profileStatus').textContent = '✓';
+            }
+        }
 
-  <script type="module">
-    import { supabase } from "./supBaseClient.js";  // ✅ shared client
+        // PROFILE UPDATE
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const updates = {
+                id: currentUser.id,
+                full_name: document.getElementById('full_name').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                date_of_birth: document.getElementById('date_of_birth').value,
+                guardian_name: document.getElementById('guardian_name').value,
+                institute: document.getElementById('institute').value,
+                course: document.getElementById('course').value,
+            };
 
-    let currentUser = null;
+            const { error } = await _supabase.from('profiles').upsert(updates);
 
-    // Fetch and display user profile
-async function fetchUserProfile(user) {
-  currentUser = user;
+            if (error) {
+                console.error('Update error:', error);
+                alert('Failed to update profile!');
+            } else {
+                alert('Profile updated successfully!');
+                loadUserData(currentUser); // Refresh data on screen
+            }
+        });
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("first_name, last_name, phone, address, date_of_birth, created_at")
-    .eq("id", user.id)
-    .single();
+        // LOGOUT
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                const { error } = await _supabase.auth.signOut();
+                if (error) {
+                    console.error("Logout error:", error);
+                } else {
+                    window.location.href = '/login.html';
+                }
+            }
+        }
 
-  if (error) {
-    console.error("Error fetching profile:", error);
-  }
+        // Navigation functions
+        function showSection(sectionName, event) {
+            if (event) event.preventDefault();
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionName).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`).classList.add('active');
+        }
 
-  // Format DOB for <input type="date"> (needs YYYY-MM-DD)
-  let formattedDob = "";
-  if (profile?.date_of_birth) {
-    formattedDob = new Date(profile.date_of_birth).toISOString().split("T")[0];
-  }
+        // --- Dummy/Placeholder functions from the template ---
+        function startScreeningTest() {
+            alert('Screening test functionality will be built here.');
+            // Example: Simulate completion
+            document.getElementById('screeningStatus').className = 'progress-icon completed';
+            document.getElementById('screeningStatus').textContent = '✓';
+        }
 
-  document.getElementById("welcome-message").textContent =
-    `Welcome, ${profile?.first_name || "User"}!`;
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if(input.value.trim()){
+                 addMessageToChat(input.value.trim(), true);
+                 input.value = '';
+                 setTimeout(() => addMessageToChat("This is a simulated AI response.", false), 1000);
+            }
+        }
 
-  document.getElementById("first_name").value = profile?.first_name || "";
-  document.getElementById("last_name").value = profile?.last_name || "";
-  document.getElementById("phone").value = profile?.phone || "";
-  document.getElementById("address").value = profile?.address || "";
-  document.getElementById("date_of_birth").value = formattedDob || "";
-  document.getElementById("created_at").value =
-    profile?.created_at || user.created_at || "N/A";
-}
+        function addMessageToChat(message, isUser) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.innerHTML = `<div class="message-bubble"><p>${message}</p></div>`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
+        function handleEnter(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
 
-   // Save profile
-document.getElementById("profile-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+        function bookSession(doctorName) {
+            alert(`Booking session with ${doctorName}.`);
+        }
+        
+        function showNotifications() {
+            alert('Notifications panel will be implemented here.');
+        }
 
-  // Convert DOB to YYYY-MM-DD format if needed
-  let rawDob = document.getElementById("date_of_birth").value;
-  let formattedDob = null;
-  if (rawDob) {
-    // if user typed DD-MM-YYYY → convert it
-    if (rawDob.includes("-") && rawDob.split("-")[0].length === 2) {
-      let [dd, mm, yyyy] = rawDob.split("-");
-      formattedDob = `${yyyy}-${mm}-${dd}`;
-    } else {
-      formattedDob = rawDob; // already in YYYY-MM-DD
-    }
-  }
-
-  const updates = {
-    id: currentUser.id,
-    first_name: document.getElementById("first_name").value,
-    last_name: document.getElementById("last_name").value,
-    phone: document.getElementById("phone").value,
-    address: document.getElementById("address").value,
-    date_of_birth: formattedDob
-  };
-
-  const { error } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
-  const msgBox = document.getElementById("message");
-
-  if (error) {
-    console.error("Update error:", error);
-    msgBox.textContent = "Failed to update profile!";
-    msgBox.className = "p-3 text-sm rounded-lg bg-red-100 text-red-700 mt-4";
-    msgBox.classList.remove("hidden");
-  } else {
-    msgBox.textContent = "Profile updated successfully!";
-    msgBox.className = "p-3 text-sm rounded-lg bg-green-100 text-green-700 mt-4";
-    msgBox.classList.remove("hidden");
-  }
-});
-
-
-    // Auth listener
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        fetchUserProfile(session.user);
-      } else {
-        window.location.href = "/login.html";
-      }
-    });
-
-    // Logout
-    async function logout() {
-      await supabase.auth.signOut();
-    }
-    window.logout = logout;
-  </script>
+        function quickChat() {
+            // Find the link that shows the chatbot and click it
+            document.querySelector('.nav-link[onclick*="chatbot"]').click();
+        }
+    </script>
 </body>
 </html>
