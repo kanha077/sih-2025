@@ -3,70 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Admin Dashboard - Ananda</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #f39c12;
+            --dark-bg: #2c3e50;
+            --light-bg: #34495e;
+            --text-color: #ecf0f1;
+        }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        .admin-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+        /* Sidebar Styles */
+        .sidebar {
+            background: var(--dark-bg);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 40px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--light-bg);
+        }
+        .logo svg { width: 40px; height: 40px; }
+        .logo h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .admin-profile {
+            text-align: center; margin-bottom: 30px;
+            padding: 20px; background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+        .admin-avatar {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: bold;
+        }
+        .admin-name { font-weight: bold; margin-bottom: 5px; }
+        .admin-role { font-size: 0.9rem; color: var(--secondary-color); }
+        .nav-menu { list-style: none; margin-bottom: 30px; }
+        .nav-item { margin-bottom: 10px; }
+        .nav-link {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px; color: var(--text-color);
+            text-decoration: none; border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white; transform: translateX(5px);
+        }
+        .logout-link { margin-top: auto; }
+        /* Main Content Styles */
+        .main-content { padding: 40px; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px;
+        }
+        .header h1 { font-size: 2rem; }
+        .stats-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px; margin-bottom: 40px;
+        }
+        .card {
+            background: var(--dark-bg); padding: 25px;
+            border-radius: 15px; border-left: 5px solid var(--primary-color);
+        }
+        .card h3 { font-size: 1.1rem; color: #bdc3c7; margin-bottom: 10px; }
+        .card .value { font-size: 2.5rem; font-weight: bold; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .table-container { background: var(--dark-bg); padding: 25px; border-radius: 15px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .table-header input {
+            padding: 10px 15px; border-radius: 8px; border: 1px solid var(--light-bg);
+            background: var(--light-bg); color: white; width: 300px;
+        }
+        .user-table { width: 100%; border-collapse: collapse; }
+        .user-table th, .user-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--light-bg); }
+        .user-table th { font-weight: bold; color: #bdc3c7; }
+        .user-table td .btn {
+            padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+            background: var(--secondary-color); color: white;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--dark-bg); padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 600px; position: relative;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 1.5rem; }
+        .close-btn { font-size: 2rem; cursor: pointer; background: none; border: none; color: white; }
+        .modal-body .detail { margin-bottom: 15px; }
+        .modal-body .detail strong { color: #bdc3c7; display: block; margin-bottom: 5px; }
+        @media (max-width: 900px) {
+            .admin-container { grid-template-columns: 1fr; }
+            .sidebar { display: none; } /* Simplified for mobile */
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Admin Dashboard</h1>
-        <button id="logoutBtn" class="bg-white text-blue-600 font-semibold px-4 py-2 rounded hover:bg-gray-200 transition">Logout</button>
-    </header>
-
-    <main class="p-6">
-        <h2 class="text-2xl font-bold mb-4">Welcome, Admin!</h2>
-        <p class="mb-6">Here you can manage your users and site settings.</p>
-
-        <!-- Example admin content -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white p-4 rounded shadow">
-                <h3 class="font-semibold mb-2">User Management</h3>
-                <p>View and manage all registered users.</p>
+<body>
+    <div class="admin-container">
+        <div class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" style="fill: #e74c3c;"><path d="M50 20 L40 40 L20 40 L35 55 L30 75 L50 65 L70 75 L65 55 L80 40 L60 40 Z"/></svg>
+                <h1>ANANDA</h1>
             </div>
-            <div class="bg-white p-4 rounded shadow">
-                <h3 class="font-semibold mb-2">Site Analytics</h3>
-                <p>Monitor site traffic and activities.</p>
+            <div class="admin-profile">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div class="admin-name" id="adminName">Admin User</div>
+                <div class="admin-role">Administrator</div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#" class="nav-link active" onclick="showSection('dashboard', event)">📊 Dashboard</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('users', event)">👥 User Management</a></li>
+                </ul>
+            </nav>
+            <a href="#" class="nav-link logout-link" onclick="logout()">🚪 Logout</a>
+        </div>
+
+        <div class="main-content">
+            <header class="header">
+                <h1 id="headerTitle">Dashboard</h1>
+            </header>
+
+            <div class="content-section active" id="dashboard">
+                <div class="stats-cards">
+                    <div class="card">
+                        <h3>Total Users</h3>
+                        <div class="value" id="totalUsersStat">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Counselors</h3>
+                        <div class="value" id="counselorsStat">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Active Chats</h3>
+                        <div class="value">N/A</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section" id="users">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2>All Users</h2>
+                        <input type="text" id="searchInput" placeholder="Search by name or email...">
+                    </div>
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    <div class="modal" id="userDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">User Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
         const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Check if user is signed in and is admin
-        (async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let allUsers = []; // To store all fetched users for searching
+
+        // 1. CRITICAL: Check for admin access on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+            if (!session || sessionError) {
                 window.location.href = '/login.html';
                 return;
             }
 
-            const { data: profile, error } = await supabase
+            const { data: profile, error: profileError } = await _supabase
                 .from('profiles')
-                .select('role')
+                .select('role, full_name')
                 .eq('id', session.user.id)
                 .single();
 
-            if (error || profile?.role !== 'admin') {
+            if (profileError || profile?.role !== 'admin') {
+                alert("Access Denied: You are not an administrator.");
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // If access is granted, load the dashboard
+            document.getElementById('adminName').textContent = profile.full_name || 'Admin';
+            document.getElementById('adminAvatar').textContent = (profile.full_name || 'A').charAt(0);
+            await loadDashboardData();
+        });
+
+        // 2. Load all data for the dashboard
+        async function loadDashboardData() {
+            const { data: users, error } = await _supabase.from('profiles').select('*');
+            if (error) {
+                console.error("Error fetching users:", error);
+                return;
+            }
+            allUsers = users;
+
+            // Populate stats
+            document.getElementById('totalUsersStat').textContent = users.length;
+            const counselorCount = users.filter(u => u.role === 'counselor').length;
+            document.getElementById('counselorsStat').textContent = counselorCount;
+
+            // Populate user table
+            populateUserTable(users);
+        }
+
+        // 3. Populate the user table with data
+        function populateUserTable(users) {
+            const tableBody = document.getElementById('userTableBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+            
+            if (users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found.</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const row = `
+                    <tr>
+                        <td>${user.full_name || 'N/A'}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>${user.role || 'user'}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td><button class="btn" onclick="showUserDetails('${user.id}')">View</button></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+        
+        // 4. Search/Filter functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredUsers = allUsers.filter(user => 
+                user.full_name?.toLowerCase().includes(searchTerm) || 
+                user.email?.toLowerCase().includes(searchTerm)
+            );
+            populateUserTable(filteredUsers);
+        });
+
+        // 5. Modal functionality
+        function showUserDetails(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('modalTitle').textContent = `Details for ${user.full_name}`;
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="detail"><strong>User ID:</strong> ${user.id}</div>
+                <div class="detail"><strong>Full Name:</strong> ${user.full_name || 'N/A'}</div>
+                <div class="detail"><strong>Email:</strong> ${user.email || 'N/A'}</div>
+                <div class="detail"><strong>Role:</strong> ${user.role || 'user'}</div>
+                <div class="detail"><strong>Phone:</strong> ${user.phone || 'N/A'}</div>
+                <div class="detail"><strong>Address:</strong> ${user.address || 'N/A'}</div>
+                <div class="detail"><strong>Date of Birth:</strong> ${user.date_of_birth || 'N/A'}</div>
+                <div class="detail"><strong>Institute:</strong> ${user.institute || 'N/A'}</div>
+                <div class="detail"><strong>Course:</strong> ${user.course || 'N/A'}</div>
+                <div class="detail"><strong>Guardian:</strong> ${user.guardian_name || 'N/A'}</div>
+                <div class="detail"><strong>Joined:</strong> ${new Date(user.created_at).toLocaleString()}</div>
+            `;
+            document.getElementById('userDetailsModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('userDetailsModal').style.display = 'none';
+        }
+        
+        // 6. Navigation
+        function showSection(sectionId, event) {
+            if(event) event.preventDefault();
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.nav-link[onclick*="'${sectionId}'"]`).classList.add('active');
+
+            const title = sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('users', 'User Management');
+            document.getElementById('headerTitle').textContent = title;
+        }
+
+        // 7. Logout
+        async function logout() {
+            if(confirm("Are you sure you want to logout?")) {
+                await _supabase.auth.signOut();
                 window.location.href = '/login.html';
             }
-        })();
-
-        // Logout button
-        const logoutBtn = document.getElementById('logoutBtn');
-        logoutBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = '/login.html';
-        });
+        }
     </script>
 </body>
 </html>
