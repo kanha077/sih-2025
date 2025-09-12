@@ -127,7 +127,8 @@
             color: #555;
             font-size: 0.95rem;
         }
-        .form-group input {
+        /* CSS CHANGE: Applied styles to select element */
+        .form-group input, .form-group select {
             width: 100%;
             padding: 15px 20px;
             border: 2px solid #e1e8ed;
@@ -136,7 +137,8 @@
             transition: all 0.3s ease;
             background: #f8f9fa;
         }
-        .form-group input:focus {
+        /* CSS CHANGE: Applied focus styles to select element */
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -252,6 +254,15 @@
                     <input type="password" id="password" name="password" required placeholder="Enter your password">
                     <div class="error-message" id="password-error"></div>
                 </div>
+
+                <div class="form-group">
+                    <label for="role">I am a</label>
+                    <select id="role" name="role">
+                        <option value="student" selected>Student</option>
+                        <option value="counselor">Counselor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
                 
                 <div class="error-message" id="general-error"></div>
                 
@@ -284,6 +295,7 @@
         const loginForm = document.getElementById('login-form');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
+        const roleSelect = document.getElementById('role');
         const loginBtn = document.getElementById('login-btn');
         const loadingDiv = document.getElementById('login-loading');
         const authContainer = document.getElementById('auth-container');
@@ -320,28 +332,25 @@
             loadingDiv.style.display = 'none';
         }
         
-        // REDIRECTION LOGIC
-        async function handleRedirect(userId) {
-            const { data: profile, error } = await _supabase
-                .from('profiles')
-                .select('phone, role')
-                .eq('id', userId)
-                .single();
+        // JAVASCRIPT CHANGE: Simplified redirection logic
+        // This function now uses the dropdown value to redirect, making it faster.
+        function handleRedirect() {
+            const selectedRole = roleSelect.value;
+            let redirectUrl = '/'; // Default redirect location
 
-            if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching profile:', error);
-                hideLoading();
-                showError(generalError, "Could not fetch user profile. Please contact support.");
-                return;
+            switch (selectedRole) {
+                case 'student':
+                    redirectUrl = '/user.html'; // Or your student dashboard URL
+                    break;
+                case 'counselor':
+                    redirectUrl = '/counselor-dashboard.html'; // Change to your counselor dashboard URL
+                    break;
+                case 'admin':
+                    redirectUrl = '/admin.html'; // Or your admin dashboard URL
+                    break;
             }
 
-            if (profile?.role === 'admin') {
-                window.location.href = window.location.origin + '/admin.html';
-            } else if (!profile || !profile.phone) {
-                window.location.href = window.location.origin + '/complete-profile.html';
-            } else {
-                window.location.href = window.location.origin + '/user.html';
-            }
+            window.location.href = window.location.origin + redirectUrl;
         }
 
         // SESSION HANDLING
@@ -349,14 +358,16 @@
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 showLoading();
-                await handleRedirect(session.user.id);
+                // JAVASCRIPT CHANGE: Removed parameter
+                handleRedirect();
             }
         })();
 
         _supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session) {
                 showLoading();
-                await handleRedirect(session.user.id);
+                // JAVASCRIPT CHANGE: Removed parameter
+                handleRedirect();
             }
         });
 
@@ -398,6 +409,7 @@
                 }
                 showError(generalError, errorMessage);
             }
+            // On success, the onAuthStateChange listener will call handleRedirect.
         });
         
         // LOGIN WITH GOOGLE
@@ -405,7 +417,6 @@
             const { error } = await _supabase.auth.signInWithOAuth({ 
                 provider: 'google',
                 options: {
-                    // This is the fix: redirect back to this page after Google login
                     redirectTo: window.location.href
                 }
             });
