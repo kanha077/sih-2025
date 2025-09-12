@@ -160,7 +160,7 @@
         async function loadChatHistory() {
             chatMessagesContainer.innerHTML = '<p class="text-center text-gray-500">Loading history...</p>';
             const { data, error } = await _supabase
-                .from('chat_messages')
+                .from('chats') // Use 'chats' table
                 .select('*')
                 .eq('user_id', currentUser.id)
                 .order('created_at');
@@ -174,14 +174,16 @@
             if (data.length === 0) {
                  addMessageToChat('Hello! I\'m your AI mental health assistant. How are you feeling today?', 'ai');
             } else {
-                data.forEach(msg => addMessageToChat(msg.message_text, msg.sender));
+                data.forEach(msg => addMessageToChat(msg.message, msg.role)); // Use 'message' and 'role' columns
             }
         }
         
         // Add a message bubble to the UI
         function addMessageToChat(message, sender) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
+            // Standardize sender to 'user' or 'ai' for CSS class consistency
+            const senderClass = (sender === 'user') ? 'user' : 'ai';
+            messageDiv.className = `message ${senderClass}`;
             messageDiv.innerHTML = `<div class="message-bubble">${message}</div>`;
             chatMessagesContainer.appendChild(messageDiv);
             chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
@@ -211,7 +213,11 @@
                 
                 chatMessagesContainer.removeChild(thinkingDiv);
                 if (error) throw error;
-                addMessageToChat(data.reply, 'ai');
+                
+                // ** THIS IS THE FIX **
+                // It now correctly looks for the 'message' key from your webhook's response.
+                const replyText = data.message || 'Sorry, I could not process that response.';
+                addMessageToChat(replyText, 'ai');
 
             } catch (error) {
                 chatMessagesContainer.removeChild(thinkingDiv);
@@ -229,3 +235,4 @@
     </script>
 </body>
 </html>
+
