@@ -5,41 +5,196 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Ananda</title>
     <style>
-        /* Your existing CSS styles remain the same... */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; min-height: 100vh; color: #333; }
-        .dashboard-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-        .sidebar { background: #ffffff; padding: 30px 20px; box-shadow: 2px 0 15px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; }
-        .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-        .logo img { height: 36px; width: auto; }
-        .logo h1 { font-size: 1.25rem; font-weight: 700; color: #1f2937; }
-        .profile-section { margin-bottom: 30px; text-align: center; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(45deg, #4CAF50, #45a049); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 15px; font-weight: 600; }
-        .profile-name { font-weight: 600; color: #1f2937; margin-bottom: 5px; }
-        .profile-role { color: #6b7280; font-size: 0.9rem; }
-        .progress-card { background: #f3f4f6; padding: 20px; border-radius: 15px; margin-bottom: 30px; }
-        .progress-title { font-weight: 600; color: #4CAF50; margin-bottom: 15px; }
-        .progress-item { display: flex; align-items: center; margin-bottom: 10px; gap: 10px; font-size: 0.9rem; }
-        .progress-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
-        .completed { background: #4CAF50; color: white; }
-        .pending { background: #d1d5db; color: #4b5563; }
-        .nav-menu { list-style: none; flex-grow: 1; }
-        .nav-item { margin-bottom: 8px; }
-        .nav-link { display: flex; align-items: center; gap: 15px; padding: 14px; color: #4b5563; text-decoration: none; border-radius: 10px; transition: all 0.3s ease; font-weight: 500; }
-        .nav-link:hover, .nav-link.active { background: #4CAF50; color: white; transform: translateX(5px); box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2); }
-        .main-content { padding: 40px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .welcome-text h1 { color: #1f2937; font-size: 1.75rem; font-weight: 700; margin-bottom: 5px; }
-        .welcome-text p { color: #6b7280; }
-        .btn { padding: 12px 24px; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
-        .btn-primary { background: #4CAF50; color: white; }
-        .btn-secondary { background: #ffffff; color: #333; border: 1px solid #d1d5db; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8; /* Softer background */
+            min-height: 100vh;
+            color: #333;
+        }
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr; /* Slightly wider sidebar */
+            min-height: 100vh;
+        }
+        /* Sidebar Styles */
+        .sidebar {
+            background: #ffffff;
+            padding: 30px 20px;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .logo img {
+            height: 36px;
+            width: auto;
+        }
+        .logo h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .profile-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 15px;
+            font-weight: 600;
+        }
+        .profile-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        .profile-role {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .progress-card {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .progress-title {
+            font-weight: 600;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .progress-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        .progress-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        .completed {
+            background: #4CAF50;
+            color: white;
+        }
+        .pending {
+            background: #d1d5db;
+            color: #4b5563;
+        }
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+        .nav-item {
+            margin-bottom: 8px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: #4CAF50;
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+        /* Main Content Styles */
+        .main-content {
+            padding: 40px;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .welcome-text h1 {
+            color: #1f2937;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .welcome-text p {
+            color: #6b7280;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background: #ffffff;
+            color: #333;
+            border: 1px solid #d1d5db;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
         .content-section { display: none; }
         .content-section.active { display: block; }
-        .card { background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); }
-        .overview-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
         .card-icon { font-size: 2.5rem; margin-bottom: 20px; }
         .card-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; color: #1f2937; }
         .card-description { color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
@@ -48,18 +203,19 @@
         .profile-form input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 1rem; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
+            .sidebar { display: none; /* Add a toggle button for mobile later */ }
             .main-content { padding: 20px; }
         }
     </style>
 </head>
 <body class="antialiased">
     <div class="dashboard-container">
+        <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
-                    <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo">
-                    <h1>ANANDA</h1>
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="h-8 w-auto">
+                    <h1 class="text-xl font-bold text-gray-800">ANANDA</h1>
                 </a>
             </div>
             
@@ -86,16 +242,17 @@
             <nav class="nav-menu">
                 <ul>
                     <li class="nav-item"><a href="#" class="nav-link active" onclick="showSection('overview', event)"> <span class="nav-icon">🏠</span> <span>Dashboard</span> </a> </li>
-                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('screening', event)"> <span class="nav-icon">📝</span> <span>Screening Test</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('screening1', event)"> <span class="nav-icon">📝</span> <span>Screening Test</span> </a> </li>
                     <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('chatbot', event)"> <span class="nav-icon">💬</span> <span>AI Chatbot</span> </a> </li>
                     <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('counselor', event)"> <span class="nav-icon">👩‍⚕️</span> <span>Counselor Chat</span> </a> </li>
                     <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('profile', event)"> <span class="nav-icon">👤</span> <span>Profile</span> </a> </li>
                 </ul>
             </nav>
-            <div style="margin-top: auto;">
+            <div>
                  <a href="#" class="nav-link" onclick="logout()"> <span class="nav-icon">🚪</span> <span>Logout</span> </a>
             </div>
         </div>
+        <!-- Main Content (Structure from original) -->
         <main class="main-content">
             <header class="header">
                 <div class="welcome-text">
@@ -108,89 +265,136 @@
                 </div>
             </header>
             
-            <div class="content-section active" id="overview">...</div>
-            <div class="content-section" id="screening">...</div>
-            <div class="content-section" id="chatbot">...</div>
-            <div class="content-section" id="counselor">...</div>
-            <div class="content-section" id="profile">...</div>
+            <!-- Overview Section -->
+            <div class="content-section active" id="overview">
+                <div class="overview-cards">
+                      <div class="card text-center">
+                        <div class="card-icon">📊</div>
+                        <h2 class="card-title">Mental Health Assessment</h2>
+                        <p class="card-description">Take our comprehensive screening test to understand your current mental health status.</p>
+                        <a href="screening1.html" class="btn btn-primary"> Start Assessment </a>
+                    </div>
+                     <div class="card text-center">
+                        <div class="card-icon">🤖</div>
+                        <h2 class="card-title">AI Support Assistant</h2>
+                        <p class="card-description">Get instant support and guidance from our AI-powered mental health chatbot.</p>
+                        <a href="chatbot.html" class="btn btn-primary"> Chat Now </a>
+                    </div>
+                    <div class="card text-center">
+                        <div class="card-icon">👩‍⚕️</div>
+                        <h2 class="card-title">Professional Counseling</h2>
+                        <p class="card-description">Connect with certified counselors for personalized therapy sessions.</p>
+                        <button class="btn btn-primary" onclick="showSection('counselor', event)"> Book Session </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Screening Test Section -->
+                     <div class="content-section" id="screening">
+                 <div class="card text-center">
+                    <h2 class="text-2xl font-bold mb-4">Mental Health Screening</h2>
+                    <p class="max-w-2xl mx-auto mb-8">You can take or review your confidential screening test on our dedicated assessment page.</p>
+                    <a href="screening1.html" class="btn btn-primary text-lg px-8 py-3">Go to Screening Test</a>
+                </div>
+            </div>
+            
+            <!-- Chatbot Section -->
+            <div class="content-section" id="chatbot">
+                 <!-- Chatbot implementation would go here -->
+                 <div class="card">
+                     <h2 class="text-2xl font-bold text-center">AI Chatbot is coming soon!</h2>
+                 </div>
+            </div>
+
+            <!-- Counselor Chat Section -->
+            <div class="content-section" id="counselor">
+                 <!-- Counselor chat implementation would go here -->
+                 <div class="card">
+                     <h2 class="text-2xl font-bold text-center">Counselor Chat is coming soon!</h2>
+                 </div>
+            </div>
+            
+            <!-- Profile Section -->
+            <div class="content-section" id="profile">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-6">Edit Your Profile</h2>
+                    <form id="profile-form" class="profile-form">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group"><label for="full_name">Full Name</label><input type="text" id="full_name" placeholder="Enter your full name"/></div>
+                            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="Enter your phone number"/></div>
+                            <div class="form-group md:col-span-2"><label for="address">Address</label><input type="text" id="address" placeholder="Enter your address"/></div>
+                            <div class="form-group"><label for="date_of_birth">Date of Birth</label><input type="date" id="date_of_birth"/></div>
+                            <div class="form-group"><label for="guardian_name">Guardian's Name</label><input type="text" id="guardian_name"/></div>
+                            <div class="form-group"><label for="institute">Institute</label><input type="text" id="institute"/></div>
+                            <div class="form-group"><label for="course">Course</label><input type="text" id="course"/></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-6 w-full md:w-auto">Save Profile</button>
+                    </form>
+                </div>
+            </div>
         </main>
     </div>
 
-    <script type="module">
-        // NEW: Importing the shared Supabase client for better code management
-        import { supabase } from './supBaseClient.js';
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         let currentUser = null;
 
-        /**
-         * NEW: Main function to check the user's session and role.
-         * This acts as a security guard for the page.
-         */
-        async function checkSessionAndProtectPage() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-
-            if (error) {
-                console.error("Error getting session:", error);
+        _supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'INITIAL_SESSION' && session) {
+                currentUser = session.user;
+                loadUserData(currentUser);
+            } else if (event === 'SIGNED_IN') {
+                currentUser = session.user;
+                loadUserData(currentUser);
+            } else if (event === 'SIGNED_OUT') {
                 window.location.href = "/login.html";
-                return;
             }
+        });
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
                 window.location.href = "/login.html";
-                return;
+            } else {
+                currentUser = session.user;
+                if(!document.body.getAttribute('data-loaded')) {
+                    loadUserData(currentUser);
+                    document.body.setAttribute('data-loaded', 'true');
+                }
             }
-
-            // --- CRITICAL: The Security Guard ---
-            const userRole = session.user.app_metadata?.role;
-            const blockedRoles = ['admin', 'counsellor'];
-
-            if (blockedRoles.includes(userRole)) {
-                alert("Access Denied: You do not have permission to view the student dashboard.");
-                // Redirect to the appropriate dashboard
-                const redirectTo = userRole === 'admin' ? '/admin.html' : '/counsellor.html';
-                window.location.href = redirectTo;
-                return;
-            }
-            // --- End of Security Guard ---
-
-            // If the user is valid, load their data
-            currentUser = session.user;
-            loadUserData(currentUser);
-        }
+        });
 
         async function loadUserData(user) {
             try {
-                const { data: profile, error } = await supabase
+                const { data: profile, error } = await _supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
                     .single();
-
                 if (error) {
-                    // This can happen if a user exists in auth but not in profiles yet
-                    console.warn('Could not fetch profile, might need to be created:', error.message);
-                    // You could redirect to a 'complete-profile' page here if needed
+                    console.error('Error fetching profile:', error);
+                    alert("Could not fetch user profile. Please try again.");
                     return;
                 }
-
                 if (profile) {
                     updateUIWithUserData(profile);
                 }
             } catch (err) {
-                console.error('Fatal error in loadUserData:', err);
+                console.error('Error in loadUserData:', err);
             }
         }
 
         function updateUIWithUserData(profile) {
             const fullName = profile.full_name || '';
             const firstName = fullName.split(' ')[0] || 'User';
-
-            // Update sidebar and header
-            document.getElementById('profileName').textContent = fullName || 'No Name Set';
+            document.getElementById('profileName').textContent = fullName;
             document.getElementById('headerName').textContent = firstName;
             document.getElementById('profileAvatar').textContent = fullName.charAt(0).toUpperCase() || '?';
-
-            // Populate profile form
             document.getElementById('full_name').value = fullName;
             document.getElementById('phone').value = profile.phone || '';
             document.getElementById('address').value = profile.address || '';
@@ -198,29 +402,18 @@
             document.getElementById('guardian_name').value = profile.guardian_name || '';
             document.getElementById('institute').value = profile.institute || '';
             document.getElementById('course').value = profile.course || '';
-
-            // Update progress indicators
-            const screeningStatus = document.getElementById('screeningStatus');
             if (profile.screening_completed) {
-                screeningStatus.className = 'progress-icon completed';
-                screeningStatus.textContent = '✓';
-            } else {
-                screeningStatus.className = 'progress-icon pending';
-                screeningStatus.textContent = '○';
+                const status = document.getElementById('screeningStatus');
+                status.className = 'progress-icon completed';
+                status.textContent = '✓';
             }
-            
-            const profileStatus = document.getElementById('profileStatus');
-            if (profile.phone && profile.address && profile.full_name) {
-                profileStatus.className = 'progress-icon completed';
-                profileStatus.textContent = '✓';
-            } else {
-                profileStatus.className = 'progress-icon pending';
-                profileStatus.textContent = '○';
+            if (profile.phone && profile.address) { // Simple check if profile is "complete"
+                const status = document.getElementById('profileStatus');
+                status.className = 'progress-icon completed';
+                status.textContent = '✓';
             }
         }
 
-        // --- Event Listeners and Global Functions ---
-        
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const updates = {
@@ -233,47 +426,39 @@
                 institute: document.getElementById('institute').value,
                 course: document.getElementById('course').value,
             };
-
-            const { error } = await supabase.from('profiles').upsert(updates);
-
+            const { error } = await _supabase.from('profiles').upsert(updates);
             if (error) {
                 console.error('Update error:', error);
-                alert('Failed to update profile! Check console for details.');
+                alert('Failed to update profile!');
             } else {
                 alert('Profile updated successfully!');
-                loadUserData(currentUser); // Refresh UI with new data
+                loadUserData(currentUser);
             }
         });
 
-        window.logout = async function() {
+        async function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                const { error } = await supabase.auth.signOut();
+                const { error } = await _supabase.auth.signOut();
                 if (error) {
                     console.error("Logout error:", error);
-                    alert("Failed to logout. Please try again.");
                 } else {
                     window.location.href = '/login.html';
                 }
             }
         }
 
-        window.showSection = function(sectionName, event) {
+        function showSection(sectionName, event) {
             if (event) event.preventDefault();
             document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
             document.getElementById(sectionName).classList.add('active');
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            // Use a more robust selector for the active link
-            const activeLink = document.querySelector(`.nav-link[onclick*="showSection('${sectionName}'"]`);
-            if (activeLink) {
-                 activeLink.classList.add('active');
-            }
+            document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`).classList.add('active');
         }
         
-        window.showNotifications = function() { alert('Notifications panel will be implemented here.'); }
-        window.quickChat = function() { showSection('chatbot', null); }
-
-        // --- Initial Page Load ---
-        checkSessionAndProtectPage();
+        function startScreeningTest() { alert('Screening test functionality will be built here.'); }
+        function showNotifications() { alert('Notifications panel will be implemented here.'); }
+        function quickChat() { document.querySelector('.nav-link[onclick*="chatbot"]').click(); }
     </script>
 </body>
 </html>
+
