@@ -94,110 +94,132 @@
     </div>
     
     <script type="module">
-    import { supabase } from './supBaseClient.js';
+        import { supabase } from './supBaseClient.js';
 
-    // --- DOM Elements (no changes) ---
-    const loginForm = document.getElementById('login-form');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const loadingDiv = document.getElementById('login-loading');
-    const authContainer = document.getElementById('auth-container');
-    const generalError = document.getElementById('general-error');
-    // ... other elements from your HTML
-
-    // --- Utility Functions (no changes) ---
-    function showError(element, message) {
-        element.textContent = message;
-        element.style.display = 'block';
-    }
-    function showLoading() {
-        authContainer.style.display = 'none';
-        loadingDiv.style.display = 'block';
-    }
-    function hideLoading() {
-        authContainer.style.display = 'block';
-        loadingDiv.style.display = 'none';
-    }
-
-    /**
-     * The reliable redirect function.
-     * It actively fetches the latest user data to ensure the role is correct.
-     */
-    async function checkRoleAndRedirect() {
-        showLoading();
-
-        // This command ALWAYS gets the latest user data from the server.
-        const { data: { user }, error } = await supabase.auth.getUser();
-
-        if (error || !user) {
-            // If we can't get the user, send back to login.
-            window.location.href = "/login.html";
-            return;
-        }
-
-        const userRole = user.app_metadata?.role;
+        // ============= DOM ELEMENTS =============
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const loadingDiv = document.getElementById('login-loading');
+        const authContainer = document.getElementById('auth-container');
         
-        // --- THIS LINE IS NOW CORRECTED ---
-        let redirectUrl = '/student.html'; // Default redirect is now student.html
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+        const generalError = document.getElementById('general-error');
 
-        if (userRole === 'admin') {
-            redirectUrl = '/admin.html';
-        } else if (userRole === 'counsellor') {
-            redirectUrl = '/counsellor.html';
+        // ============= UTILITY FUNCTIONS =============
+        function hideErrors() {
+            emailError.style.display = 'none';
+            passwordError.style.display = 'none';
+            generalError.style.display = 'none';
         }
 
-        window.location.href = window.location.origin + redirectUrl;
-    }
-
-    // --- SESSION HANDLING ---
-
-    // For users who are already logged in when they visit the page.
-    (async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            await checkRoleAndRedirect();
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
         }
-    })();
-
-    // Handles redirects from Google/OAuth.
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-            await checkRoleAndRedirect();
-        }
-    });
-
-    // --- EVENT LISTENERS ---
-
-    loginForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        // ... your form validation logic ...
         
-        showLoading();
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (error) {
-            hideLoading();
-            showError(generalError, 'Invalid email or password.');
-        } else if (data.user) {
-            await checkRoleAndRedirect();
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
         }
-    });
 
-    // Make Google login function available globally
-    window.loginWithGoogle = async function() {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin 
+        function showLoading() {
+            authContainer.style.display = 'none';
+            loadingDiv.style.display = 'block';
+        }
+
+        function hideLoading() {
+            authContainer.style.display = 'block';
+            loadingDiv.style.display = 'none';
+        }
+        
+        /**
+         * JAVASCRIPT CHANGE: The new redirection logic.
+         * It checks the user's role from their Supabase metadata and sends them to the correct page.
+         * @param {object} user - The user object from Supabase auth.
+         */
+        function handleRedirect(user) {
+            const userRole = user?.app_metadata?.role;
+            let redirectUrl = '/student.html'; // Default to the student dashboard
+
+            if (userRole === 'admin') {
+                redirectUrl = '/admin.html';
+            } else if (userRole === 'counsellor') {
+                redirectUrl = '/counsellor.html'; // Ensure this page exists
+            }
+            // If the role is 'student' or not defined, they will go to the default '/user.html'
+            
+            window.location.href = window.location.origin + redirectUrl;
+        }
+
+        // ============= SESSION HANDLING (for users already logged in) =============
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                showLoading();
+                handleRedirect(session.user); // JAVASCRIPT CHANGE: Pass the user object
+            }
+        })();
+
+        // This listener is mainly for handling OAuth (Google login) redirects
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === "SIGNED_IN" && session) {
+                showLoading();
+                handleRedirect(session.user); // JAVASCRIPT CHANGE: Pass the user object
             }
         });
-        if (error) {
-            showError(generalError, `Google Sign-in Failed: ${error.message}`);
+
+        // ============= EVENT LISTENERS =============
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideErrors();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            let hasErrors = false;
+            if (!email || !validateEmail(email)) {
+                showError(emailError, 'Please enter a valid email address');
+                hasErrors = true;
+            }
+            if (!password) {
+                showError(passwordError, 'Password is required');
+                hasErrors = true;
+            }
+            if (hasErrors) return;
+
+            showLoading();
+
+            // JAVASCRIPT CHANGE: Handle the login result directly for a faster redirect
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                hideLoading();
+                let errorMessage = error.message.includes('Invalid login credentials') 
+                    ? 'Invalid email or password.' 
+                    : 'An error occurred. Please try again.';
+                showError(generalError, errorMessage);
+            } else if (data.user) {
+                // On success, redirect immediately based on the user's role
+                handleRedirect(data.user);
+            }
+        });
+        
+        // Make Google login function available globally
+        window.loginWithGoogle = async function() {
+            const { error } = await supabase.auth.signInWithOAuth({ 
+                provider: 'google',
+                options: {
+                    // Redirect back to the current page; onAuthStateChange will handle the rest
+                    redirectTo: window.location.href 
+                }
+            });
+            if (error) {
+                showError(generalError, `Google Sign-in Failed: ${error.message}`);
+            }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
