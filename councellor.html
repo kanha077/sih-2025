@@ -125,23 +125,27 @@
 
         // --- AUTH & PAGE SETUP ---
         async function checkSessionAndProtectPage() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = "/login.html";
-                return;
-            }
-            
-            const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single();
+       // In counsellor.html
 
-            if (!profile || profile.role !== 'counsellor') {
-                alert("Access Denied.");
-                await supabase.auth.signOut();
-                window.location.href = '/login.html';
-                return;
-            }
-            currentUser = session.user;
-            document.getElementById('councillorName').textContent = profile.full_name || 'Councillor';
-        }
+async function checkSessionAndProtectPage() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = "/login.html";
+        return;
+    }
+    
+    const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single();
+
+    if (!profile || profile.role !== 'counsellor') {
+        alert("Access Denied.");
+        // REMOVED: The forceful signOut() command is gone.
+        window.location.href = '/login.html'; // Simply redirect without logging out.
+        return;
+    }
+    
+    currentUser = session.user;
+    document.getElementById('councillorName').textContent = profile.full_name || 'Councillor';
+}
 
         // --- UI TOGGLING ---
         const mainDashboard = document.getElementById('main-dashboard');
