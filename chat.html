@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | Ananda</title>
+    <style>
+        :root { --primary-color: #4CAF50; --light-gray: #f0f4f8; --medium-gray: #e5e7eb; --dark-gray: #4b5563; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--light-gray); margin: 0; display: flex; height: 100vh; color: var(--dark-gray); }
+        .chat-container { display: flex; width: 100%; height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        
+        /* Sidebar (User List) */
+        .sidebar { width: 320px; background-color: #fff; border-right: 1px solid var(--medium-gray); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--medium-gray); }
+        .sidebar-header h2 { margin: 0; font-size: 1.5rem; }
+        .sidebar-header p { margin: 5px 0 0; color: #666; }
+        #user-list { list-style: none; padding: 10px 0; margin: 0; flex-grow: 1; overflow-y: auto; }
+        .user-item { display: flex; align-items: center; padding: 15px 20px; cursor: pointer; transition: background-color 0.2s; border-bottom: 1px solid var(--medium-gray); }
+        .user-item:hover, .user-item.active { background-color: var(--light-gray); }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 15px; }
+        .user-info .name { font-weight: 600; }
+        .user-info .status { font-size: 0.8rem; color: #888; display: flex; align-items: center; }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .status-indicator.online { background-color: #2ecc71; }
+        .status-indicator.offline { background-color: #95a5a6; }
+        
+        /* Chat Window */
+        .chat-window { flex-grow: 1; display: flex; flex-direction: column; background-color: #f9f9f9; }
+        .chat-header { background-color: #fff; padding: 20px; border-bottom: 1px solid var(--medium-gray); display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h3 { margin: 0; }
+        .chat-header .status { font-size: 0.9rem; }
+        #message-list { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .message-bubble { max-width: 70%; padding: 12px 18px; border-radius: 20px; margin-bottom: 10px; line-height: 1.5; }
+        .message-bubble.sent { background-color: var(--primary-color); color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
+        .message-bubble.received { background-color: #fff; color: var(--dark-gray); align-self: flex-start; border-bottom-left-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .chat-input { display: flex; padding: 20px; background-color: #fff; border-top: 1px solid var(--medium-gray); }
+        #message-input { flex-grow: 1; border: 1px solid var(--medium-gray); border-radius: 25px; padding: 12px 20px; font-size: 1rem; }
+        #send-button { background-color: var(--primary-color); color: white; border: none; border-radius: 25px; padding: 12px 25px; margin-left: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+        
+        /* Initial state overlay */
+        #initial-view { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
+        #initial-view h3 { font-size: 1.5rem; color: var(--dark-gray); }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 id="sidebar-title">Contacts</h2>
+                <p id="sidebar-subtitle">Select a user to start chatting</p>
+            </div>
+            <ul id="user-list">
+                </ul>
+        </aside>
+
+        <main class="chat-window" id="chat-area" style="display: none;">
+            <div class="chat-header">
+                <h3 id="chat-with-name">Select a Chat</h3>
+                <div class="status">
+                    <span class="status-indicator offline" id="chat-with-status-indicator"></span>
+                    <span id="chat-with-status-text">Offline</span>
+                </div>
+            </div>
+            <div id="message-list">
+                </div>
+            <form class="chat-input" id="message-form">
+                <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+                <button type="submit" id="send-button">Send</button>
+            </form>
+        </main>
+        
+        <div id="initial-view">
+            <h3>Loading...</h3>
+        </div>
+    </div>
+
+<script type="module">
+    import { supabase } from './supBaseClient.js';
+
+    // All variables and the HTML structure remain the same
+    let currentUser = null;
+    let activeChatId = null;
+    let messageSubscription = null;
+    const userList = document.getElementById('user-list');
+    const chatArea = document.getElementById('chat-area');
+    const initialView = document.getElementById('initial-view');
+    
+    // The initialize(), loadCounselorList(), loadStudentListForCounselor(),
+    // displayUserList(), and setupPresenceForAllUsers() functions
+    // have NO CHANGES and remain the same.
+
+    // ... (paste your unchanged functions here) ...
+
+    async function openChatWith(otherUserId, otherUserName) {
+        // This function has NO CHANGES and remains the same.
+        // ...
+    }
+
+    async function loadMessages(chatId, otherUserName) {
+        document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
+        const messageList = document.getElementById('message-list');
+        messageList.innerHTML = '';
+
+        // NAME CHANGE: Fetch from "msg" table
+        const { data: messages, error } = await supabase
+            .from('msg')
+            .select('content, sender_id')
+            .eq('conversation_id', chatId)
+            .order('created_at', { ascending: true });
+        
+        if (error) return console.error("Error fetching messages:", error);
+        
+        messages.forEach(msg => appendMessage(msg));
+        messageList.scrollTop = messageList.scrollHeight;
+
+        // NAME CHANGE: Listen to changes on the "msg" table
+        messageSubscription = supabase
+            .channel(`conversation:${chatId}`)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'msg', filter: `conversation_id=eq.${chatId}` },
+                (payload) => {
+                    appendMessage(payload.new);
+                    messageList.scrollTop = messageList.scrollHeight;
+                }
+            )
+            .subscribe();
+    }
+
+    function appendMessage(message) {
+        // This function has NO CHANGES and remains the same.
+        // ...
+    }
+    
+    document.getElementById('message-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const content = input.value.trim();
+        if (content && activeChatId) {
+            // NAME CHANGE: Insert into "msg" table
+            const { error } = await supabase
+                .from('msg')
+                .insert({ conversation_id: activeChatId, sender_id: currentUser.id, content: content });
+            if (error) console.error("Error sending message:", error);
+            else input.value = '';
+        }
+    });
+
+    // Run on page load
+    initialize();
+
+    // NOTE: You need to include the full code for the unchanged functions
+    // (like initialize, openChatWith, etc.) for the script to work.
+</script>
+</body>
+</html>
