@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Ananda</title>
     <style>
+        /* --- COMPLETE STYLESHEET (RESTORED & MERGED) --- */
         * {
             margin: 0;
             padding: 0;
@@ -12,13 +13,13 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8; /* Softer background */
+            background: #f0f4f8;
             min-height: 100vh;
             color: #333;
         }
         .dashboard-container {
             display: grid;
-            grid-template-columns: 280px 1fr; /* Slightly wider sidebar */
+            grid-template-columns: 280px 1fr;
             min-height: 100vh;
         }
         /* Sidebar Styles */
@@ -201,24 +202,48 @@
         .profile-form .form-group { margin-bottom: 20px; }
         .profile-form label { font-weight: 600; display: block; margin-bottom: 8px; color: #374151; }
         .profile-form input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 1rem; }
+        
+        /* Styles for the Integrated Chat */
+        #counselor-chat-container { display: flex; height: 70vh; width: 100%; border: 1px solid #e5e7eb; border-radius: 15px; overflow: hidden; }
+        .chat-sidebar { width: 300px; background-color: #f9fafb; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; }
+        .chat-sidebar-header { padding: 20px; border-bottom: 1px solid #e5e7eb; }
+        .chat-sidebar-header h4 { margin: 0; font-size: 1.2rem; }
+        #counselor-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
+        .counselor-item { display: flex; align-items: center; padding: 15px 20px; cursor: pointer; transition: background-color 0.2s; }
+        .counselor-item:hover, .counselor-item.active { background-color: #e5e7eb; }
+        .counselor-avatar { width: 45px; height: 45px; border-radius: 50%; background-color: #4CAF50; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; margin-right: 15px; }
+        .counselor-info .name { font-weight: 600; }
+        .counselor-info .status { font-size: 0.8rem; color: #888; display: flex; align-items: center; }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .status-indicator.online { background-color: #2ecc71; }
+        .status-indicator.offline { background-color: #95a5a6; }
+        .chat-window { flex-grow: 1; display: none; flex-direction: column; background-color: #fff; }
+        .chat-header { padding: 15px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background-color: #f9fafb; }
+        #message-list { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .message-bubble { max-width: 70%; padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; line-height: 1.5; }
+        .message-bubble.sent { background-color: #4CAF50; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .message-bubble.received { background-color: #e5e7eb; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-area { display: flex; padding: 15px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; }
+        #message-input { flex-grow: 1; border: 1px solid #d1d5db; border-radius: 25px; padding: 10px 18px; font-size: 1rem; }
+        #send-button { background-color: #4CAF50; color: white; border: none; border-radius: 25px; padding: 10px 20px; margin-left: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+        #initial-chat-view { flex-grow: 1; display: flex; align-items: center; justify-content: center; text-align: center; color: #6b7280; }
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
-            .sidebar { display: none; /* Add a toggle button for mobile later */ }
+            .sidebar { display: none; }
             .main-content { padding: 20px; }
         }
     </style>
 </head>
 <body class="antialiased">
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <a href="index.html" class="flex items-center gap-3">
-                    <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="h-8 w-auto">
-                    <h1 class="text-xl font-bold text-gray-800">ANANDA</h1>
+                <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+                    <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo">
+                    <h1>ANANDA</h1>
                 </a>
             </div>
-            
             <div class="profile-section">
                 <div class="profile-avatar" id="profileAvatar">?</div>
                 <div class="profile-name" id="profileName">Loading...</div>
@@ -242,17 +267,17 @@
             <nav class="nav-menu">
                 <ul>
                     <li class="nav-item"><a href="#" class="nav-link active" onclick="showSection('overview', event)"> <span class="nav-icon">🏠</span> <span>Dashboard</span> </a> </li>
-                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('screening1', event)"> <span class="nav-icon">📝</span> <span>Screening Test</span> </a> </li>
-                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('chatbot', event)"> <span class="nav-icon">💬</span> <span>AI Chatbot</span> </a> </li>
+                    <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('screening', event)"> <span class="nav-icon">📝</span> <span>Screening Test</span> </a> </li>
+                    <li class="nav-item"><a href="chatbot.html" class="nav-link"> <span class="nav-icon">💬</span> <span>AI Chatbot</span> </a> </li>
                     <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('counselor', event)"> <span class="nav-icon">👩‍⚕️</span> <span>Counselor Chat</span> </a> </li>
                     <li class="nav-item"><a href="#" class="nav-link" onclick="showSection('profile', event)"> <span class="nav-icon">👤</span> <span>Profile</span> </a> </li>
                 </ul>
             </nav>
-            <div>
+            <div style="margin-top: auto;">
                  <a href="#" class="nav-link" onclick="logout()"> <span class="nav-icon">🚪</span> <span>Logout</span> </a>
             </div>
         </div>
-        <!-- Main Content (Structure from original) -->
+
         <main class="main-content">
             <header class="header">
                 <div class="welcome-text">
@@ -261,204 +286,289 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-secondary" onclick="showNotifications()"> 🔔 Notifications </button>
-                    <button class="btn btn-primary" onclick="quickChat()"> 💬 Quick Chat </button>
+                    <a href="chatbot.html" class="btn btn-primary"> 💬 Quick Chat </a>
                 </div>
             </header>
             
-            <!-- Overview Section -->
             <div class="content-section active" id="overview">
-                <div class="overview-cards">
-                      <div class="card text-center">
+                 <div class="overview-cards">
+                    <div class="card text-center">
                         <div class="card-icon">📊</div>
                         <h2 class="card-title">Mental Health Assessment</h2>
                         <p class="card-description">Take our comprehensive screening test to understand your current mental health status.</p>
-                        <a href="screening1.html" class="btn btn-primary"> Start Assessment </a>
+                        <button onclick="showSection('screening', event)" class="btn btn-primary">Start Assessment</button>
                     </div>
-                     <div class="card text-center">
+                    <div class="card text-center">
                         <div class="card-icon">🤖</div>
                         <h2 class="card-title">AI Support Assistant</h2>
                         <p class="card-description">Get instant support and guidance from our AI-powered mental health chatbot.</p>
-                        <a href="chatbot.html" class="btn btn-primary"> Chat Now </a>
+                        <a href="chatbot.html" class="btn btn-primary">Chat Now</a>
                     </div>
-                 <div class="card text-center">
-        <div class="card-icon">👩‍⚕️</div>
-       <h2 class="card-title">Professional Counseling</h2>
-      <p class="card-description">Connect with certified counselors for personalized therapy sessions.</p>
-       <button onclick="showSection('counselor', event)" class="btn btn-primary">Chat with Counselor</button>
-</div>
+                    <div class="card text-center">
+                        <div class="card-icon">👩‍⚕️</div>
+                        <h2 class="card-title">Professional Counseling</h2>
+                        <p class="card-description">Connect with certified counselors for personalized therapy sessions.</p>
+                        <button onclick="showSection('counselor', event)" class="btn btn-primary">Chat with Counselor</button>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Screening Test Section -->
-                     <div class="content-section" id="screening">
-                 <div class="card text-center">
-                    <h2 class="text-2xl font-bold mb-4">Mental Health Screening</h2>
-                    <p class="max-w-2xl mx-auto mb-8">You can take or review your confidential screening test on our dedicated assessment page.</p>
-                    <a href="screening1.html" class="btn btn-primary text-lg px-8 py-3">Go to Screening Test</a>
-                </div>
-            </div>
-            
-            <!-- Chatbot Section -->
-            <div class="content-section" id="chatbot">
-                 <!-- Chatbot implementation would go here -->
-                 <div class="card">
-                     <h2 class="text-2xl font-bold text-center">AI Chatbot is coming soon!</h2>
-                 </div>
             </div>
 
-            <!-- Counselor Chat Section -->
-            <div class="content-section" id="counselor">
-                 <!-- Counselor chat implementation would go here -->
-                 <div class="card">
-                     <h2 class="text-2xl font-bold text-center">Counselor Chat is coming soon!</h2>
-                 </div>
+            <div class="content-section" id="screening">
+                <div class="card">
+                     <h2 class="card-title">Screening Test</h2>
+                     <p>The screening test functionality will be implemented here. For now, you can link to an external page or build the test within this section.</p>
+                </div>
             </div>
             
-            <!-- Profile Section -->
+            <div class="content-section" id="counselor">
+                <div class="card">
+                    <h2 class="card-title" style="margin-bottom: 1.5rem;">Counselor Chat</h2>
+                    <div id="counselor-chat-container">
+                        <aside class="chat-sidebar">
+                            <div class="chat-sidebar-header">
+                                <h4>Counselors</h4>
+                            </div>
+                            <ul id="counselor-list">
+                                </ul>
+                        </aside>
+                        <div class="chat-window" id="chat-area">
+                            <div class="chat-header">
+                                <h4 id="chat-with-name"></h4>
+                                <div class="status">
+                                    <span class="status-indicator offline" id="chat-with-status-indicator"></span>
+                                    <span id="chat-with-status-text">Offline</span>
+                                </div>
+                            </div>
+                            <div id="message-list"></div>
+                            <form class="chat-input-area" id="message-form">
+                                <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+                                <button type="submit" id="send-button">Send</button>
+                            </form>
+                        </div>
+                         <div id="initial-chat-view">
+                            <p>Please select a counselor to start a conversation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="content-section" id="profile">
                 <div class="card">
-                    <h2 class="text-2xl font-bold mb-6">Edit Your Profile</h2>
+                    <h2 class="card-title" style="margin-bottom: 1.5rem;">Edit Your Profile</h2>
                     <form id="profile-form" class="profile-form">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="form-group"><label for="full_name">Full Name</label><input type="text" id="full_name" placeholder="Enter your full name"/></div>
-                            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="Enter your phone number"/></div>
-                            <div class="form-group md:col-span-2"><label for="address">Address</label><input type="text" id="address" placeholder="Enter your address"/></div>
-                            <div class="form-group"><label for="date_of_birth">Date of Birth</label><input type="date" id="date_of_birth"/></div>
-                            <div class="form-group"><label for="guardian_name">Guardian's Name</label><input type="text" id="guardian_name"/></div>
-                            <div class="form-group"><label for="institute">Institute</label><input type="text" id="institute"/></div>
-                            <div class="form-group"><label for="course">Course</label><input type="text" id="course"/></div>
+                         <div class="form-group">
+                            <label for="full_name">Full Name</label>
+                            <input type="text" id="full_name" placeholder="Enter your full name"/>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-6 w-full md:w-auto">Save Profile</button>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="Enter your phone number"/>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Save Profile</button>
                     </form>
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+    <script type="module">
+        import { supabase } from "./supBaseClient.js";
+
         let currentUser = null;
 
-        _supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'INITIAL_SESSION' && session) {
-                currentUser = session.user;
-                loadUserData(currentUser);
-            } else if (event === 'SIGNED_IN') {
-                currentUser = session.user;
-                loadUserData(currentUser);
-            } else if (event === 'SIGNED_OUT') {
-                window.location.href = "/login.html";
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await _supabase.auth.getSession();
+        // --- AUTH & PAGE SETUP ---
+        async function checkSessionAndProtectPage() {
+            const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 window.location.href = "/login.html";
-            } else {
-                currentUser = session.user;
-                if(!document.body.getAttribute('data-loaded')) {
-                    loadUserData(currentUser);
-                    document.body.setAttribute('data-loaded', 'true');
-                }
+                return;
             }
-        });
+            const userRole = session.user.app_metadata?.role;
+            if (userRole && userRole !== 'student') {
+                alert("Access Denied. Redirecting to your dashboard.");
+                const redirectTo = userRole === 'admin' ? '/admin.html' : '/counselor.html';
+                window.location.href = redirectTo;
+                return;
+            }
+            currentUser = session.user;
+            await loadUserData(currentUser);
+        }
 
         async function loadUserData(user) {
-            try {
-                const { data: profile, error } = await _supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                if (error) {
-                    console.error('Error fetching profile:', error);
-                    alert("Could not fetch user profile. Please try again.");
-                    return;
-                }
-                if (profile) {
-                    updateUIWithUserData(profile);
-                }
-            } catch (err) {
-                console.error('Error in loadUserData:', err);
-            }
+            const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (profile) updateUIWithUserData(profile);
         }
 
         function updateUIWithUserData(profile) {
-            const fullName = profile.full_name || '';
-            const firstName = fullName.split(' ')[0] || 'User';
+            const fullName = profile.full_name || 'User';
+            const firstName = fullName.split(' ')[0];
             document.getElementById('profileName').textContent = fullName;
             document.getElementById('headerName').textContent = firstName;
-            document.getElementById('profileAvatar').textContent = fullName.charAt(0).toUpperCase() || '?';
-            document.getElementById('full_name').value = fullName;
-            document.getElementById('phone').value = profile.phone || '';
-            document.getElementById('address').value = profile.address || '';
-            document.getElementById('date_of_birth').value = profile.date_of_birth || '';
-            document.getElementById('guardian_name').value = profile.guardian_name || '';
-            document.getElementById('institute').value = profile.institute || '';
-            document.getElementById('course').value = profile.course || '';
+            document.getElementById('profileAvatar').textContent = fullName.charAt(0).toUpperCase();
+
+            // Populate profile form if it exists on the page
+            const fullNameInput = document.getElementById('full_name');
+            if(fullNameInput) fullNameInput.value = fullName;
+
+            const phoneInput = document.getElementById('phone');
+            if(phoneInput) phoneInput.value = profile.phone || '';
+            
+            // Update progress indicators
+            const screeningStatus = document.getElementById('screeningStatus');
             if (profile.screening_completed) {
-                const status = document.getElementById('screeningStatus');
-                status.className = 'progress-icon completed';
-                status.textContent = '✓';
+                screeningStatus.className = 'progress-icon completed';
+                screeningStatus.textContent = '✓';
             }
-            if (profile.phone && profile.address) { // Simple check if profile is "complete"
-                const status = document.getElementById('profileStatus');
-                status.className = 'progress-icon completed';
-                status.textContent = '✓';
+            const profileStatus = document.getElementById('profileStatus');
+            if (profile.phone && profile.full_name) {
+                profileStatus.className = 'progress-icon completed';
+                profileStatus.textContent = '✓';
             }
         }
 
+        // --- CHAT INTEGRATION ---
+        let isChatInitialized = false;
+        let activeChatId = null;
+        let messageSubscription = null;
+
+        function initializeChat() {
+            if (isChatInitialized) return;
+            isChatInitialized = true;
+            loadCounselorList();
+            setupPresenceForAllCounselors();
+        }
+
+        async function loadCounselorList() {
+            const { data: counselors } = await supabase.from('profiles').select('id, full_name').eq('role', 'counsellor');
+            if (counselors) displayCounselorList(counselors);
+        }
+
+        function displayCounselorList(counselors) {
+            const counselorListEl = document.getElementById('counselor-list');
+            counselorListEl.innerHTML = '';
+            counselors.forEach(counselor => {
+                const item = document.createElement('li');
+                item.className = 'counselor-item';
+                item.dataset.userId = counselor.id;
+                item.innerHTML = `
+                    <div class="counselor-avatar">${counselor.full_name.charAt(0)}</div>
+                    <div class="counselor-info">
+                        <div class="name">${counselor.full_name}</div>
+                        <div class="status">
+                            <span class="status-indicator offline"></span><span>Offline</span>
+                        </div>
+                    </div>`;
+                item.addEventListener('click', () => openChatWith(counselor.id, counselor.full_name));
+                counselorListEl.appendChild(item);
+            });
+        }
+
+        function setupPresenceForAllCounselors() {
+            const channel = supabase.channel('online-users');
+            channel.on('presence', { event: 'sync' }, () => {
+                const presenceState = channel.presenceState();
+                document.querySelectorAll('.counselor-item').forEach(item => {
+                    const userId = item.dataset.userId;
+                    const isOnline = Object.keys(presenceState).includes(userId);
+                    const indicator = item.querySelector('.status-indicator');
+                    const text = item.querySelector('.status span:last-child');
+                    indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+                    text.textContent = isOnline ? 'Online' : 'Offline';
+                });
+            }).subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') await channel.track({});
+            });
+        }
+
+        async function openChatWith(counselorId, counselorName) {
+            if (messageSubscription) supabase.removeChannel(messageSubscription);
+
+            document.querySelectorAll('.counselor-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.counselor-item[data-user-id='${counselorId}']`).classList.add('active');
+            
+            let { data: convo } = await supabase.from('conversations').select('id').eq('student_id', currentUser.id).eq('counsellor_id', counselorId).single();
+
+            if (!convo) {
+                const { data: newConvo } = await supabase.from('conversations').insert({ student_id: currentUser.id, counsellor_id: counselorId }).select('id').single();
+                convo = newConvo;
+            }
+            
+            activeChatId = convo.id;
+            loadMessages(activeChatId, counselorName);
+            document.getElementById('initial-chat-view').style.display = 'none';
+            document.getElementById('chat-area').style.display = 'flex';
+        }
+
+        async function loadMessages(chatId, counselorName) {
+            const msgListEl = document.getElementById('message-list');
+            document.getElementById('chat-with-name').textContent = counselorName;
+            msgListEl.innerHTML = '';
+
+            const { data: messages } = await supabase.from('msg').select('*').eq('conversation_id', chatId).order('created_at');
+            if (messages) messages.forEach(msg => appendMessage(msg));
+
+            messageSubscription = supabase.channel(`conversation:${chatId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'msg', filter: `conversation_id=eq.${chatId}` }, 
+                    payload => appendMessage(payload.new))
+                .subscribe();
+        }
+        
+        function appendMessage(message) {
+            const msgListEl = document.getElementById('message-list');
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble ' + (message.sender_id === currentUser.id ? 'sent' : 'received');
+            bubble.textContent = message.content;
+            msgListEl.appendChild(bubble);
+            msgListEl.scrollTop = msgListEl.scrollHeight;
+        }
+
+        // --- EVENT LISTENERS & NAVIGATION ---
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const updates = {
                 id: currentUser.id,
                 full_name: document.getElementById('full_name').value,
                 phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value,
-                date_of_birth: document.getElementById('date_of_birth').value,
-                guardian_name: document.getElementById('guardian_name').value,
-                institute: document.getElementById('institute').value,
-                course: document.getElementById('course').value,
             };
-            const { error } = await _supabase.from('profiles').upsert(updates);
+            const { error } = await supabase.from('profiles').upsert(updates);
             if (error) {
-                console.error('Update error:', error);
-                alert('Failed to update profile!');
+                alert('Failed to update profile.');
             } else {
                 alert('Profile updated successfully!');
-                loadUserData(currentUser);
+                updateUIWithUserData({ ...updates });
             }
         });
 
-        async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                const { error } = await _supabase.auth.signOut();
-                if (error) {
-                    console.error("Logout error:", error);
-                } else {
-                    window.location.href = '/login.html';
-                }
+        document.getElementById('message-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (content && activeChatId) {
+                await supabase.from('msg').insert({ conversation_id: activeChatId, sender_id: currentUser.id, content: content });
+                input.value = '';
             }
-        }
+        });
 
-        function showSection(sectionName, event) {
+        window.showSection = function(sectionName, event) {
             if (event) event.preventDefault();
             document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
             document.getElementById(sectionName).classList.add('active');
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`).classList.add('active');
+            const activeLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
+            if (activeLink) activeLink.classList.add('active');
+
+            if (sectionName === 'counselor') {
+                initializeChat();
+            }
         }
         
-        function startScreeningTest() { alert('Screening test functionality will be built here.'); }
-        function showNotifications() { alert('Notifications panel will be implemented here.'); }
-        function quickChat() { document.querySelector('.nav-link[onclick*="chatbot"]').click(); }
+        window.logout = async function() {
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+        }
+
+        // Initial Page Load
+        checkSessionAndProtectPage();
     </script>
 </body>
 </html>
-
