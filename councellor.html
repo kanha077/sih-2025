@@ -231,21 +231,32 @@
     });
 }
         
-        function setupPresenceForStudents() {
-            const channel = supabase.channel('online-users');
-            channel.on('presence', { event: 'sync' }, () => {
-                const presenceState = channel.presenceState();
-                document.querySelectorAll('.student-item').forEach(item => {
-                    const isOnline = Object.keys(presenceState).includes(item.dataset.userId);
-                    const indicator = item.querySelector('.status-indicator');
-                    const text = item.querySelector('.status span:last-child');
-                    indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
-                    text.textContent = isOnline ? 'Online' : 'Offline';
-                });
-            }).subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') await channel.track({});
-            });
+     // In counsellor.html
+
+function setupPresenceForStudents() {
+    const channel = supabase.channel('online-users');
+
+    channel.on('presence', { event: 'sync' }, () => {
+        const presenceState = channel.presenceState();
+
+        // This is a great tool for debugging. Check your browser's console.
+        console.log('Councillor Page - Presence State: ', presenceState);
+
+        document.querySelectorAll('.student-item').forEach(item => {
+            const isOnline = Object.keys(presenceState).includes(item.dataset.userId);
+            const indicator = item.querySelector('.status-indicator');
+            const text = item.querySelector('.status span:last-child');
+            indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+            text.textContent = isOnline ? 'Online' : 'Offline';
+        });
+
+    }).subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            // UPDATED: This now sends a clear signal that the user is online.
+            await channel.track({ online_at: new Date().toISOString() });
         }
+    });
+}
         
         async function openChatWith(studentId, studentName) {
             if (messageSubscription) supabase.removeChannel(messageSubscription);
