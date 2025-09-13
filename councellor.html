@@ -125,27 +125,23 @@
 
         // --- AUTH & PAGE SETUP ---
         async function checkSessionAndProtectPage() {
-       // In counsellor.html
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = "/login.html";
+                return;
+            }
+            
+            const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single();
 
-async function checkSessionAndProtectPage() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = "/login.html";
-        return;
-    }
-    
-    const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single();
-
-    if (!profile || profile.role !== 'counsellor') {
-        alert("Access Denied.");
-        // REMOVED: The forceful signOut() command is gone.
-        window.location.href = '/login.html'; // Simply redirect without logging out.
-        return;
-    }
-    
-    currentUser = session.user;
-    document.getElementById('councillorName').textContent = profile.full_name || 'Councillor';
-}
+            if (!profile || profile.role !== 'counsellor') {
+                alert("Access Denied.");
+                await supabase.auth.signOut();
+                window.location.href = '/login.html';
+                return;
+            }
+            currentUser = session.user;
+            document.getElementById('councillorName').textContent = profile.full_name || 'Councillor';
+        }
 
         // --- UI TOGGLING ---
         const mainDashboard = document.getElementById('main-dashboard');
@@ -178,62 +174,34 @@ async function checkSessionAndProtectPage() {
             setupPresenceForStudents();
         }
 
- async function loadStudentListForCounselor() {
-    // 1. Get all conversations for the current counselor to find the student IDs
-    const { data: conversations, error: convoError } = await supabase
-        .from('conversations')
-        .select('student_id')
-        .eq('counsellor_id', currentUser.id);
+        async function loadStudentListForCounselor() {
+            const { data: conversations } = await supabase
+                .from('conversations')
+                .select('student_id, profiles!inner(id, full_name)')
+                .eq('counsellor_id', currentUser.id);
 
-    if (convoError) {
-        return console.error("Error fetching conversations:", convoError);
-    }
-    if (!conversations || conversations.length === 0) {
-        displayStudentChatList([]); // Show an empty list if there are no conversations
-        return;
-    }
-
-    // 2. Extract just the student IDs from the conversation data
-    const studentIds = conversations.map(c => c.student_id);
-
-    // 3. Now, fetch the profiles for only those specific students
-    const { data: students, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', studentIds);
-
-    if (profileError) {
-        return console.error("Error fetching student profiles:", profileError);
-    }
-
-    // 4. Display the list of students
-    if (students) {
-        displayStudentChatList(students);
-    }
-}
+            if (conversations) displayStudentChatList(conversations);
+        }
         
-       function displayStudentChatList(students) {
-    const studentListEl = document.getElementById('student-chat-list');
-    studentListEl.innerHTML = '';
-    if (!students || students.length === 0) {
-        studentListEl.innerHTML = '<li class="p-4 text-gray-500">No student conversations yet.</li>';
-        return;
-    }
-    students.forEach(student => {
-        if (!student) return;
-        const item = document.createElement('li');
-        item.className = 'student-item';
-        item.dataset.userId = student.id;
-        item.innerHTML = `
-            <div class="student-avatar">${student.full_name.charAt(0)}</div>
-            <div class="student-info">
-                <div class="name">${student.full_name}</div>
-                <div class="status"><span class="status-indicator offline"></span><span>Offline</span></div>
-            </div>`;
-        item.addEventListener('click', () => openChatWith(student.id, student.full_name));
-        studentListEl.appendChild(item);
-    });
-}
+        function displayStudentChatList(conversations) {
+            const studentListEl = document.getElementById('student-chat-list');
+            studentListEl.innerHTML = '';
+            conversations.forEach(convo => {
+                const student = convo.profiles;
+                if (!student) return;
+                const item = document.createElement('li');
+                item.className = 'student-item';
+                item.dataset.userId = student.id;
+                item.innerHTML = `
+                    <div class="student-avatar">${student.full_name.charAt(0)}</div>
+                    <div class="student-info">
+                        <div class="name">${student.full_name}</div>
+                        <div class="status"><span class="status-indicator offline"></span><span>Offline</span></div>
+                    </div>`;
+                item.addEventListener('click', () => openChatWith(student.id, student.full_name));
+                studentListEl.appendChild(item);
+            });
+        }
         
         function setupPresenceForStudents() {
             const channel = supabase.channel('online-users');

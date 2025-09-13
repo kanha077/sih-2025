@@ -377,27 +377,22 @@
         let currentUser = null;
 
         // --- AUTH & PAGE SETUP ---
-        // In student.html
-
-async function checkSessionAndProtectPage() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = "/login.html";
-        return;
-    }
-    
-    const userRole = session.user.app_metadata?.role;
-    if (userRole && userRole !== 'student') {
-        alert("Access Denied. Redirecting to your dashboard.");
-        // REMOVED: The forceful signOut() command is gone.
-        const redirectTo = userRole === 'admin' ? '/admin.html' : '/counsellor.html';
-        window.location.href = redirectTo;
-        return;
-    }
-    
-    currentUser = session.user;
-    await loadUserData(currentUser);
-}
+        async function checkSessionAndProtectPage() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = "/login.html";
+                return;
+            }
+            const userRole = session.user.app_metadata?.role;
+            if (userRole && userRole !== 'student') {
+                alert("Access Denied. Redirecting to your dashboard.");
+                const redirectTo = userRole === 'admin' ? '/admin.html' : '/counselor.html';
+                window.location.href = redirectTo;
+                return;
+            }
+            currentUser = session.user;
+            await loadUserData(currentUser);
+        }
 
         async function loadUserData(user) {
             const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
