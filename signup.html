@@ -715,6 +715,9 @@
                     email: formData.email,
                     password: formData.password,
                     options: {
+                        // THIS IS THE UPDATED PART
+                        emailRedirectTo: 'https://sih-2025-beta.vercel.app/login.html',
+                        
                         data: {
                             full_name: formData.name,
                             guardian_name: formData.guardianName,
