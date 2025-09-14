@@ -291,52 +291,6 @@
             color: hsl(var(--muted-foreground));
         }
 
-        .chat-interface {
-            background: hsl(var(--muted) / 0.2);
-            border-radius: 0.5rem;
-            height: 24rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            padding: 1rem;
-            border-bottom: 1px solid hsl(var(--border));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
-        .chat-message {
-            background: var(--gradient-primary);
-            color: white;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            max-width: 75%;
-            margin-bottom: 1rem;
-        }
-
-        .chat-input-area {
-            padding: 1rem;
-            border-top: 1px solid hsl(var(--border));
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 0.5rem;
-            border: 1px solid hsl(var(--border));
-            border-radius: 0.5rem;
-            background: hsl(var(--background));
-        }
-
         .badge {
             display: inline-flex;
             align-items: center;
@@ -452,7 +406,7 @@
                             <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.75rem;">
                                 Take a mental health screening to get personalized recommendations
                             </p>
-                            <button class="btn btn-secondary" style="width: 100%;" onclick="window.location.href='screening-page.html'">
+                            <button class="btn btn-secondary" style="width: 100%;" onclick="window.location.href='screening.html'">
                                 Take Screening Test
                             </button>
                         </div>
@@ -520,7 +474,7 @@
 
             <div class="main-content">
                 <div class="quick-actions">
-                    <div class="card card-primary action-card" onclick="startChat()">
+                    <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-primary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -560,38 +514,9 @@
                             <p style="color: hsl(var(--muted-foreground)); margin-bottom: 1rem;">
                                 Start your first conversation to begin your wellness journey
                             </p>
-                            <button class="btn btn-primary" onclick="startChat()">
+                            <button class="btn btn-primary" onclick="window.location.href='chat.html'">
                                 Start Chatting
                             </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="chat-interface" class="card hidden">
-                    <div class="chat-header">
-                        <div>
-                            <h3 class="card-title">AI Counselor Chat</h3>
-                            <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">
-                                I'm here to listen and provide support. How are you feeling today?
-                            </p>
-                        </div>
-                        <button class="btn btn-outline" onclick="closeChat()">×</button>
-                    </div>
-                    <div class="chat-interface">
-                        <div class="chat-messages">
-                            <div class="chat-message">
-                                Hello! I'm your AI counselor. I'm here to provide support and guidance. How can I help you today?
-                            </div>
-                        </div>
-                        <div class="chat-input-area">
-                            <input 
-                                type="text" 
-                                placeholder="Type your message..." 
-                                class="chat-input"
-                                onkeypress="handleChatInput(event)"
-                                id="chat-input"
-                            >
-                            <button class="btn btn-primary" onclick="sendMessage()">Send</button>
                         </div>
                     </div>
                 </div>
@@ -635,7 +560,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
-                window.location.href = 'login-page.html'; // Redirect if not logged in
+                window.location.href = 'login.html'; // Redirect if not logged in
             } else {
                 currentUser = session.user;
                 if (!document.body.getAttribute('data-loaded')) {
@@ -647,7 +572,7 @@
 
         _supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
-                window.location.href = 'login-page.html';
+                window.location.href = 'login.html';
             } else if (session) {
                 currentUser = session.user;
                 loadUserData(currentUser);
@@ -760,39 +685,6 @@
             const activeSection = document.getElementById(sectionId);
             if (activeSection) {
                 activeSection.classList.remove('hidden');
-            }
-        }
-        
-        function startChat() {
-            const chatInterface = document.getElementById('chat-interface');
-            chatInterface.classList.remove('hidden');
-            chatInterface.classList.add('fade-in');
-            chatInterface.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function closeChat() {
-            const chatInterface = document.getElementById('chat-interface');
-            chatInterface.classList.add('hidden');
-        }
-
-        function handleChatInput(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
-            if (message) {
-                // TODO: Implement chat functionality with Supabase
-                console.log('Sending message:', message);
-                input.value = '';
-                
-                // Mock response (replace with actual AI integration)
-                setTimeout(() => {
-                    alert('AI response will be implemented with backend integration');
-                }, 500);
             }
         }
     </script>
