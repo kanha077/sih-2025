@@ -249,17 +249,30 @@ async function loadMessages(chatId, otherUserName) {
 }
 
 
-        async function loadMessages(chatId, otherUserName) {
-            document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
-            messageListEl.innerHTML = '';
-            const { data: messages } = await supabase.from('msg').select('*').eq('conversation_id', chatId).order('created_at');
-            if (messages) messages.forEach(msg => appendMessage(msg));
+       async function loadMessages(chatId, otherUserName) {
+    document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
+    messageListEl.innerHTML = '';
 
-            messageSubscription = supabase.channel(`conversation:${chatId}`);
-            messageSubscription.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'msg', filter: `conversation_id=eq.${chatId}` }, 
-                payload => appendMessage(payload.new))
-            .subscribe();
-        }
+    // load history
+    const { data: messages } = await supabase
+        .from('msg')
+        .select('*')
+        .eq('conversation_id', chatId)
+        .order('created_at');
+    if (messages) messages.forEach(msg => appendMessage(msg));
+
+    // realtime subscription
+    messageSubscription = supabase.channel(`conversation:${chatId}`)
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'msg',
+            filter: `conversation_id=eq.${chatId}`
+        }, (payload) => appendMessage(payload.new));
+    
+    await messageSubscription.subscribe(); // important
+}
+
         
         function appendMessage(message) {
             const userRole = currentUser.app_metadata?.role;
