@@ -115,10 +115,26 @@
         }
     }
 
-    async function loadCounselorList() {
-        const { data: counselors } = await supabase.from('profiles').select('id, full_name').eq('role', 'counselor');
-        if (counselors) displayUserList(counselors, 'counselor');
+  // In chat.html
+
+async function loadCounselorList() {
+    const { data: counselors, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, role') // Selecting 'role' to help debug
+        .eq('role', 'counsellor');
+
+    // --- DEBUG LINE ---
+    console.log('Attempting to fetch counselors. Result:', { counselors, error });
+    
+    if (error) {
+        console.error("Error fetching counselors:", error);
+        return;
     }
+    
+    if (counselors) {
+        displayUserList(counselors, 'counsellor');
+    }
+}
 
     async function loadStudentListForCounselor() {
         // Updated to use the corrected query from our previous fix
