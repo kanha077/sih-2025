@@ -1,723 +1,700 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - Ananda Mental Health</title>
-    <style>
-        :root {
-            --primary: 220 70% 50%;
-            --primary-foreground: 0 0% 98%;
-            --secondary: 280 60% 50%;
-            --secondary-foreground: 0 0% 98%;
-            --accent: 340 75% 55%;
-            --accent-foreground: 0 0% 98%;
-            --background: 0 0% 100%;
-            --foreground: 224 71.4% 4.1%;
-            --muted: 220 14.3% 95.9%;
-            --muted-foreground: 220 8.9% 46.1%;
-            --border: 220 13% 91%;
-            --ring: 220 70% 50%;
-            --card: 0 0% 100%;
-            --card-foreground: 224 71.4% 4.1%;
-            
-            --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(280 65% 60%));
-            --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(260 70% 55%));
-            --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(320 80% 60%));
-            --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
-            --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted) / 0.3));
-            
-            --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-            --shadow-primary: 0 0 40px hsl(var(--primary) / 0.4);
-            --shadow-secondary: 0 0 40px hsl(var(--secondary) / 0.4);
-            --shadow-accent: 0 0 40px hsl(var(--accent) / 0.4);
-            
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Ananda Mental Health</title>
+    <style>
+        :root {
+            --primary: 220 70% 50%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 280 60% 50%;
+            --secondary-foreground: 0 0% 98%;
+            --accent: 340 75% 55%;
+            --accent-foreground: 0 0% 98%;
+            --background: 0 0% 100%;
+            --foreground: 224 71.4% 4.1%;
+            --muted: 220 14.3% 95.9%;
+            --muted-foreground: 220 8.9% 46.1%;
+            --border: 220 13% 91%;
+            --ring: 220 70% 50%;
+            --card: 0 0% 100%;
+            --card-foreground: 224 71.4% 4.1%;
+            
+            --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(280 65% 60%));
+            --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(260 70% 55%));
+            --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(320 80% 60%));
+            --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
+            --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted) / 0.3));
+            
+            --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+            --shadow-primary: 0 0 40px hsl(var(--primary) / 0.4);
+            --shadow-secondary: 0 0 40px hsl(var(--secondary) / 0.4);
+            --shadow-accent: 0 0 40px hsl(var(--accent) / 0.4);
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: hsl(var(--foreground));
-            background: linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.05));
-            min-height: 100vh;
-        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: hsl(var(--foreground));
+            background: linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.05));
+            min-height: 100vh;
+        }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
 
-        .header {
-            background: hsl(var(--background) / 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid hsl(var(--border));
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            margin-bottom: 2rem;
-        }
+        .header {
+            background: hsl(var(--background) / 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid hsl(var(--border));
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 2rem;
+        }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1.5rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-        .logo {
-            height: 2.5rem;
-        }
+        .logo {
+            height: 2.5rem;
+        }
 
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: var(--transition-smooth);
-            border: none;
-            cursor: pointer;
-            font-size: 0.875rem;
-        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
 
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-        }
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
 
-        .btn-secondary {
-            background: var(--gradient-secondary);
-            color: white;
-        }
+        .btn-secondary {
+            background: var(--gradient-secondary);
+            color: white;
+        }
 
-        .btn-outline {
-            border: 1px solid hsl(var(--border));
-            background: transparent;
-            color: hsl(var(--foreground));
-        }
+        .btn-outline {
+            border: 1px solid hsl(var(--border));
+            background: transparent;
+            color: hsl(var(--foreground));
+        }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-elegant);
-        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-elegant);
+        }
 
-        .card {
-            background: var(--gradient-card);
-            border: 1px solid hsl(var(--border));
-            border-radius: 1rem;
-            box-shadow: var(--shadow-elegant);
-            transition: var(--transition-smooth);
-        }
+        .card {
+            background: var(--gradient-card);
+            border: 1px solid hsl(var(--border));
+            border-radius: 1rem;
+            box-shadow: var(--shadow-elegant);
+            transition: var(--transition-smooth);
+        }
 
-        .card:hover {
-            transform: translateY(-2px);
-        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
 
-        .card-primary:hover {
-            box-shadow: var(--shadow-primary);
-        }
+        .card-primary:hover {
+            box-shadow: var(--shadow-primary);
+        }
 
-        .card-secondary:hover {
-            box-shadow: var(--shadow-secondary);
-        }
+        .card-secondary:hover {
+            box-shadow: var(--shadow-secondary);
+        }
 
-        .card-accent:hover {
-            box-shadow: var(--shadow-accent);
-        }
+        .card-accent:hover {
+            box-shadow: var(--shadow-accent);
+        }
 
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid hsl(var(--border));
-        }
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid hsl(var(--border));
+        }
 
-        .card-content {
-            padding: 1.5rem;
-        }
+        .card-content {
+            padding: 1.5rem;
+        }
 
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
 
-        .welcome-section {
-            text-align: center;
-            margin-bottom: 2rem;
-            animation: fadeIn 1s ease-out;
-        }
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out;
+        }
 
-        .welcome-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
 
-        .welcome-subtitle {
-            color: hsl(var(--muted-foreground));
-            font-size: 1.125rem;
-        }
+        .welcome-subtitle {
+            color: hsl(var(--muted-foreground));
+            font-size: 1.125rem;
+        }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
 
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
 
-        .profile-card {
-            text-align: center;
-        }
+        .profile-card {
+            text-align: center;
+        }
 
-        .avatar {
-            width: 5rem;
-            height: 5rem;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 auto 1rem;
-        }
+        .avatar {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
 
-        .progress-bar {
-            width: 100%;
-            height: 0.5rem;
-            background: hsl(var(--muted));
-            border-radius: 0.25rem;
-            overflow: hidden;
-            margin: 0.5rem 0;
-        }
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background: hsl(var(--muted));
+            border-radius: 0.25rem;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
 
-        .progress-fill {
-            height: 100%;
-            background: var(--gradient-primary);
-            transition: width 1s ease-out;
-        }
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width 1s ease-out;
+        }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
 
-        .stat-item {
-            text-align: center;
-        }
+        .stat-item {
+            text-align: center;
+        }
 
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: hsl(var(--primary));
-        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: hsl(var(--primary));
+        }
 
-        .stat-label {
-            font-size: 0.75rem;
-            color: hsl(var(--muted-foreground));
-        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+        }
 
-        .quick-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
 
-        .action-card {
-            text-align: center;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
+        .action-card {
+            text-align: center;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
 
-        .action-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-        }
+        .action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+        }
 
-        .action-card:hover .action-icon {
-            transform: scale(1.1);
-        }
+        .action-card:hover .action-icon {
+            transform: scale(1.1);
+        }
 
-        .action-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
 
-        .action-description {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-        }
+        .action-description {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            border: 1px solid hsl(var(--border));
-            background: hsl(var(--background));
-        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid hsl(var(--border));
+            background: hsl(var(--background));
+        }
 
-        .hidden {
-            display: none;
-        }
+        .hidden {
+            display: none;
+        }
 
-        .icon {
-            width: 1.5rem;
-            height: 1.5rem;
-            fill: currentColor;
-        }
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            fill: currentColor;
+        }
 
-        .icon-sm {
-            width: 1rem;
-            height: 1rem;
-            fill: currentColor;
-        }
-        
-        .form-group { margin-bottom: 1rem; text-align: left; }
-        .form-group label { font-weight: 500; display: block; margin-bottom: 0.5rem; color: hsl(var(--muted-foreground)); }
-        .form-group input { 
-            width: 100%; 
-            padding: 0.75rem; 
-            border: 1px solid hsl(var(--border)); 
-            border-radius: 0.5rem; 
-            font-size: 0.875rem; 
-            background: hsl(var(--background));
-            color: hsl(var(--foreground));
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+        .icon-sm {
+            width: 1rem;
+            height: 1rem;
+            fill: currentColor;
+        }
+        
+        .form-group { margin-bottom: 1rem; text-align: left; }
+        .form-group label { font-weight: 500; display: block; margin-bottom: 0.5rem; color: hsl(var(--muted-foreground)); }
+        .form-group input { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid hsl(var(--border)); 
+            border-radius: 0.5rem; 
+            font-size: 0.875rem; 
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
 
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(2rem); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(2rem); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-            
-            .welcome-title {
-                font-size: 2rem;
-            }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-title {
+                font-size: 2rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <img src="/lovable-uploads/527eaa0c-da64-4b66-8551-84509109187a.png" alt="Ananda Logo" class="logo">
-            <div class="user-menu">
-                <span id="userNameHeader" style="color: hsl(var(--muted-foreground));">Loading...</span>
-                <button class="btn btn-outline" onclick="logout()">Logout</button>
-            </div>
-        </div>
-    </div>
+    <div class="header">
+        <div class="header-content">
+            <img src="/lovable-uploads/527eaa0c-da64-4b66-8551-84509109187a.png" alt="Ananda Logo" class="logo">
+            <div class="user-menu">
+                <span id="userNameHeader" style="color: hsl(var(--muted-foreground));">Loading...</span>
+                <button class="btn btn-outline" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
 
-    <div class="container">
-        <div class="welcome-section">
-            <h1 class="welcome-title">Welcome back, <span id="welcomeName">User</span>!</h1>
-            <p class="welcome-subtitle">Continue your mental wellness journey</p>
-        </div>
+    <div class="container">
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome back, <span id="welcomeName">User</span>!</h1>
+            <p class="welcome-subtitle">Continue your mental wellness journey</p>
+        </div>
 
-        <div class="dashboard-grid content-section" id="dashboard-section">
-            <div class="sidebar">
-                <div class="card profile-card">
-                    <div class="card-content">
-                        <div class="avatar" id="profileAvatar">?</div>
-                        <h3 class="card-title" id="profileName">Loading...</h3>
-                        <p id="profileInstitute" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">University</p>
-                        <p id="profileCourse" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Major</p>
-                        
-                        <div style="margin: 1rem 0;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem;">
-                                <span>Profile Completion</span>
-                                <span id="completionPercentage">0%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div id="completionFill" class="progress-fill" style="width: 0%;"></div>
-                            </div>
-                        </div>
+        <div class="dashboard-grid content-section" id="dashboard-section">
+            <div class="sidebar">
+                <div class="card profile-card">
+                    <div class="card-content">
+                        <div class="avatar" id="profileAvatar">?</div>
+                        <h3 class="card-title" id="profileName">Loading...</h3>
+                        <p id="profileInstitute" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">University</p>
+                        <p id="profileCourse" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Major</p>
+                        
+                        <div style="margin: 1rem 0;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                <span>Profile Completion</span>
+                                <span id="completionPercentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="completionFill" class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
 
-                        <div id="screeningCta" style="padding: 1rem; background: hsl(var(--secondary) / 0.1); border: 1px solid hsl(var(--secondary) / 0.2); border-radius: 0.5rem; margin: 1rem 0;">
-                            <h4 style="color: hsl(var(--secondary)); margin-bottom: 0.5rem;">Complete Your Profile</h4>
-                            <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.75rem;">
-                                Take a mental health screening to get personalized recommendations
-                            </p>
-                            <button class="btn btn-secondary" style="width: 100%;" onclick="window.location.href='screening.html'">
-                                Take Screening Test
-                            </button>
-                        </div>
-                        
-                        <button class="btn btn-outline" style="width: 100%;" onclick="showSection('profile-editor-section')">Edit Profile</button>
+                        <div id="screeningCta" style="padding: 1rem; background: hsl(var(--secondary) / 0.1); border: 1px solid hsl(var(--secondary) / 0.2); border-radius: 0.5rem; margin: 1rem 0;">
+                            <h4 style="color: hsl(var(--secondary)); margin-bottom: 0.5rem;">Complete Your Profile</h4>
+                            <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.75rem;">
+                                Take a mental health screening to get personalized recommendations
+                            </p>
+                            <button class="btn btn-secondary" style="width: 100%;" onclick="window.location.href='screening.html'">
+                                Take Screening Test
+                            </button>
+                        </div>
+                        
+                        <button class="btn btn-outline" style="width: 100%;" onclick="showSection('profile-editor-section')">Edit Profile</button>
 
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">Sessions</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" style="color: hsl(var(--secondary));">0</div>
-                                <div class="stat-label">Day Streak</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Sessions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" style="color: hsl(var(--secondary));">0</div>
+                                <div class="stat-label">Day Streak</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <svg class="icon" style="display: inline-block; margin-right: 0.5rem; vertical-align: middle;" viewBox="0 0 24 24">
-                                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
-                            </svg>
-                            Your Progress
-                        </h3>
-                    </div>
-                    <div class="card-content">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <div style="display: flex; align-items: center;">
-                                <svg class="icon-sm" style="margin-right: 0.5rem; color: hsl(var(--secondary));" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="8" r="7"/>
-                                    <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/>
-                                </svg>
-                                <span style="font-size: 0.875rem;">Achievements</span>
-                            </div>
-                            <span class="badge">0</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <div style="display: flex; align-items: center;">
-                                <svg class="icon-sm" style="margin-right: 0.5rem; color: hsl(var(--accent));" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <polyline points="12,6 12,12 16,14"/>
-                                </svg>
-                                <span style="font-size: 0.875rem;">Total Time</span>
-                            </div>
-                            <span class="badge">0h</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; align-items: center;">
-                                <svg class="icon-sm" style="margin-right: 0.5rem; color: hsl(var(--primary));" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                                    <line x1="9" y1="9" x2="9.01" y2="9"/>
-                                    <line x1="15" y1="9" x2="15.01" y2="9"/>
-                                </svg>
-                                <span style="font-size: 0.875rem;">Goals Met</span>
-                            </div>
-                            <span class="badge">0/5</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg class="icon" style="display: inline-block; margin-right: 0.5rem; vertical-align: middle;" viewBox="0 0 24 24">
+                                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                            </svg>
+                            Your Progress
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center;">
+                                <svg class="icon-sm" style="margin-right: 0.5rem; color: hsl(var(--secondary));" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="7"/>
+                                    <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/>
+                                </svg>
+                                <span style="font-size: 0.875rem;">Achievements</span>
+                            </div>
+                            <span class="badge">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center;">
+                                <svg class="icon-sm" style="margin-right: 0.5rem; color: hsl(var(--accent));" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12,6 12,12 16,14"/>
+                                </svg>
+                                <span style="font-size: 0.875rem;">Total Time</span>
+                            </div>
+                            <span class="badge">0h</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center;">
+                                <svg class="icon-sm" style="margin-right: 0.5rem; color: hsl(var(--primary));" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                                </svg>
+                                <span style="font-size: 0.875rem;">Goals Met</span>
+                            </div>
+                            <span class="badge">0/5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="main-content">
-                <div class="quick-actions">
-                    <div class="card card-primary action-card" onclick="window.location.href='counselor.html'">
-                        <div class="card-content">
-                            <div class="action-icon" style="background: var(--gradient-primary);">
-                                <svg class="icon" style="color: white;" viewBox="0 0 24 24">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                </svg>
-                            </div>
-                            <h3 class="action-title">Connect with a Counselor</h3>
-                            <p class="action-description">Get in contact with a professional</p>
-                        </div>
-                    </div>
-                    <div class="card card-primary action-card" onclick="window.location.href='chatbot.html'">
-                        <div class="card-content">
-                            <div class="action-icon" style="background: var(--gradient-primary);">
-                                <svg class="icon" style="color: white;" viewBox="0 0 24 24">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                </svg>
-                            </div>
-                            <h3 class="action-title">Start Chat Session</h3>
-                            <p class="action-description">Talk to our AI counselor anytime</p>
-                        </div>
-                    </div>
+            <div class="main-content">
+                <div class="quick-actions">
+                    <div class="card card-primary action-card" onclick="window.location.href='counselor.html'">
+                        <div class="card-content">
+                            <div class="action-icon" style="background: var(--gradient-primary);">
+                                <svg class="icon" style="color: white;" viewBox="0 0 24 24">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="action-title">Connect with a Counselor</h3>
+                            <p class="action-description">Get in contact with a counselor</p>
+                        </div>
+                    </div>
+                    <div class="card card-primary action-card" onclick="window.location.href='chatbot.html'">
+                        <div class="card-content">
+                            <div class="action-icon" style="background: var(--gradient-primary);">
+                                <svg class="icon" style="color: white;" viewBox="0 0 24 24">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="action-title">Start Chat Session</h3>
+                            <p class="action-description">Talk to our AI counselor anytime</p>
+                        </div>
+                    </div>
 
-                    <div class="card card-secondary action-card" onclick="showSection('mental-health-section')">
-                        <div class="card-content">
-                            <div class="action-icon" style="background: var(--gradient-secondary);">
-                                <svg class="icon" style="color: white;" viewBox="0 0 24 24">
-                                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
-                                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
-                                </svg>
-                            </div>
-                            <h3 class="action-title">Mental Health Check</h3>
-                            <p class="action-description">Take a comprehensive assessment</p>
-                        </div>
-                    </div>
-                </div>
+                    <div class="card card-secondary action-card" onclick="window.location.href='screening-page.html'">
+                        <div class="card-content">
+                            <div class="action-icon" style="background: var(--gradient-secondary);">
+                                <svg class="icon" style="color: white;" viewBox="0 0 24 24">
+                                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+                                </svg>
+                            </div>
+                            <h3 class="action-title">Mental Health Check</h3>
+                            <p class="action-description">Take a comprehensive assessment</p>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Recent Activity</h3>
-                        <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Your latest conversations and sessions</p>
-                    </div>
-                    <div class="card-content">
-                        <div style="text-align: center; padding: 2rem;">
-                            <svg class="icon" style="width: 3rem; height: 3rem; color: hsl(var(--muted-foreground)); margin-bottom: 1rem;" viewBox="0 0 24 24">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">No conversations yet</h3>
-                            <p style="color: hsl(var(--muted-foreground)); margin-bottom: 1rem;">
-                                Start your first conversation to begin your wellness journey
-                            </p>
-                            <button class="btn btn-primary" onclick="window.location.href='chatbot.html'">
-                                Start Chatting
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="profile-editor-section" class="content-section card hidden" style="animation: fadeIn 0.5s;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 class="card-title">Edit Your Profile</h3>
-                <button class="btn btn-outline" onclick="showSection('dashboard-section')">← Back to Dashboard</button>
-            </div>
-            <div class="card-content">
-                <form id="profile-form">
-                    <div class="form-grid">
-                        <div class="form-group"><label for="full_name">Full Name</label><input type="text" id="full_name" placeholder="Enter your full name"/></div>
-                        <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="Enter your phone number"/></div>
-                        <div class="form-group" style="grid-column: 1 / -1;"><label for="address">Address</label><input type="text" id="address" placeholder="Enter your address"/></div>
-                        <div class="form-group"><label for="date_of_birth">Date of Birth</label><input type="date" id="date_of_birth"/></div>
-                        <div class="form-group"><label for="guardian_name">Guardian's Name</label><input type="text" id="guardian_name" placeholder="Enter guardian's name"/></div>
-                        <div class="form-group"><label for="institute">Institute</label><input type="text" id="institute" placeholder="e.g., Stanford University"/></div>
-                        <div class="form-group"><label for="course">Course</label><input type="text" id="course" placeholder="e.g., Computer Science"/></div>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Changes</button>
-                </form>
-            </div>
-        </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activity</h3>
+                        <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Your latest conversations and sessions</p>
+                    </div>
+                    <div class="card-content">
+                        <div style="text-align: center; padding: 2rem;">
+                            <svg class="icon" style="width: 3rem; height: 3rem; color: hsl(var(--muted-foreground)); margin-bottom: 1rem;" viewBox="0 0 24 24">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">No conversations yet</h3>
+                            <p style="color: hsl(var(--muted-foreground)); margin-bottom: 1rem;">
+                                Start your first conversation to begin your wellness journey
+                            </p>
+                            <button class="btn btn-primary" onclick="window.location.href='chatbot.html'">
+                                Start Chatting
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="profile-editor-section" class="content-section card hidden" style="animation: fadeIn 0.5s;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title">Edit Your Profile</h3>
+                <button class="btn btn-outline" onclick="showSection('dashboard-section')">← Back to Dashboard</button>
+            </div>
+            <div class="card-content">
+                <form id="profile-form">
+                    <div class="form-grid">
+                        <div class="form-group"><label for="full_name">Full Name</label><input type="text" id="full_name" placeholder="Enter your full name"/></div>
+                        <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="Enter your phone number"/></div>
+                        <div class="form-group" style="grid-column: 1 / -1;"><label for="address">Address</label><input type="text" id="address" placeholder="Enter your address"/></div>
+                        <div class="form-group"><label for="date_of_birth">Date of Birth</label><input type="date" id="date_of_birth"/></div>
+                        <div class="form-group"><label for="guardian_name">Guardian's Name</label><input type="text" id="guardian_name" placeholder="Enter guardian's name"/></div>
+                        <div class="form-group"><label for="institute">Institute</label><input type="text" id="institute" placeholder="e.g., Stanford University"/></div>
+                        <div class="form-group"><label for="course">Course</label><input type="text" id="course" placeholder="e.g., Computer Science"/></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Changes</button>
+                </form>
+            </div>
+        </div>
 
-                <div id="mental-health-section" class="content-section card hidden" style="animation: fadeIn 0.5s;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 class="card-title">Mental Health Check</h3>
-                <button class="btn btn-outline" onclick="showSection('dashboard-section')">← Back to Dashboard</button>
-            </div>
-            <div class="card-content" style="text-align: center;">
-                <svg class="icon" style="width: 4rem; height: 4rem; color: hsl(var(--secondary)); margin-bottom: 1.5rem;" viewBox="0 0 24 24">
-                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
-                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
-                </svg>
-                <h4 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">Let's Check In on Your Wellbeing</h4>
-                <p style="font-size: 1rem; color: hsl(var(--muted-foreground)); margin-bottom: 2rem;">
-                    Our comprehensive mental health assessment can provide valuable insights. Your results are confidential and will help us offer personalized support and resources.
-                </p>
-                <button class="btn btn-secondary" onclick="window.location.href='screening-page.html'" style="width: 100%; max-width: 300px;">
-                    Start Assessment
-                </button>
-            </div>
-        </div>
+    </div>
 
-    </div>
+    <script type="module">
+        import { supabaseClient } from "./supabaseClient.js";
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // --- SUPABASE SETUP ---
-        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Assign the imported client to a local variable for consistency
+        const _supabase = supabaseClient;
+        let currentUser = null;
 
-        let currentUser = null;
+        // --- AUTHENTICATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html'; // Redirect if not logged in
+            } else {
+                currentUser = session.user;
+                if (!document.body.getAttribute('data-loaded')) {
+                    loadUserData(currentUser);
+                    document.body.setAttribute('data-loaded', 'true');
+                }
+            }
+        });
 
-        // --- AUTHENTICATION ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html'; // Redirect if not logged in
-            } else {
-                currentUser = session.user;
-                if (!document.body.getAttribute('data-loaded')) {
-                    loadUserData(currentUser);
-                    document.body.setAttribute('data-loaded', 'true');
-                }
-            }
-        });
+        _supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                window.location.href = 'login.html';
+            } else if (session) {
+                currentUser = session.user;
+                loadUserData(currentUser);
+            }
+        });
 
-        _supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT') {
-                window.location.href = 'login.html';
-            } else if (session) {
-                currentUser = session.user;
-                loadUserData(currentUser);
-            }
-        });
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                const { error } = await _supabase.auth.signOut();
+                if (error) {
+                    console.error("Logout error:", error);
+                    alert("Failed to log out. Please try again.");
+                }
+            }
+        }
+        
+        // --- DATA HANDLING & UI UPDATES ---
+        async function loadUserData(user) {
+            try {
+                const { data: profile, error } = await _supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                if (error) {
+                    console.error('Error fetching profile:', error);
+                    alert("Could not fetch user profile.");
+                    return;
+                }
+                if (profile) {
+                    updateUI(profile);
+                }
+            } catch (err) {
+                console.error('Error in loadUserData:', err);
+            }
+        }
 
-        async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                const { error } = await _supabase.auth.signOut();
-                if (error) {
-                    console.error("Logout error:", error);
-                    alert("Failed to log out. Please try again.");
-                }
-            }
-        }
-        
-        // --- DATA HANDLING & UI UPDATES ---
-        async function loadUserData(user) {
-            try {
-                const { data: profile, error } = await _supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                if (error) {
-                    console.error('Error fetching profile:', error);
-                    alert("Could not fetch user profile.");
-                    return;
-                }
-                if (profile) {
-                    updateUI(profile);
-                }
-            } catch (err) {
-                console.error('Error in loadUserData:', err);
-            }
-        }
+        function updateUI(profile) {
+            const fullName = profile.full_name || 'User';
+            const firstName = fullName.split(' ')[0];
+            const avatarInitial = fullName.charAt(0).toUpperCase() || '?';
+            
+            // Update names and avatar
+            document.getElementById('userNameHeader').textContent = fullName;
+            document.getElementById('welcomeName').textContent = firstName;
+            document.getElementById('profileName').textContent = fullName;
+            document.getElementById('profileAvatar').textContent = avatarInitial;
+            document.getElementById('profileInstitute').textContent = profile.institute || 'Set your institute';
+            document.getElementById('profileCourse').textContent = profile.course || 'Set your course';
 
-        function updateUI(profile) {
-            const fullName = profile.full_name || 'User';
-            const firstName = fullName.split(' ')[0];
-            const avatarInitial = fullName.charAt(0).toUpperCase() || '?';
-            
-            // Update names and avatar
-            document.getElementById('userNameHeader').textContent = fullName;
-            document.getElementById('welcomeName').textContent = firstName;
-            document.getElementById('profileName').textContent = fullName;
-            document.getElementById('profileAvatar').textContent = avatarInitial;
-            document.getElementById('profileInstitute').textContent = profile.institute || 'Set your institute';
-            document.getElementById('profileCourse').textContent = profile.course || 'Set your course';
+            // Calculate and update profile completion
+            let completion = 0;
+            if (profile.full_name) completion += 20;
+            if (profile.phone) completion += 20;
+            if (profile.institute && profile.course) completion += 20;
+            if (profile.screening_completed) completion += 40;
+            
+            document.getElementById('completionPercentage').textContent = `${completion}%`;
+            document.getElementById('completionFill').style.width = `${completion}%`;
 
-            // Calculate and update profile completion
-            let completion = 0;
-            if (profile.full_name) completion += 20;
-            if (profile.phone) completion += 20;
-            if (profile.institute && profile.course) completion += 20;
-            if (profile.screening_completed) completion += 40;
-            
-            document.getElementById('completionPercentage').textContent = `${completion}%`;
-            document.getElementById('completionFill').style.width = `${completion}%`;
+            // Show/hide screening call-to-action
+            const screeningCta = document.getElementById('screeningCta');
+            if (profile.screening_completed) {
+                screeningCta.classList.add('hidden');
+            } else {
+                screeningCta.classList.remove('hidden');
+            }
 
-            // Show/hide screening call-to-action
-            const screeningCta = document.getElementById('screeningCta');
-            if (profile.screening_completed) {
-                screeningCta.classList.add('hidden');
-            } else {
-                screeningCta.classList.remove('hidden');
-            }
+            // Populate profile editor form
+            document.getElementById('full_name').value = profile.full_name || '';
+            document.getElementById('phone').value = profile.phone || '';
+            document.getElementById('address').value = profile.address || '';
+            document.getElementById('date_of_birth').value = profile.date_of_birth || '';
+            document.getElementById('guardian_name').value = profile.guardian_name || '';
+            document.getElementById('institute').value = profile.institute || '';
+            document.getElementById('course').value = profile.course || '';
+        }
 
-            // Populate profile editor form
-            document.getElementById('full_name').value = profile.full_name || '';
-            document.getElementById('phone').value = profile.phone || '';
-            document.getElementById('address').value = profile.address || '';
-            document.getElementById('date_of_birth').value = profile.date_of_birth || '';
-            document.getElementById('guardian_name').value = profile.guardian_name || '';
-            document.getElementById('institute').value = profile.institute || '';
-            document.getElementById('course').value = profile.course || '';
-        }
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const updates = {
+                id: currentUser.id,
+                full_name: document.getElementById('full_name').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                date_of_birth: document.getElementById('date_of_birth').value,
+                guardian_name: document.getElementById('guardian_name').value,
+                institute: document.getElementById('institute').value,
+                course: document.getElementById('course').value,
+                updated_at: new Date()
+            };
 
-        document.getElementById('profile-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const updates = {
-                id: currentUser.id,
-                full_name: document.getElementById('full_name').value,
-                phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value,
-                date_of_birth: document.getElementById('date_of_birth').value,
-                guardian_name: document.getElementById('guardian_name').value,
-                institute: document.getElementById('institute').value,
-                course: document.getElementById('course').value,
-                updated_at: new Date()
-            };
-
-            const { error } = await _supabase.from('profiles').upsert(updates);
-            if (error) {
-                console.error('Update error:', error);
-                alert('Failed to update profile!');
-            } else {
-                alert('Profile updated successfully!');
-                loadUserData(currentUser); // Refresh data
-                showSection('dashboard-section'); // Go back to dashboard
-            }
-        });
+            const { error } = await _supabase.from('profiles').upsert(updates);
+            if (error) {
+                console.error('Update error:', error);
+                alert('Failed to update profile!');
+            } else {
+                alert('Profile updated successfully!');
+                loadUserData(currentUser); // Refresh data
+                showSection('dashboard-section'); // Go back to dashboard
+            }
+        });
 
 
-        // --- UI INTERACTIVITY ---
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            const activeSection = document.getElementById(sectionId);
-            if (activeSection) {
-                activeSection.classList.remove('hidden');
-            }
-        }
-    </script>
+        // --- UI INTERACTIVITY ---
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) {
+                activeSection.classList.remove('hidden');
+            }
+        }
+    </script>
 </body>
 </html>
