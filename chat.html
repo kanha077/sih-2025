@@ -178,35 +178,76 @@
             });
         }
 
-        async function openChatWith(otherUserId, otherUserName) {
-            // --- FIX: This block removes the old channel subscription to prevent loops ---
-            if (messageSubscription) {
-                supabase.removeChannel(messageSubscription);
-                messageSubscription = null;
-            }
-            
-            document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
-            
-            const studentId = currentUser.app_metadata.role === 'student' ? currentUser.id : otherUserId;
-            const counselorId = currentUser.app_metadata.role === 'counselor' ? currentUser.id : otherUserId;
+       async function openChatWith(otherUserId, otherUserName) {
+    // ✅ unsubscribe old channel properly
+    if (messageSubscription) {
+        await supabase.removeChannel(messageSubscription);
+        messageSubscription = null;
+    }
 
-            let { data: convo, error } = await supabase.from('conversations').select('id').eq('student_id', studentId).eq('counselor_id', counselorId).single();
-            if (error && error.code !== 'PGRST116') return console.error("Error finding conversation:", error);
+    document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+    document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
 
-            if (!convo) {
-                const { data: newConvo, error: insertError } = await supabase.from('conversations').insert({ student_id: studentId, counselor_id: counselorId }).select('id').single();
-                if (insertError) return console.error("Error creating conversation:", insertError);
-                convo = newConvo;
-            }
-            
-            if (!convo) return alert("A critical error occurred. Could not find or create a conversation.");
+    const userRole = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
+    const studentId = userRole === 'student' ? currentUser.id : otherUserId;
+    const counselorId = userRole === 'counselor' ? currentUser.id : otherUserId;
 
-            activeChatId = convo.id;
-            loadMessages(activeChatId, otherUserName);
-            initialViewEl.style.display = 'none';
-            chatAreaEl.style.display = 'flex';
+    // ✅ find or create conversation
+    let { data: convo, error } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('student_id', studentId)
+        .eq('counselor_id', counselorId)
+        .single();
+
+    if (error && error.code !== 'PGRST116') {
+        console.error("Error finding conversation:", error);
+        return;
+    }
+
+    if (!convo) {
+        const { data: newConvo, error: insertError } = await supabase
+            .from('conversations')
+            .insert({ student_id: studentId, counselor_id: counselorId })
+            .select('id')
+            .single();
+        if (insertError) {
+            console.error("Error creating conversation:", insertError);
+            return;
         }
+        convo = newConvo;
+    }
+
+    activeChatId = convo.id;
+    await loadMessages(activeChatId, otherUserName);
+    initialViewEl.style.display = 'none';
+    chatAreaEl.style.display = 'flex';
+}
+
+async function loadMessages(chatId, otherUserName) {
+    document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
+    messageListEl.innerHTML = '';
+
+    // ✅ load history
+    const { data: messages } = await supabase
+        .from('msg')
+        .select('*')
+        .eq('conversation_id', chatId)
+        .order('created_at');
+    if (messages) messages.forEach(msg => appendMessage(msg));
+
+    // ✅ realtime subscription
+    messageSubscription = supabase.channel(`conversation:${chatId}`)
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'msg',
+            filter: `conversation_id=eq.${chatId}`
+        }, (payload) => appendMessage(payload.new))
+    
+    await messageSubscription.subscribe(); // 🔑 important
+}
+
 
         async function loadMessages(chatId, otherUserName) {
             document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
