@@ -368,10 +368,10 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <img src="/lovable-uploads/527eaa0c-da64-4b66-8551-84509109187a.png" alt="Ananda Logo" class="logo">
+            <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="logo">
             <div class="user-menu">
                 <span id="userNameHeader" style="color: hsl(var(--muted-foreground));">Loading...</span>
-                <button class="btn btn-outline" onclick="logout()">Logout</button>
+                <button class="btn btn-outline" id="logoutBtn">Logout</button>
             </div>
         </div>
     </div>
@@ -474,18 +474,18 @@
 
             <div class="main-content">
                 <div class="quick-actions">
-                    <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
+                    <div class="card card-primary action-card" onclick="window.location.href='counselor.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-primary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
                             </div>
-                            <h3 class="action-title">connet with coucellor</h3>
-                            <p class="action-description">get in contact with counselor </p>
+                            <h3 class="action-title">Connect with a Counselor</h3>
+                            <p class="action-description">Get in contact with a counselor</p>
                         </div>
                     </div>
-                    <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
+                    <div class="card card-primary action-card" onclick="window.location.href='chatbot.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-primary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -525,7 +525,7 @@
                             <p style="color: hsl(var(--muted-foreground)); margin-bottom: 1rem;">
                                 Start your first conversation to begin your wellness journey
                             </p>
-                            <button class="btn btn-primary" onclick="window.location.href='chat.html'">
+                            <button class="btn btn-primary" onclick="window.location.href='chatbot.html'">
                                 Start Chatting
                             </button>
                         </div>
@@ -567,11 +567,11 @@
 
         let currentUser = null;
 
-        // --- AUTHENTICATION ---
+        // --- AUTHENTICATION & DATA LOADING ---
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
-                window.location.href = 'login.html'; // Redirect if not logged in
+                window.location.href = 'login.html';
             } else {
                 currentUser = session.user;
                 if (!document.body.getAttribute('data-loaded')) {
@@ -590,17 +590,6 @@
             }
         });
 
-        async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                const { error } = await _supabase.auth.signOut();
-                if (error) {
-                    console.error("Logout error:", error);
-                    alert("Failed to log out. Please try again.");
-                }
-            }
-        }
-        
-        // --- DATA HANDLING & UI UPDATES ---
         async function loadUserData(user) {
             try {
                 const { data: profile, error } = await _supabase
@@ -687,8 +676,17 @@
             }
         });
 
-
-        // --- UI INTERACTIVITY ---
+        // --- GLOBAL FUNCTIONS FOR HTML ONCLICK ---
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                const { error } = await _supabase.auth.signOut();
+                if (error) {
+                    console.error("Logout error:", error);
+                    alert("Failed to log out. Please try again.");
+                }
+            }
+        }
+        
         function showSection(sectionId) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.add('hidden');
