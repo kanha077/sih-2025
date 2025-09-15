@@ -198,25 +198,43 @@
             if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() });
         });
     }
+// In chat.html, replace the entire openChatWith function
+
 async function openChatWith(otherUserId, otherUserName) {
-    console.log("--- CLICK! Attempting to open chat with:", otherUserName);
-    if (messageSubscription) supabase.removeChannel(messageSubscription);
+    // --- NEW, MORE ROBUST CLEANUP LOGIC ---
+    // First, unsubscribe from any existing message channel to prevent loops.
+    if (messageSubscription) {
+        messageSubscription.unsubscribe();
+    }
     
     document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
     document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
     
-    // Call the secure database function to get the conversation ID
-    const { data: conversationId, error } = await supabase.rpc('create_conversation_if_not_exists', {
-        counselor_id_param: otherUserId
-    });
+    const studentId = currentUser.app_metadata.role === 'student' ? currentUser.id : otherUserId;
+    const counselorId = currentUser.app_metadata.role === 'counselor' ? currentUser.id : otherUserId;
 
-    if (error || !conversationId) {
-        console.error("CRITICAL ERROR: Could not find or create a conversation via RPC function.", error);
-        alert("Sorry, there was an error starting the chat. Please try again.");
+    let { data: convo, error } = await supabase.from('conversations').select('id').eq('student_id', studentId).eq('counselor_id', counselorId).single();
+    
+    if (error && error.code !== 'PGRST116') {
+        console.error("Error finding conversation:", error);
         return;
     }
 
-    activeChatId = conversationId;
+    if (!convo) {
+        const { data: newConvo, error: insertError } = await supabase.from('conversations').insert({ student_id: studentId, counselor_id: counselorId }).select('id').single();
+        if (insertError) {
+            console.error("Error creating conversation:", insertError);
+            return;
+        }
+        convo = newConvo;
+    }
+    
+    if (!convo) {
+        alert("A critical error occurred. Could not find or create a conversation.");
+        return;
+    }
+
+    activeChatId = convo.id;
     loadMessages(activeChatId, otherUserName);
     initialViewEl.style.display = 'none';
     chatAreaEl.style.display = 'flex';
