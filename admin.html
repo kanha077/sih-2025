@@ -3,146 +3,779 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Ananda</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Admin Dashboard - Ananda Mental Health</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F8F9FA;
+        :root {
+            --primary: 220 70% 50%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 280 60% 50%;
+            --secondary-foreground: 0 0% 98%;
+            --accent: 340 75% 55%;
+            --accent-foreground: 0 0% 98%;
+            --background: 0 0% 100%;
+            --foreground: 224 71.4% 4.1%;
+            --muted: 220 14.3% 95.9%;
+            --muted-foreground: 220 8.9% 46.1%;
+            --border: 220 13% 91%;
+            --ring: 220 70% 50%;
+            --card: 0 0% 100%;
+            --card-foreground: 224 71.4% 4.1%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            
+            --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(280 65% 60%));
+            --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(260 70% 55%));
+            --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(320 80% 60%));
+            --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
+            --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted) / 0.3));
+            
+            --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+            --shadow-primary: 0 0 40px hsl(var(--primary) / 0.4);
+            --shadow-secondary: 0 0 40px hsl(var(--secondary) / 0.4);
+            --shadow-accent: 0 0 40px hsl(var(--accent) / 0.4);
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .text-gradient {
-            background: linear-gradient(90deg, #e74c3c, #f39c12);
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: hsl(var(--foreground));
+            background: linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.05));
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: hsl(var(--card));
+            border-bottom: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-elegant);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
         }
-        .bg-gradient-custom {
-            background: linear-gradient(135deg, #f9e5e3, #fdf3e6);
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
         }
-        .btn-red {
-            background-color: #e74c3c;
-            transition: all 0.3s ease;
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        .btn-red:hover {
-            background-color: #c0392b;
+
+        .admin-portal {
+            color: hsl(var(--muted-foreground));
+            font-weight: 500;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: hsl(var(--card));
+            border-right: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-elegant);
+            position: fixed;
+            height: calc(100vh - 80px);
+            top: 80px;
+            overflow-y: auto;
+        }
+
+        .nav-menu {
+            padding: 1.5rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: hsl(var(--muted-foreground));
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.1);
+            border-left-color: hsl(var(--primary));
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            margin-top: 80px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: hsl(var(--muted-foreground));
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--gradient-card);
+            border: 1px solid hsl(var(--border));
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-elegant);
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover {
             transform: translateY(-2px);
+            box-shadow: var(--shadow-primary);
         }
-        .btn-orange {
-            background-color: #f39c12;
-            transition: all 0.3s ease;
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
-        .btn-orange:hover {
-            background-color: #e67e22;
-            transform: translateY(-2px);
+
+        .stat-title {
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            font-weight: 500;
         }
+
+        .stat-icon {
+            width: 24px;
+            height: 24px;
+            padding: 0.5rem;
+            border-radius: 8px;
+            background: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Action Cards */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
         .action-card {
-            transition: all 0.3s ease;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-elegant);
+            transition: var(--transition-smooth);
         }
+
         .action-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .action-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: hsl(var(--primary) / 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: hsl(var(--primary));
+        }
+
+        .action-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 0.5rem;
+        }
+
+        .action-description {
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 1.5rem;
+        }
+
+        /* User Management Section */
+        .management-section {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: 12px;
+            box-shadow: var(--shadow-elegant);
+            overflow: hidden;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .management-section.active {
+            display: block;
+        }
+
+        .section-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid hsl(var(--border));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: 8px;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: 8px;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            background: hsl(var(--muted));
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .users-table td {
+            padding: 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground));
+        }
+
+        .users-table tr:hover {
+            background: hsl(var(--muted) / 0.5);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .role-student {
+            background: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+        }
+
+        .role-counselor {
+            background: hsl(var(--secondary) / 0.1);
+            color: hsl(var(--secondary));
+        }
+
+        .role-admin {
+            background: hsl(var(--accent) / 0.1);
+            color: hsl(var(--accent));
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: hsl(120 60% 90%);
+            color: hsl(120 60% 30%);
+        }
+
+        .status-inactive {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: hsl(var(--primary-foreground));
+            box-shadow: var(--shadow-elegant);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .btn-secondary {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .btn-secondary:hover {
+            background: hsl(var(--secondary) / 0.9);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground));
+        }
+
+        .btn-outline:hover {
+            background: hsl(var(--accent) / 0.1);
+            border-color: hsl(var(--accent));
+            color: hsl(var(--foreground));
+        }
+
+        .btn-destructive {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+
+        .btn-destructive:hover {
+            background: hsl(var(--destructive) / 0.9);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid hsl(var(--muted));
+            border-top: 4px solid hsl(var(--primary));
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-top: 100px;
+                padding: 1rem;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .search-filters {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .search-input {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .table-container {
+                font-size: 0.875rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
-<body class="antialiased flex flex-col min-h-screen">
-
-    <!-- Header Section -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-2">
-                <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="h-8 w-auto">
-                <span class="text-xl font-bold text-white-800">ANANDA</span>
-            </a>
-            <div class="hidden md:flex items-center space-x-8">
-                <span class="text-gray-600 font-medium">Admin Portal</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" onclick="logout()" class="text-gray-600 hover:text-red-600 font-medium">Logout</a>
-            </div>
-        </nav>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="index.html" class="logo">
+            <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo">
+            <span>ANANDA</span>
+        </a>
+        <div class="header-actions">
+            <span class="admin-portal">Admin Portal</span>
+            <button class="btn btn-outline" onclick="logout()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16,17 21,12 16,7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </button>
+        </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="bg-gradient-custom py-20 flex-grow">
-        <div class="container mx-auto px-6 text-center">
-            <div class="mx-auto w-20 h-20 mb-6 bg-red-100 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-            </div>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" onclick="showDashboard()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#users" class="nav-item" onclick="showUserManagement()">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    User Management
+                </a>
+                <a href="#sessions" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Sessions
+                </a>
+                <a href="#analytics" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="M18.7 8l-2.9-2.7L12 9l-3.8-3.7L4.3 8"/>
+                    </svg>
+                    Analytics
+                </a>
+            </nav>
+        </div>
 
-            <h1 class="text-4xl font-extrabold text-gray-800">
-                <span class="text-gradient">Administrator Dashboard</span>
-            </h1>
-            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-                Welcome, Admin. Manage users and oversee platform activity.
-            </p>
-
-            <!-- Action Cards -->
-            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <!-- User Management Card -->
-                <div class="action-card bg-white p-8 rounded-2xl shadow-md text-center">
-                    <div class="mx-auto w-16 h-16 mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">User Management</h2>
-                    <p class="text-gray-600 mb-6">View, edit, and manage all user accounts on the platform.</p>
-                    <a href="#users" id="viewUsersBtn" class="btn-red text-white font-bold px-8 py-3 rounded-full inline-block">Manage Users</a>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection">
+                <div class="welcome-section">
+                    <h1 class="welcome-title">Administrator Dashboard</h1>
+                    <p class="welcome-subtitle">
+                        Welcome to the Ananda Mental Health admin portal. Manage users, monitor platform activity, and oversee the mental health support system.
+                    </p>
                 </div>
 
-                <!-- Analytics Card -->
-                <div class="action-card bg-white p-8 rounded-2xl shadow-md text-center">
-                     <div class="mx-auto w-16 h-16 mb-4 bg-orange-100 rounded-full flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Total Users</div>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                        <div class="stat-change">Loading...</div>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Platform Analytics</h2>
-                    <p class="text-gray-600 mb-6">Review key metrics like user sign-ups and platform engagement.</p>
-                    <a href="#" class="btn-orange text-white font-bold px-8 py-3 rounded-full inline-block">View Analytics</a>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Students</div>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalStudents">-</div>
+                        <div class="stat-change">Regular users</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Counselors</div>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalCounselors">-</div>
+                        <div class="stat-change">Mental health professionals</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Administrators</div>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalAdmins">-</div>
+                        <div class="stat-change">System administrators</div>
+                    </div>
+                </div>
+
+                <!-- Action Cards -->
+                <div class="action-cards">
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="action-title">User Management</h2>
+                        <p class="action-description">View, edit, and manage all user accounts on the platform. Control roles and access permissions.</p>
+                        <button class="btn btn-primary btn-lg" onclick="showUserManagement()">Manage Users</button>
+                    </div>
+
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                        <h2 class="action-title">Platform Analytics</h2>
+                        <p class="action-description">Review key metrics like user sign-ups, platform engagement, and system performance.</p>
+                        <button class="btn btn-primary btn-lg" onclick="showAnalytics()">View Analytics</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div class="management-section" id="userManagementSection">
+                <div class="section-header">
+                    <h2 class="section-title">User Management</h2>
+                    <div class="search-filters">
+                        <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+                        <select class="filter-select" id="roleFilter">
+                            <option value="">All Roles</option>
+                            <option value="user">Students</option>
+                            <option value="counselor">Counselors</option>
+                            <option value="admin">Admins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="loading" id="userLoading">
+                    <div class="spinner"></div>
+                    <p>Loading user data...</p>
+                </div>
+
+                <div class="table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- User data will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </main>
-    
-    <!-- User Table Section (Initially hidden) -->
-    <section id="users" class="py-20 bg-white hidden">
-        <div class="container mx-auto px-6">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">User Management</h2>
-             <input type="text" id="searchInput" placeholder="Search by name, email, or role..." class="w-full max-w-md mx-auto mb-8 p-3 border border-gray-300 rounded-lg block">
-            <div class="overflow-x-auto bg-white rounded-lg shadow">
-                 <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Name</th>
-                            <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Email</th>
-                            <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Role</th>
-                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Joined On</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-700" id="userTableBody">
-                        <!-- User rows will be injected here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Supabase Configuration
         const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let allUsers = [];
+        let userStats = {
+            total: 0,
+            students: 0,
+            counselors: 0,
+            admins: 0
+        };
 
+        // Initialize the dashboard
         document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthentication();
+            await loadDashboardData();
+        });
+
+        // Authentication check
+        async function checkAuthentication() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
-                window.location.href = '/login.html';
+                window.location.href = 'login.html';
                 return;
             }
 
@@ -154,66 +787,276 @@
 
             if (error || profile?.role !== 'admin') {
                 alert("Access Denied: You are not an administrator.");
-                window.location.href = '/login.html';
+                window.location.href = 'login.html';
                 return;
             }
-            
-            await loadUserData();
-        });
+        }
 
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                await loadUserData();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load user data from Supabase
         async function loadUserData() {
-            const { data: users, error } = await _supabase.from('profiles').select('*');
+            const { data: users, error } = await _supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
             if (error) {
                 console.error("Error fetching users:", error);
                 return;
             }
-            allUsers = users;
-            populateUserTable(users);
+
+            allUsers = users || [];
+            populateUserTable(allUsers);
         }
 
+        // Update statistics
+        function updateStats() {
+            userStats.total = allUsers.length;
+            userStats.students = allUsers.filter(user => !user.role || user.role === 'user').length;
+            userStats.counselors = allUsers.filter(user => user.role === 'counselor').length;
+            userStats.admins = allUsers.filter(user => user.role === 'admin').length;
+
+            document.getElementById('totalUsers').textContent = userStats.total;
+            document.getElementById('totalStudents').textContent = userStats.students;
+            document.getElementById('totalCounselors').textContent = userStats.counselors;
+            document.getElementById('totalAdmins').textContent = userStats.admins;
+        }
+
+        // Populate user table
         function populateUserTable(users) {
-            const tableBody = document.getElementById('userTableBody');
+            const tableBody = document.getElementById('usersTableBody');
+            const loading = document.getElementById('userLoading');
+            
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
             tableBody.innerHTML = '';
             
             if (users.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No users found.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No users found.</td></tr>';
                 return;
             }
 
             users.forEach(user => {
+                const initials = getInitials(user.full_name || user.email);
+                const role = user.role || 'user';
+                const displayRole = role === 'user' ? 'Student' : role.charAt(0).toUpperCase() + role.slice(1);
+                const roleClass = role === 'user' ? 'role-student' : `role-${role}`;
+                const joinedDate = new Date(user.created_at).toLocaleDateString();
+
                 const row = `
                     <tr>
-                        <td class="text-left py-3 px-4">${user.full_name || 'N/A'}</td>
-                        <td class="text-left py-3 px-4">${user.email || 'N/A'}</td>
-                        <td class="text-left py-3 px-4">${user.role || 'user'}</td>
-                        <td class="text-left py-3 px-4">${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="user-avatar">${initials}</div>
+                                <div>
+                                    <div style="font-weight: 500;">${user.full_name || 'N/A'}</div>
+                                    <div style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">ID: ${user.id.slice(0, 8)}...</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${user.email}</td>
+                        <td><span class="role-badge ${roleClass}">${displayRole}</span></td>
+                        <td>${joinedDate}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-outline btn-sm" onclick="viewUser('${user.id}')">View</button>
+                                <button class="btn btn-secondary btn-sm" onclick="editUser('${user.id}')">Edit</button>
+                                ${role !== 'admin' ? `<button class="btn btn-destructive btn-sm" onclick="deleteUser('${user.id}')">Delete</button>` : ''}
+                            </div>
+                        </td>
                     </tr>
                 `;
                 tableBody.innerHTML += row;
             });
         }
-        
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredUsers = allUsers.filter(user => 
-                user.full_name?.toLowerCase().includes(searchTerm) || 
-                user.email?.toLowerCase().includes(searchTerm) ||
-                user.role?.toLowerCase().includes(searchTerm)
-            );
-            populateUserTable(filteredUsers);
+
+        // Get initials from name or email
+        function getInitials(name) {
+            if (!name) return '?';
+            if (name.includes('@')) {
+                // It's an email, use first two letters
+                return name.substring(0, 2).toUpperCase();
+            }
+            const parts = name.split(' ');
+            return parts.length >= 2 
+                ? (parts[0][0] + parts[1][0]).toUpperCase()
+                : parts[0].substring(0, 2).toUpperCase();
+        }
+
+        // Navigation functions
+        function showDashboard() {
+            document.getElementById('dashboardSection').style.display = 'block';
+            document.getElementById('userManagementSection').classList.remove('active');
+            updateActiveNav('dashboard');
+        }
+
+        function showUserManagement() {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('userManagementSection').classList.add('active');
+            updateActiveNav('users');
+            
+            // Show loading if no users loaded yet
+            if (allUsers.length === 0) {
+                document.getElementById('userLoading').style.display = 'block';
+                loadUserData();
+            }
+        }
+
+        function showAnalytics() {
+            alert('Analytics feature coming soon! This would show detailed platform metrics and usage statistics.');
+        }
+
+        function updateActiveNav(section) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const navMap = {
+                'dashboard': 0,
+                'users': 1,
+                'sessions': 2,
+                'analytics': 3
+            };
+            
+            const navItems = document.querySelectorAll('.nav-item');
+            if (navItems[navMap[section]]) {
+                navItems[navMap[section]].classList.add('active');
+            }
+        }
+
+        // User management functions
+        function viewUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (user) {
+                alert(`User Details:\n\nName: ${user.full_name || 'N/A'}\nEmail: ${user.email}\nRole: ${user.role || 'user'}\nJoined: ${new Date(user.created_at).toLocaleDateString()}\n\nIn a real application, this would open a detailed modal with more information and editing capabilities.`);
+            }
+        }
+
+        async function editUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const newRole = prompt(`Current role: ${user.role || 'user'}\n\nEnter new role (user/counselor/admin):`, user.role || 'user');
+            if (newRole && ['user', 'counselor', 'admin'].includes(newRole.toLowerCase())) {
+                try {
+                    const { error } = await _supabase
+                        .from('profiles')
+                        .update({ role: newRole.toLowerCase() })
+                        .eq('id', userId);
+
+                    if (error) {
+                        alert('Error updating user role: ' + error.message);
+                    } else {
+                        alert('User role updated successfully!');
+                        await loadUserData();
+                        updateStats();
+                    }
+                } catch (error) {
+                    alert('Error updating user: ' + error.message);
+                }
+            }
+        }
+
+        async function deleteUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            if (user.role === 'admin') {
+                alert('Cannot delete administrator accounts.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${user.full_name || user.email}?\n\nThis action cannot be undone.`)) {
+                try {
+                    const { error } = await _supabase
+                        .from('profiles')
+                        .delete()
+                        .eq('id', userId);
+
+                    if (error) {
+                        alert('Error deleting user: ' + error.message);
+                    } else {
+                        alert('User deleted successfully!');
+                        await loadUserData();
+                        updateStats();
+                    }
+                } catch (error) {
+                    alert('Error deleting user: ' + error.message);
+                }
+            }
+        }
+
+        // Search and filter functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const roleFilter = document.getElementById('roleFilter');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', filterUsers);
+            }
+            if (roleFilter) {
+                roleFilter.addEventListener('change', filterUsers);
+            }
         });
 
-        document.getElementById('viewUsersBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            const userSection = document.getElementById('users');
-            userSection.classList.remove('hidden');
-            userSection.scrollIntoView({ behavior: 'smooth' });
-        });
-        
-        async function logout() {
-            await _supabase.auth.signOut();
-            window.location.href = '/login.html';
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const roleFilter = document.getElementById('roleFilter')?.value.toLowerCase() || '';
+            
+            const filteredUsers = allUsers.filter(user => {
+                const matchesSearch = !searchTerm || 
+                    (user.full_name && user.full_name.toLowerCase().includes(searchTerm)) || 
+                    (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                    ((user.role || 'user').toLowerCase().includes(searchTerm));
+                
+                const matchesRole = !roleFilter || 
+                    (user.role || 'user').toLowerCase() === roleFilter;
+                
+                return matchesSearch && matchesRole;
+            });
+            
+            populateUserTable(filteredUsers);
         }
+
+        // Logout function
+        async function logout() {
+            try {
+                await _supabase.auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error during logout:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Initialize navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (!this.onclick) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('Enhanced Admin Dashboard loaded successfully!');
+        console.log('Features available:');
+        console.log('- Real-time user management with Supabase integration');
+        console.log('- User role management (edit/delete)');
+        console.log('- Live statistics dashboard');
+        console.log('- Search and filtering');
+        console.log('- Responsive design');
+        console.log('- Authentication and authorization');
     </script>
 </body>
 </html>
