@@ -8,6 +8,8 @@
         :root { --primary-color: #4CAF50; --secondary-color: #3498db; --light-gray: #f0f4f8; --medium-gray: #e5e7eb; --dark-gray: #4b5563; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--light-gray); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--dark-gray); }
         .chat-container { display: flex; width: 100%; flex-grow: 1; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        /* Header */
         .page-header { background-color: #fff; padding: 0 2rem; border-bottom: 1px solid var(--medium-gray); flex-shrink: 0; }
         .page-header nav { display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
@@ -15,6 +17,8 @@
         .logo h1 { font-size: 1.25rem; font-weight: 700; }
         .nav-links a { text-decoration: none; color: var(--dark-gray); font-weight: 500; padding: 8px 12px; border-radius: 6px; transition: background-color 0.2s; }
         .nav-links a:hover { background-color: var(--light-gray); }
+
+        /* Sidebar (User List) */
         .sidebar { width: 320px; background-color: #fff; border-right: 1px solid var(--medium-gray); display: flex; flex-direction: column; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid var(--medium-gray); }
         .sidebar-header h2 { margin: 0; font-size: 1.5rem; }
@@ -30,6 +34,8 @@
         .status-indicator { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
         .status-indicator.online { background-color: #2ecc71; }
         .status-indicator.offline { background-color: #95a5a6; }
+        
+        /* Chat Window */
         .chat-window { flex-grow: 1; display: flex; flex-direction: column; background-color: #f9f9f9; }
         .chat-header { background-color: #fff; padding: 20px; border-bottom: 1px solid var(--medium-gray); display: flex; justify-content: space-between; align-items: center; }
         #message-list { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
@@ -113,14 +119,21 @@
             const userRole = currentUser.app_metadata?.role;
             const dashboardLink = document.getElementById('dashboard-link');
             
+            // This safety check prevents the script from crashing
+            if (dashboardLink) {
+                if (userRole === 'counselor') {
+                    dashboardLink.href = 'counselor.html';
+                } else {
+                    dashboardLink.href = 'student.html';
+                }
+            }
+            
             if (userRole === 'counselor') {
-                if (dashboardLink) dashboardLink.href = 'counselor.html';
                 sendButton.className = 'counselor';
                 document.getElementById('sidebar-title').textContent = 'Students';
                 document.getElementById('sidebar-subtitle').textContent = 'Your conversations with students';
                 await loadStudentListForCounselor();
             } else { // Default to student view
-                if (dashboardLink) dashboardLink.href = 'student.html';
                 sendButton.className = 'student';
                 document.getElementById('sidebar-title').textContent = 'Counselors';
                 document.getElementById('sidebar-subtitle').textContent = 'Select a counselor to talk to';
@@ -205,10 +218,8 @@
         async function loadMessages(chatId, otherUserName) {
             document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
             messageListEl.innerHTML = '';
-
             const { data: messages } = await supabase.from('msg').select('*').eq('conversation_id', chatId).order('created_at');
             if (messages) messages.forEach(msg => appendMessage(msg));
-
             messageSubscription = supabase.channel(`conversation:${chatId}`)
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'msg', filter: `conversation_id=eq.${chatId}` }, 
                     payload => appendMessage(payload.new))
