@@ -77,78 +77,166 @@
 <script type="module">
     import { supabase } from './supBaseClient.js';
 
-    // All variables and the HTML structure remain the same
     let currentUser = null;
     let activeChatId = null;
     let messageSubscription = null;
-    const userList = document.getElementById('user-list');
-    const chatArea = document.getElementById('chat-area');
-    const initialView = document.getElementById('initial-view');
     
-    // The initialize(), loadCounselorList(), loadStudentListForCounselor(),
-    // displayUserList(), and setupPresenceForAllUsers() functions
-    // have NO CHANGES and remain the same.
+    const userListEl = document.getElementById('user-list');
+    const initialViewEl = document.getElementById('initial-view');
+    const chatAreaEl = document.getElementById('chat-area');
+    const sendButton = document.getElementById('send-button');
+    const messageListEl = document.getElementById('message-list');
 
-    // ... (paste your unchanged functions here) ...
+    async function initialize() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login.html';
+            return;
+        }
+        currentUser = session.user;
+
+        initialViewEl.style.display = 'none'; // Hide loading screen
+
+        const userRole = currentUser.app_metadata?.role;
+        const dashboardLink = document.getElementById('dashboard-link');
+        
+        if (userRole === 'student') {
+            dashboardLink.href = 'student.html';
+            sendButton.className = 'student';
+            document.getElementById('sidebar-title').textContent = 'Counselors';
+            document.getElementById('sidebar-subtitle').textContent = 'Select a counselor to talk to';
+            await loadCounselorList();
+        } else if (userRole === 'counsellor') {
+            dashboardLink.href = 'counsellor.html';
+            sendButton.className = 'counsellor';
+            document.getElementById('sidebar-title').textContent = 'Students';
+            document.getElementById('sidebar-subtitle').textContent = 'Your conversations with students';
+            await loadStudentListForCounselor();
+        }
+    }
+
+    async function loadCounselorList() {
+        const { data: counselors } = await supabase.from('profiles').select('id, full_name').eq('role', 'counsellor');
+        if (counselors) displayUserList(counselors, 'counsellor');
+    }
+
+    async function loadStudentListForCounselor() {
+        // Updated to use the corrected query from our previous fix
+        const { data: conversations, error: convoError } = await supabase
+            .from('conversations')
+            .select('student_id')
+            .eq('counsellor_id', currentUser.id);
+
+        if (convoError) return console.error("Error fetching conversations:", convoError);
+        if (!conversations || conversations.length === 0) {
+            displayUserList([], 'student');
+            return;
+        }
+
+        const studentIds = conversations.map(c => c.student_id);
+        const { data: students, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', studentIds);
+        
+        if (profileError) return console.error("Error fetching student profiles:", profileError);
+        
+        if (students) displayUserList(students, 'student');
+    }
+
+    function displayUserList(users, role) {
+        userListEl.innerHTML = '';
+        if (users.length === 0) {
+            userListEl.innerHTML = `<li style="padding: 20px; color: #888;">No conversations yet.</li>`;
+            return;
+        }
+        for (const user of users) {
+            if (!user) continue;
+            const item = document.createElement('li');
+            item.className = 'user-item';
+            item.dataset.userId = user.id;
+            const avatarColorClass = role === 'student' ? 'counsellor' : 'student'; // Student sees green, counsellor sees blue
+            item.innerHTML = `<div class="user-avatar ${avatarColorClass}">${user.full_name.charAt(0)}</div> <div class="user-info"><div class="name">${user.full_name}</div><div class="status"><span class="status-indicator offline"></span><span>Offline</span></div></div>`;
+            item.addEventListener('click', () => openChatWith(user.id, user.full_name));
+            userListEl.appendChild(item);
+        }
+        setupPresence();
+    }
+
+    function setupPresence() {
+        const channel = supabase.channel('online-users');
+        channel.on('presence', { event: 'sync' }, () => {
+            const presenceState = channel.presenceState();
+            document.querySelectorAll('.user-item').forEach(item => {
+                const isOnline = Object.keys(presenceState).includes(item.dataset.userId);
+                const indicator = item.querySelector('.status-indicator');
+                const text = item.querySelector('.status span:last-child');
+                indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+                text.textContent = isOnline ? 'Online' : 'Offline';
+            });
+        }).subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() });
+        });
+    }
 
     async function openChatWith(otherUserId, otherUserName) {
-        // This function has NO CHANGES and remains the same.
-        // ...
+        if (messageSubscription) supabase.removeChannel(messageSubscription);
+        document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
+        
+        const studentId = currentUser.app_metadata.role === 'student' ? currentUser.id : otherUserId;
+        const counsellorId = currentUser.app_metadata.role === 'counsellor' ? currentUser.id : otherUserId;
+
+        let { data: convo } = await supabase.from('conversations').select('id').eq('student_id', studentId).eq('counsellor_id', counsellorId).single();
+        if (!convo) {
+            const { data: newConvo } = await supabase.from('conversations').insert({ student_id: studentId, counsellor_id: counsellorId }).select('id').single();
+            convo = newConvo;
+        }
+        
+        activeChatId = convo.id;
+        loadMessages(activeChatId, otherUserName);
+        initialViewEl.style.display = 'none';
+        chatAreaEl.style.display = 'flex';
     }
 
     async function loadMessages(chatId, otherUserName) {
         document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
-        const messageList = document.getElementById('message-list');
-        messageList.innerHTML = '';
+        messageListEl.innerHTML = '';
 
-        // NAME CHANGE: Fetch from "msg" table
-        const { data: messages, error } = await supabase
-            .from('msg')
-            .select('content, sender_id')
-            .eq('conversation_id', chatId)
-            .order('created_at', { ascending: true });
-        
-        if (error) return console.error("Error fetching messages:", error);
-        
-        messages.forEach(msg => appendMessage(msg));
-        messageList.scrollTop = messageList.scrollHeight;
+        const { data: messages } = await supabase.from('msg').select('*').eq('conversation_id', chatId).order('created_at');
+        if (messages) messages.forEach(msg => appendMessage(msg));
 
-        // NAME CHANGE: Listen to changes on the "msg" table
-        messageSubscription = supabase
-            .channel(`conversation:${chatId}`)
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'msg', filter: `conversation_id=eq.${chatId}` },
-                (payload) => {
-                    appendMessage(payload.new);
-                    messageList.scrollTop = messageList.scrollHeight;
-                }
-            )
+        messageSubscription = supabase.channel(`conversation:${chatId}`)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'msg', filter: `conversation_id=eq.${chatId}` }, 
+                payload => appendMessage(payload.new))
             .subscribe();
     }
-
-    function appendMessage(message) {
-        // This function has NO CHANGES and remains the same.
-        // ...
-    }
     
+    function appendMessage(message) {
+        const userRole = currentUser.app_metadata?.role;
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble ' + (message.sender_id === currentUser.id ? `sent ${userRole}` : 'received');
+        bubble.textContent = message.content;
+        messageListEl.appendChild(bubble);
+        messageListEl.scrollTop = messageListEl.scrollHeight;
+    }
+
     document.getElementById('message-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const input = document.getElementById('message-input');
         const content = input.value.trim();
         if (content && activeChatId) {
-            // NAME CHANGE: Insert into "msg" table
-            const { error } = await supabase
-                .from('msg')
-                .insert({ conversation_id: activeChatId, sender_id: currentUser.id, content: content });
-            if (error) console.error("Error sending message:", error);
-            else input.value = '';
+            await supabase.from('msg').insert({ conversation_id: activeChatId, sender_id: currentUser.id, content: content });
+            input.value = '';
         }
     });
+    
+    window.logout = async function() {
+        await supabase.auth.signOut();
+        window.location.href = '/login.html';
+    }
 
-    // Run on page load
     initialize();
-
-    // NOTE: You need to include the full code for the unchanged functions
-    // (like initialize, openChatWith, etc.) for the script to work.
 </script>
 </body>
 </html>
