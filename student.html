@@ -368,7 +368,7 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="logo">
+            <img src="/lovable-uploads/527eaa0c-da64-4b66-8551-84509109187a.png" alt="Ananda Logo" class="logo">
             <div class="user-menu">
                 <span id="userNameHeader" style="color: hsl(var(--muted-foreground));">Loading...</span>
                 <button class="btn btn-outline" onclick="logout()">Logout</button>
@@ -474,18 +474,18 @@
 
             <div class="main-content">
                 <div class="quick-actions">
-                    <div class="card card-primary action-card" onclick="window.location.href='councellor.html'">
+                    <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-primary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
                             </div>
-                            <h3 class="action-title">Connect with a Counselor</h3>
-                            <p class="action-description">Get in contact with a counselor</p>
+                            <h3 class="action-title">connet with coucellor</h3>
+                            <p class="action-description">get in contact with counselor </p>
                         </div>
                     </div>
-                    <div class="card card-primary action-card" onclick="window.location.href='chatbot.html'">
+                    <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-primary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@
                         </div>
                     </div>
 
-                    <div class="card card-secondary action-card" onclick="window.location.href='screening.html'">
+                    <div class="card card-secondary action-card" onclick="window.location.href='screening-page.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-secondary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -525,7 +525,7 @@
                             <p style="color: hsl(var(--muted-foreground)); margin-bottom: 1rem;">
                                 Start your first conversation to begin your wellness journey
                             </p>
-                            <button class="btn btn-primary" onclick="window.location.href='chatbot.html'">
+                            <button class="btn btn-primary" onclick="window.location.href='chat.html'">
                                 Start Chatting
                             </button>
                         </div>
@@ -557,10 +557,14 @@
 
     </div>
 
-     <script type="module">
-        import { supabaseClient } from "./supBaseClient.js"; // Corrected import path and filename
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // --- SUPABASE SETUP ---
+        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const _supabase = supabaseClient;
         let currentUser = null;
 
         // --- AUTHENTICATION ---
@@ -595,7 +599,7 @@
                 }
             }
         }
-
+        
         // --- DATA HANDLING & UI UPDATES ---
         async function loadUserData(user) {
             try {
@@ -621,7 +625,7 @@
             const fullName = profile.full_name || 'User';
             const firstName = fullName.split(' ')[0];
             const avatarInitial = fullName.charAt(0).toUpperCase() || '?';
-
+            
             // Update names and avatar
             document.getElementById('userNameHeader').textContent = fullName;
             document.getElementById('welcomeName').textContent = firstName;
@@ -636,7 +640,7 @@
             if (profile.phone) completion += 20;
             if (profile.institute && profile.course) completion += 20;
             if (profile.screening_completed) completion += 40;
-
+            
             document.getElementById('completionPercentage').textContent = `${completion}%`;
             document.getElementById('completionFill').style.width = `${completion}%`;
 
