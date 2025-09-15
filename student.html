@@ -557,10 +557,9 @@
 
     </div>
 
-    <script type="module">
-        import { supabaseClient } from "./supBaseClient.js";
+     <script type="module">
+        import { supabaseClient } from "./supBaseClient.js"; // Corrected import path and filename
 
-        // Assign the imported client to a local variable for consistency
         const _supabase = supabaseClient;
         let currentUser = null;
 
@@ -596,7 +595,7 @@
                 }
             }
         }
-        
+
         // --- DATA HANDLING & UI UPDATES ---
         async function loadUserData(user) {
             try {
@@ -622,7 +621,7 @@
             const fullName = profile.full_name || 'User';
             const firstName = fullName.split(' ')[0];
             const avatarInitial = fullName.charAt(0).toUpperCase() || '?';
-            
+
             // Update names and avatar
             document.getElementById('userNameHeader').textContent = fullName;
             document.getElementById('welcomeName').textContent = firstName;
@@ -637,7 +636,7 @@
             if (profile.phone) completion += 20;
             if (profile.institute && profile.course) completion += 20;
             if (profile.screening_completed) completion += 40;
-            
+
             document.getElementById('completionPercentage').textContent = `${completion}%`;
             document.getElementById('completionFill').style.width = `${completion}%`;
 
