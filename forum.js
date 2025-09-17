@@ -1,154 +1,180 @@
-// forum.js
-
 import { auth, db } from './firebase-config.js';
 
-let currentUsername = null;
-
-// --- DOM ELEMENT REFERENCES ---
+// --- DOM REFERENCES ---
+const welcomeModal = document.getElementById('welcome-modal');
+const modalSkipBtn = document.getElementById('modal-skip-btn');
+const modalPostBtn = document.getElementById('modal-post-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const postTextarea = document.getElementById('post-textarea');
 const postSubmitBtn = document.getElementById('post-submit-btn');
 const postsContainer = document.getElementById('posts-container');
+const sortNewestBtn = document.getElementById('sort-newest');
+const sortPopularBtn = document.getElementById('sort-popular');
 
-// --- AUTHENTICATION CHECK ---
-// Use onAuthStateChanged to listen for login/logout events
+let currentSortOrder = { field: 'createdAt', direction: 'desc' };
+let unsubscribePosts = null; // To store our real-time listener
+
+// --- ANONYMOUS NAME GENERATOR ---
+const adjectives = ["Clever", "Curious", "Brave", "Wise", "Silent", "Scholarly", "Creative", "Fearless", "Humble"];
+const nouns = ["Falcon", "Panda", "Coyote", "Sparrow", "Chameleon", "Jaguar", "Lion", "Wolf", "Eagle"];
+
+function generateAnonymousName() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    return `${adj} ${noun}`;
+}
+
+// --- AUTHENTICATION & INITIALIZATION ---
 auth.onAuthStateChanged(user => {
     if (user) {
-        // User is signed in.
-        // We get the username from the dummy email we created (e.g., "john@studentforum.com")
-        currentUsername = user.email.split('@')[0];
-        console.log(`User logged in: ${currentUsername}`);
-        fetchPosts(); // Load the forum posts
+        welcomeModal.classList.add('visible'); // Show welcome popup
     } else {
-        // User is signed out.
-        console.log("No user is logged in. Redirecting to login page.");
-        // Redirect to the login page if not authenticated
         window.location.href = 'index.html';
     }
 });
 
-// --- EVENT LISTENERS ---
-
-// Logout Button
-logoutBtn.addEventListener('click', () => {
-    auth.signOut().then(() => {
-        console.log("User signed out successfully.");
-    }).catch(error => {
-        console.error("Sign out error:", error);
-    });
+// --- MODAL/POPUP LOGIC ---
+modalSkipBtn.addEventListener('click', () => {
+    welcomeModal.classList.remove('visible');
+    fetchPosts(); // Load posts after skipping
 });
 
-// Post a new Question
+modalPostBtn.addEventListener('click', () => {
+    welcomeModal.classList.remove('visible');
+    postTextarea.focus(); // Focus on the post creator
+    fetchPosts(); // Also load posts
+});
+
+// --- CORE APP LOGIC ---
+logoutBtn.addEventListener('click', () => auth.signOut());
+
 postSubmitBtn.addEventListener('click', () => {
     const questionText = postTextarea.value.trim();
-    if (questionText === '') {
-        alert("Please write a question before posting.");
-        return;
-    }
+    if (!questionText) return;
 
-    // Add a new post to the 'posts' collection in Firestore
     db.collection('posts').add({
-        authorUsername: currentUsername,
         authorId: auth.currentUser.uid,
+        authorAnonymousName: generateAnonymousName(),
         questionText: questionText,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp() // Use server time
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        upvotes: 0,
+        answerCount: 0
     }).then(() => {
-        console.log("Post added successfully!");
-        postTextarea.value = ''; // Clear the textarea
-    }).catch(error => {
-        console.error("Error adding post: ", error);
-    });
+        postTextarea.value = '';
+    }).catch(error => console.error("Error adding post: ", error));
 });
 
-// --- CORE FUNCTIONS ---
+// --- SORTING LOGIC ---
+sortNewestBtn.addEventListener('click', () => {
+    currentSortOrder = { field: 'createdAt', direction: 'desc' };
+    sortNewestBtn.classList.add('active');
+    sortPopularBtn.classList.remove('active');
+    fetchPosts();
+});
 
-// Fetch all posts in real-time
+sortPopularBtn.addEventListener('click', () => {
+    currentSortOrder = { field: 'upvotes', direction: 'desc' };
+    sortPopularBtn.classList.add('active');
+    sortNewestBtn.classList.remove('active');
+    fetchPosts();
+});
+
+// --- FETCHING & RENDERING ---
 function fetchPosts() {
-    // Use onSnapshot for a real-time listener
-    db.collection('posts').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        postsContainer.innerHTML = ''; // Clear existing posts
-        snapshot.forEach(doc => {
-            const post = doc.data();
-            const postId = doc.id;
-            renderPost(post, postId);
+    // If a listener is already active, detach it before creating a new one
+    if (unsubscribePosts) {
+        unsubscribePosts();
+    }
+    postsContainer.innerHTML = `<div class="loader"></div>`;
+
+    unsubscribePosts = db.collection('posts')
+        .orderBy(currentSortOrder.field, currentSortOrder.direction)
+        .onSnapshot(snapshot => {
+            if (snapshot.empty) {
+                postsContainer.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No questions have been asked yet. Be the first!</p>`;
+                return;
+            }
+            postsContainer.innerHTML = '';
+            snapshot.forEach(doc => renderPost(doc));
         });
-    });
 }
 
-// Render a single post card to the page
-function renderPost(post, postId) {
-    const postDate = post.createdAt ? post.createdAt.toDate().toLocaleString() : 'Just now';
+function renderPost(doc) {
+    const post = doc.data();
+    const postId = doc.id;
+    const postDate = post.createdAt ? post.createdAt.toDate().toLocaleDateString() : 'Just now';
 
-    const postDiv = document.createElement('div');
-    postDiv.className = 'post-card';
-    postDiv.innerHTML = `
+    const postCard = document.createElement('div');
+    postCard.className = 'post-card';
+    postCard.innerHTML = `
         <div class="post-header">
-            <span class="post-author">${post.authorUsername}</span>
+            <strong class="post-author">${post.authorAnonymousName}</strong>
             <span class="post-date">${postDate}</span>
         </div>
         <p class="post-content">${post.questionText}</p>
+        <div class="post-footer">
+            <div class="upvote-btn" data-post-id="${postId}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <span>${post.upvotes || 0}</span>
+            </div>
+            <div class="answers-count">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <span>${post.answerCount || 0} Answers</span>
+            </div>
+        </div>
         <div class="answers-section">
             <div class="answers-list" id="answers-${postId}"></div>
             <div class="answer-form">
-                <textarea class="answer-textarea" placeholder="Write an answer..."></textarea>
-                <button class="submit-answer-btn" data-post-id="${postId}">Submit Answer</button>
+                <textarea class="answer-textarea" placeholder="Contribute your thoughts..."></textarea>
+                <button class="submit-answer-btn" data-post-id="${postId}">Answer</button>
             </div>
         </div>
     `;
-    postsContainer.appendChild(postDiv);
-
-    // Now, fetch and render the answers for this specific post
+    postsContainer.appendChild(postCard);
     fetchAndRenderAnswers(postId);
 }
 
-// Fetch and render answers for a specific post (using a subcollection)
 function fetchAndRenderAnswers(postId) {
     const answersContainer = document.getElementById(`answers-${postId}`);
-    
     db.collection('posts').doc(postId).collection('answers').orderBy('createdAt', 'asc').onSnapshot(snapshot => {
-        answersContainer.innerHTML = ''; // Clear existing answers
+        answersContainer.innerHTML = '';
         snapshot.forEach(doc => {
             const answer = doc.data();
-            const answerDate = answer.createdAt ? answer.createdAt.toDate().toLocaleString() : 'Just now';
-            
-            const answerDiv = document.createElement('div');
-            answerDiv.className = 'answer-card';
-            answerDiv.innerHTML = `
-                <div class="post-header">
-                    <span class="post-author">${answer.authorUsername}</span>
-                    <span class="post-date">${answerDate}</span>
-                </div>
-                <p>${answer.answerText}</p>
-            `;
-            answersContainer.appendChild(answerDiv);
+            const answerCard = document.createElement('div');
+            answerCard.className = 'answer-card';
+            answerCard.innerHTML = `<p><strong>${answer.authorAnonymousName}</strong> replied:</p><p>${answer.answerText}</p>`;
+            answersContainer.appendChild(answerCard);
         });
     });
 }
 
-// --- EVENT DELEGATION FOR ANSWER SUBMISSION ---
-// Since answer buttons are created dynamically, we listen on the parent container
-postsContainer.addEventListener('click', (e) => {
+// --- EVENT DELEGATION for dynamic buttons (answers & upvotes) ---
+postsContainer.addEventListener('click', e => {
+    // Answer submission
     if (e.target.classList.contains('submit-answer-btn')) {
         const postId = e.target.dataset.postId;
         const answerTextarea = e.target.previousElementSibling;
         const answerText = answerTextarea.value.trim();
+        if (!answerText) return;
 
-        if (answerText === '') {
-            alert('Please write an answer before submitting.');
-            return;
-        }
-
-        // Add the answer to the 'answers' subcollection of the specific post
         db.collection('posts').doc(postId).collection('answers').add({
-            authorUsername: currentUsername,
             authorId: auth.currentUser.uid,
+            authorAnonymousName: generateAnonymousName(),
             answerText: answerText,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
-            console.log("Answer submitted successfully!");
-            answerTextarea.value = ''; // Clear the textarea
-        }).catch(error => {
-            console.error("Error submitting answer: ", error);
+            answerTextarea.value = '';
+            // Update answer count on the post
+            const postRef = db.collection('posts').doc(postId);
+            postRef.update({ answerCount: firebase.firestore.FieldValue.increment(1) });
         });
+    }
+
+    // Upvote submission
+    if (e.target.closest('.upvote-btn')) {
+        const upvoteBtn = e.target.closest('.upvote-btn');
+        const postId = upvoteBtn.dataset.postId;
+        const postRef = db.collection('posts').doc(postId);
+        postRef.update({ upvotes: firebase.firestore.FieldValue.increment(1) });
     }
 });
