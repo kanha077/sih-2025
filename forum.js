@@ -1,273 +1,140 @@
-// forum.js
-import { auth, db, storage } from "./firebase-config.js";
+import { app, auth, db, storage } from "./firebase-config.js";
 
+// Elements
 const logoutBtn = document.getElementById("logout-btn");
-const postTextarea = document.getElementById("post-textarea");
-const postSubmitBtn = document.getElementById("post-submit-btn");
+const postBtn = document.getElementById("post-submit-btn");
+const postInput = document.getElementById("post-textarea");
+const postsContainer = document.getElementById("posts-container");
 const mediaUpload = document.getElementById("media-upload");
 const progressContainer = document.getElementById("progress-container");
 const uploadProgress = document.getElementById("upload-progress");
+const userEmailEl = document.getElementById("user-email");
 
-const postsContainer = document.getElementById("posts-container");
-const feedView = document.getElementById("feed-view");
-const postDetailView = document.getElementById("post-detail-view");
-const singlePostContainer = document.getElementById("single-post-container");
-const threadsContainer = document.getElementById("threads-container");
-const backToForumBtn = document.getElementById("back-to-forum-btn");
-
-const sortNewestBtn = document.getElementById("sort-newest");
-const sortPopularBtn = document.getElementById("sort-popular");
-
-let currentSort = "newest"; // default sort
-let selectedMediaFile = null;
-
-// ----------------- AUTH -----------------
-logoutBtn.addEventListener("click", () => {
-  auth.signOut().then(() => {
-    window.location.href = "login.html"; // redirect after logout
-  });
-});
-
-// ----------------- POST CREATION -----------------
-mediaUpload.addEventListener("change", (e) => {
-  selectedMediaFile = e.target.files[0];
-});
-
-postSubmitBtn.addEventListener("click", async () => {
-  const content = postTextarea.value.trim();
-  if (!content && !selectedMediaFile) {
-    alert("Post cannot be empty!");
-    return;
-  }
-
-  postSubmitBtn.disabled = true;
-
-  let mediaUrl = null;
-  let mediaType = null;
-
-  if (selectedMediaFile) {
-    const storageRef = storage.ref(
-      `posts/${Date.now()}_${selectedMediaFile.name}`
-    );
-    const uploadTask = storageRef.put(selectedMediaFile);
-
-    progressContainer.style.display = "block";
-
-    await new Promise((resolve, reject) => {
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          uploadProgress.style.width = `${progress}%`;
-        },
-        (error) => reject(error),
-        async () => {
-          mediaUrl = await uploadTask.snapshot.ref.getDownloadURL();
-          mediaType = selectedMediaFile.type.startsWith("video")
-            ? "video"
-            : "image";
-          resolve();
-        }
-      );
-    });
-
-    progressContainer.style.display = "none";
-    uploadProgress.style.width = "0%";
-    selectedMediaFile = null;
-    mediaUpload.value = "";
-  }
-
-  await db.collection("posts").add({
-    content,
-    mediaUrl,
-    mediaType,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    upvotes: 0,
-  });
-
-  postTextarea.value = "";
-  postSubmitBtn.disabled = false;
-  loadPosts();
-});
-
-// ----------------- LOAD POSTS -----------------
-async function loadPosts() {
-  postsContainer.innerHTML = `<div class="loader"></div>`;
-
-  let query = db.collection("posts");
-
-  if (currentSort === "newest") {
-    query = query.orderBy("createdAt", "desc");
-  } else if (currentSort === "popular") {
-    query = query.orderBy("upvotes", "desc");
-  }
-
-  const snapshot = await query.get();
-  postsContainer.innerHTML = "";
-
-  snapshot.forEach((doc) => {
-    const post = doc.data();
-    const postEl = document.createElement("div");
-    postEl.className = "post-card clickable";
-
-    const date = post.createdAt
-      ? post.createdAt.toDate().toLocaleString()
-      : "Just now";
-
-    postEl.innerHTML = `
-      <div class="post-header">
-        <span class="post-author">Anonymous</span>
-        <span class="post-date">${date}</span>
-      </div>
-      <div class="post-content">${post.content || ""}</div>
-      ${
-        post.mediaUrl
-          ? `<div class="post-media-container">${
-              post.mediaType === "video"
-                ? `<video controls src="${post.mediaUrl}"></video>`
-                : `<img src="${post.mediaUrl}" alt="post media">`
-            }</div>`
-          : ""
-      }
-      <div class="post-footer">
-        <div class="post-footer-item upvote-btn" data-id="${doc.id}">
-          ⬆️ ${post.upvotes || 0}
-        </div>
-      </div>
-    `;
-
-    postEl.addEventListener("click", (e) => {
-      if (e.target.classList.contains("upvote-btn")) return; // avoid detail click
-      showPostDetail(doc.id, post);
-    });
-
-    const upvoteBtn = postEl.querySelector(".upvote-btn");
-    upvoteBtn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      await db.collection("posts").doc(doc.id).update({
-        upvotes: firebase.firestore.FieldValue.increment(1),
-      });
-      loadPosts();
-    });
-
-    postsContainer.appendChild(postEl);
-  });
-
-  if (snapshot.empty) {
-    postsContainer.innerHTML = "<p>No posts yet. Be the first!</p>";
-  }
-}
-
-// ----------------- POST DETAIL -----------------
-async function showPostDetail(postId, post) {
-  feedView.style.display = "none";
-  postDetailView.style.display = "block";
-
-  const date = post.createdAt
-    ? post.createdAt.toDate().toLocaleString()
-    : "Just now";
-
-  singlePostContainer.innerHTML = `
-    <div class="post-card">
-      <div class="post-header">
-        <span class="post-author">Anonymous</span>
-        <span class="post-date">${date}</span>
-      </div>
-      <div class="post-content">${post.content || ""}</div>
-      ${
-        post.mediaUrl
-          ? `<div class="post-media-container">${
-              post.mediaType === "video"
-                ? `<video controls src="${post.mediaUrl}"></video>`
-                : `<img src="${post.mediaUrl}" alt="post media">`
-            }</div>`
-          : ""
-      }
-    </div>
-    <div class="thread-form">
-      <textarea id="thread-textarea" placeholder="Write a reply..."></textarea>
-      <button id="thread-submit-btn">Reply</button>
-    </div>
-  `;
-
-  threadsContainer.innerHTML = `<div class="loader"></div>`;
-
-  // Load threads
-  const threadsSnap = await db
-    .collection("posts")
-    .doc(postId)
-    .collection("threads")
-    .orderBy("createdAt", "asc")
-    .get();
-
-  threadsContainer.innerHTML = "";
-  threadsSnap.forEach((doc) => {
-    const thread = doc.data();
-    const threadEl = document.createElement("div");
-    threadEl.className = "thread-card";
-    threadEl.innerHTML = `
-      <div class="post-header">
-        <span class="post-author">Anonymous</span>
-        <span class="post-date">${
-          thread.createdAt
-            ? thread.createdAt.toDate().toLocaleString()
-            : "Just now"
-        }</span>
-      </div>
-      <div class="post-content">${thread.content}</div>
-    `;
-    threadsContainer.appendChild(threadEl);
-  });
-
-  // Add new thread
-  document
-    .getElementById("thread-submit-btn")
-    .addEventListener("click", async () => {
-      const reply = document
-        .getElementById("thread-textarea")
-        .value.trim();
-      if (!reply) return;
-
-      await db
-        .collection("posts")
-        .doc(postId)
-        .collection("threads")
-        .add({
-          content: reply,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-
-      showPostDetail(postId, post); // reload detail
-    });
-}
-
-backToForumBtn.addEventListener("click", () => {
-  postDetailView.style.display = "none";
-  feedView.style.display = "block";
-  loadPosts();
-});
-
-// ----------------- SORT HANDLERS -----------------
-sortNewestBtn.addEventListener("click", () => {
-  currentSort = "newest";
-  sortNewestBtn.classList.add("active");
-  sortPopularBtn.classList.remove("active");
-  loadPosts();
-});
-
-sortPopularBtn.addEventListener("click", () => {
-  currentSort = "popular";
-  sortPopularBtn.classList.add("active");
-  sortNewestBtn.classList.remove("active");
-  loadPosts();
-});
-
-// ----------------- INIT -----------------
-auth.onAuthStateChanged((user) => {
+// Check auth
+auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
   } else {
+    userEmailEl.textContent = user.email;
     loadPosts();
   }
 });
+
+// Logout
+logoutBtn.addEventListener("click", async () => {
+  await auth.signOut();
+  window.location.href = "login.html";
+});
+
+// Create post
+postBtn.addEventListener("click", async () => {
+  const text = postInput.value.trim();
+  const file = mediaUpload.files[0];
+
+  if (!text && !file) return alert("Write something or add media");
+
+  let mediaUrl = "";
+  if (file) {
+    const storageRef = storage.ref(`posts/${Date.now()}-${file.name}`);
+    const uploadTask = storageRef.put(file);
+
+    progressContainer.classList.remove("hidden");
+
+    uploadTask.on("state_changed", snap => {
+      const progress = (snap.bytesTransferred / snap.totalBytes) * 100;
+      uploadProgress.style.width = progress + "%";
+    });
+
+    await uploadTask;
+    mediaUrl = await storageRef.getDownloadURL();
+    progressContainer.classList.add("hidden");
+    uploadProgress.style.width = "0%";
+  }
+
+  await db.collection("posts").add({
+    text,
+    mediaUrl,
+    email: auth.currentUser.email,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    likes: 0
+  });
+
+  postInput.value = "";
+  mediaUpload.value = "";
+});
+
+// Load posts
+function loadPosts() {
+  db.collection("posts")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+      postsContainer.innerHTML = "";
+      if (snapshot.empty) {
+        postsContainer.innerHTML = `<p class="text-center text-gray-500">No posts yet</p>`;
+        return;
+      }
+      snapshot.forEach(doc => {
+        const post = doc.data();
+        const postId = doc.id;
+
+        const postEl = document.createElement("div");
+        postEl.className = "bg-white shadow rounded-xl p-4";
+        postEl.innerHTML = `
+          <div class="flex justify-between text-sm text-gray-500 mb-2">
+            <span>${post.email}</span>
+            <span>${post.createdAt?.toDate().toLocaleString() || ""}</span>
+          </div>
+          <p class="text-gray-800 mb-2">${post.text || ""}</p>
+          ${
+            post.mediaUrl
+              ? post.mediaUrl.match(/\.mp4|\.webm/)
+                ? `<video controls class="rounded-lg max-h-64 w-full"><source src="${post.mediaUrl}"></video>`
+                : `<img src="${post.mediaUrl}" class="rounded-lg max-h-64 w-full object-cover"/>`
+              : ""
+          }
+          <div class="flex space-x-6 mt-3 text-sm text-gray-500">
+            <button class="like-btn" data-id="${postId}">👍 ${post.likes || 0}</button>
+            <button class="comment-btn" data-id="${postId}">💬 Comment</button>
+          </div>
+          <div class="comments mt-3 space-y-2"></div>
+          <input type="text" placeholder="Write a comment..." class="comment-input mt-2 w-full border rounded p-1 text-sm"/>
+        `;
+
+        // Like button
+        postEl.querySelector(".like-btn").addEventListener("click", async e => {
+          await db.collection("posts").doc(postId).update({
+            likes: firebase.firestore.FieldValue.increment(1)
+          });
+        });
+
+        // Comment button
+        const commentInput = postEl.querySelector(".comment-input");
+        commentInput.addEventListener("keypress", async e => {
+          if (e.key === "Enter" && commentInput.value.trim()) {
+            await db.collection("posts").doc(postId).collection("comments").add({
+              text: commentInput.value.trim(),
+              email: auth.currentUser.email,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            commentInput.value = "";
+          }
+        });
+
+        // Load comments
+        db.collection("posts").doc(postId).collection("comments").orderBy("createdAt", "asc")
+          .onSnapshot(commentsSnap => {
+            const commentsEl = postEl.querySelector(".comments");
+            commentsEl.innerHTML = "";
+            commentsSnap.forEach(c => {
+              const cm = c.data();
+              const div = document.createElement("div");
+              div.className = "text-sm text-gray-700 bg-gray-100 p-2 rounded";
+              div.textContent = `${cm.email}: ${cm.text}`;
+              commentsEl.appendChild(div);
+            });
+          });
+
+        postsContainer.appendChild(postEl);
+      });
+    });
+}
