@@ -1,273 +1,334 @@
 // forum.js
-import { auth, db, storage } from "./firebase-config.js";
 
-const logoutBtn = document.getElementById("logout-btn");
-const postTextarea = document.getElementById("post-textarea");
-const postSubmitBtn = document.getElementById("post-submit-btn");
-const mediaUpload = document.getElementById("media-upload");
-const progressContainer = document.getElementById("progress-container");
-const uploadProgress = document.getElementById("upload-progress");
+import { auth, db, storage } from './firebase-config.js';
 
-const postsContainer = document.getElementById("posts-container");
-const feedView = document.getElementById("feed-view");
-const postDetailView = document.getElementById("post-detail-view");
-const singlePostContainer = document.getElementById("single-post-container");
-const threadsContainer = document.getElementById("threads-container");
-const backToForumBtn = document.getElementById("back-to-forum-btn");
+// --- DOM REFERENCES ---
+const feedView = document.getElementById('feed-view');
+const postDetailView = document.getElementById('post-detail-view');
+const singlePostContainer = document.getElementById('single-post-container');
+const threadsContainer = document.getElementById('threads-container');
+const backToForumBtn = document.getElementById('back-to-forum-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const postTextarea = document.getElementById('post-textarea');
+const postSubmitBtn = document.getElementById('post-submit-btn');
+const mediaUploadInput = document.getElementById('media-upload');
+const progressContainer = document.getElementById('progress-container');
+const uploadProgress = document.getElementById('upload-progress');
+const postsContainer = document.getElementById('posts-container');
+const sortNewestBtn = document.getElementById('sort-newest');
+const sortPopularBtn = document.getElementById('sort-popular');
 
-const sortNewestBtn = document.getElementById("sort-newest");
-const sortPopularBtn = document.getElementById("sort-popular");
+// --- STATE MANAGEMENT ---
+let currentUserId = null;
+let currentSortOrder = { field: 'createdAt', direction: 'desc' };
+let unsubscribePosts = null;
+let unsubscribeThreads = null;
+let fileToUpload = null;
 
-let currentSort = "newest"; // default sort
-let selectedMediaFile = null;
+// --- ANONYMOUS NAME & AVATAR GENERATOR ---
+const adjectives = ["Clever", "Wise", "Brave", "Silent", "Creative", "Humble", "Curious", "Fearless"];
+const nouns = ["Falcon", "Panda", "Coyote", "Sparrow", "Chameleon", "Jaguar", "Lion", "Wolf", "Eagle"];
+const avatars = ["👤", "🎭", "🤓", "🌟", "💡", "🚀", "🎓", "🦉", "🧠"];
 
-// ----------------- AUTH -----------------
-logoutBtn.addEventListener("click", () => {
-  auth.signOut().then(() => {
-    window.location.href = "login.html"; // redirect after logout
-  });
+function generateAnonymousData() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+    return { name: `${adj} ${noun}`, avatar: avatar };
+}
+
+// --- TIME FORMATTING HELPER ---
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return "Just now";
+}
+
+// --- AUTHENTICATION & INITIALIZATION ---
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUserId = user.uid;
+        fetchPosts();
+    } else {
+        window.location.href = 'index.html'; // Or your login page file name
+    }
 });
 
-// ----------------- POST CREATION -----------------
-mediaUpload.addEventListener("change", (e) => {
-  selectedMediaFile = e.target.files[0];
-});
+// --- VIEW MANAGEMENT ---
+function showFeedView() {
+    postDetailView.style.display = 'none';
+    feedView.style.display = 'block';
+    if (unsubscribeThreads) unsubscribeThreads(); // Stop listening to specific threads
+}
 
-postSubmitBtn.addEventListener("click", async () => {
-  const content = postTextarea.value.trim();
-  if (!content && !selectedMediaFile) {
-    alert("Post cannot be empty!");
-    return;
-  }
+function showPostDetailView(postId) {
+    feedView.style.display = 'none';
+    postDetailView.style.display = 'block';
+    singlePostContainer.innerHTML = `<div class="loader"></div>`;
+    threadsContainer.innerHTML = '';
 
-  postSubmitBtn.disabled = true;
-
-  let mediaUrl = null;
-  let mediaType = null;
-
-  if (selectedMediaFile) {
-    const storageRef = storage.ref(
-      `posts/${Date.now()}_${selectedMediaFile.name}`
-    );
-    const uploadTask = storageRef.put(selectedMediaFile);
-
-    progressContainer.style.display = "block";
-
-    await new Promise((resolve, reject) => {
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          uploadProgress.style.width = `${progress}%`;
-        },
-        (error) => reject(error),
-        async () => {
-          mediaUrl = await uploadTask.snapshot.ref.getDownloadURL();
-          mediaType = selectedMediaFile.type.startsWith("video")
-            ? "video"
-            : "image";
-          resolve();
+    db.collection('posts').doc(postId).get().then(doc => {
+        if (doc.exists) {
+            renderSinglePost(doc);
+            fetchAndRenderThreads(postId);
+        } else {
+            console.error("No such post found!");
+            showFeedView(); // Go back if post doesn't exist
         }
-      );
     });
-
-    progressContainer.style.display = "none";
-    uploadProgress.style.width = "0%";
-    selectedMediaFile = null;
-    mediaUpload.value = "";
-  }
-
-  await db.collection("posts").add({
-    content,
-    mediaUrl,
-    mediaType,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    upvotes: 0,
-  });
-
-  postTextarea.value = "";
-  postSubmitBtn.disabled = false;
-  loadPosts();
-});
-
-// ----------------- LOAD POSTS -----------------
-async function loadPosts() {
-  postsContainer.innerHTML = `<div class="loader"></div>`;
-
-  let query = db.collection("posts");
-
-  if (currentSort === "newest") {
-    query = query.orderBy("createdAt", "desc");
-  } else if (currentSort === "popular") {
-    query = query.orderBy("upvotes", "desc");
-  }
-
-  const snapshot = await query.get();
-  postsContainer.innerHTML = "";
-
-  snapshot.forEach((doc) => {
-    const post = doc.data();
-    const postEl = document.createElement("div");
-    postEl.className = "post-card clickable";
-
-    const date = post.createdAt
-      ? post.createdAt.toDate().toLocaleString()
-      : "Just now";
-
-    postEl.innerHTML = `
-      <div class="post-header">
-        <span class="post-author">Anonymous</span>
-        <span class="post-date">${date}</span>
-      </div>
-      <div class="post-content">${post.content || ""}</div>
-      ${
-        post.mediaUrl
-          ? `<div class="post-media-container">${
-              post.mediaType === "video"
-                ? `<video controls src="${post.mediaUrl}"></video>`
-                : `<img src="${post.mediaUrl}" alt="post media">`
-            }</div>`
-          : ""
-      }
-      <div class="post-footer">
-        <div class="post-footer-item upvote-btn" data-id="${doc.id}">
-          ⬆️ ${post.upvotes || 0}
-        </div>
-      </div>
-    `;
-
-    postEl.addEventListener("click", (e) => {
-      if (e.target.classList.contains("upvote-btn")) return; // avoid detail click
-      showPostDetail(doc.id, post);
-    });
-
-    const upvoteBtn = postEl.querySelector(".upvote-btn");
-    upvoteBtn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      await db.collection("posts").doc(doc.id).update({
-        upvotes: firebase.firestore.FieldValue.increment(1),
-      });
-      loadPosts();
-    });
-
-    postsContainer.appendChild(postEl);
-  });
-
-  if (snapshot.empty) {
-    postsContainer.innerHTML = "<p>No posts yet. Be the first!</p>";
-  }
 }
 
-// ----------------- POST DETAIL -----------------
-async function showPostDetail(postId, post) {
-  feedView.style.display = "none";
-  postDetailView.style.display = "block";
+backToForumBtn.addEventListener('click', showFeedView);
 
-  const date = post.createdAt
-    ? post.createdAt.toDate().toLocaleString()
-    : "Just now";
+// --- CORE APP & UPLOAD LOGIC ---
+logoutBtn.addEventListener('click', () => auth.signOut());
 
-  singlePostContainer.innerHTML = `
-    <div class="post-card">
-      <div class="post-header">
-        <span class="post-author">Anonymous</span>
-        <span class="post-date">${date}</span>
-      </div>
-      <div class="post-content">${post.content || ""}</div>
-      ${
-        post.mediaUrl
-          ? `<div class="post-media-container">${
-              post.mediaType === "video"
-                ? `<video controls src="${post.mediaUrl}"></video>`
-                : `<img src="${post.mediaUrl}" alt="post media">`
-            }</div>`
-          : ""
-      }
-    </div>
-    <div class="thread-form">
-      <textarea id="thread-textarea" placeholder="Write a reply..."></textarea>
-      <button id="thread-submit-btn">Reply</button>
-    </div>
-  `;
+mediaUploadInput.addEventListener('change', (e) => {
+    fileToUpload = e.target.files[0];
+    if (fileToUpload) console.log(`File selected: ${fileToUpload.name}`);
+});
 
-  threadsContainer.innerHTML = `<div class="loader"></div>`;
+postSubmitBtn.addEventListener('click', () => {
+    const questionText = postTextarea.value.trim();
+    if (!questionText && !fileToUpload) {
+        alert("Please write something or select a file to post.");
+        return;
+    }
+    if (fileToUpload) {
+        uploadFileAndCreatePost(questionText, fileToUpload);
+    } else {
+        createPost(questionText, null, null);
+    }
+});
 
-  // Load threads
-  const threadsSnap = await db
-    .collection("posts")
-    .doc(postId)
-    .collection("threads")
-    .orderBy("createdAt", "asc")
-    .get();
+function uploadFileAndCreatePost(text, file) {
+    postSubmitBtn.disabled = true;
+    progressContainer.style.display = 'block';
+    const uniqueFileName = `${Date.now()}_${file.name}`;
+    const storageRef = storage.ref(`posts/${uniqueFileName}`);
+    const uploadTask = storageRef.put(file);
 
-  threadsContainer.innerHTML = "";
-  threadsSnap.forEach((doc) => {
-    const thread = doc.data();
-    const threadEl = document.createElement("div");
-    threadEl.className = "thread-card";
-    threadEl.innerHTML = `
-      <div class="post-header">
-        <span class="post-author">Anonymous</span>
-        <span class="post-date">${
-          thread.createdAt
-            ? thread.createdAt.toDate().toLocaleString()
-            : "Just now"
-        }</span>
-      </div>
-      <div class="post-content">${thread.content}</div>
-    `;
-    threadsContainer.appendChild(threadEl);
-  });
+    uploadTask.on('state_changed', 
+        (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            uploadProgress.style.width = progress + '%';
+        }, 
+        (error) => {
+            console.error("Upload failed:", error);
+            alert("File upload failed. Please check your CORS settings and Storage rules.");
+            resetPostCreator();
+        }, 
+        () => {
+            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                createPost(text, downloadURL, file.type);
+            });
+        }
+    );
+}
 
-  // Add new thread
-  document
-    .getElementById("thread-submit-btn")
-    .addEventListener("click", async () => {
-      const reply = document
-        .getElementById("thread-textarea")
-        .value.trim();
-      if (!reply) return;
+function createPost(text, mediaUrl, mediaType) {
+    const anonymousData = generateAnonymousData();
+    db.collection('posts').add({
+        authorId: auth.currentUser.uid,
+        authorAnonymousName: anonymousData.name,
+        authorAvatar: anonymousData.avatar,
+        questionText: text,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        upvotes: 0,
+        answerCount: 0
+    }).then(() => {
+        resetPostCreator();
+    }).catch(error => {
+        console.error("Error creating post: ", error);
+        resetPostCreator();
+    });
+}
 
-      await db
-        .collection("posts")
-        .doc(postId)
-        .collection("threads")
-        .add({
-          content: reply,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+function resetPostCreator() {
+    postTextarea.value = '';
+    mediaUploadInput.value = '';
+    fileToUpload = null;
+    progressContainer.style.display = 'none';
+    uploadProgress.style.width = '0%';
+    postSubmitBtn.disabled = false;
+}
+
+// --- SORTING LOGIC ---
+sortNewestBtn.addEventListener('click', () => {
+    currentSortOrder = { field: 'createdAt', direction: 'desc' };
+    sortNewestBtn.classList.add('active');
+    sortPopularBtn.classList.remove('active');
+    fetchPosts();
+});
+
+sortPopularBtn.addEventListener('click', () => {
+    currentSortOrder = { field: 'upvotes', direction: 'desc' };
+    sortPopularBtn.classList.add('active');
+    sortNewestBtn.classList.remove('active');
+    fetchPosts();
+});
+
+// --- FETCHING & RENDERING (FEED VIEW) ---
+function fetchPosts() {
+    if (unsubscribePosts) unsubscribePosts();
+    postsContainer.innerHTML = `<div class="loader"></div>`;
+
+    unsubscribePosts = db.collection('posts')
+        .orderBy(currentSortOrder.field, currentSortOrder.direction)
+        .onSnapshot(snapshot => {
+            if (snapshot.empty) {
+                postsContainer.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">No questions yet. Be the first!</p>`;
+                return;
+            }
+            postsContainer.innerHTML = '';
+            snapshot.forEach(doc => renderPostCard(doc));
+        }, error => {
+            console.error("Error fetching posts:", error);
+            postsContainer.innerHTML = `<p style="text-align:center; color: red;">Error loading posts. Check console and security rules.</p>`;
         });
-
-      showPostDetail(postId, post); // reload detail
-    });
 }
 
-backToForumBtn.addEventListener("click", () => {
-  postDetailView.style.display = "none";
-  feedView.style.display = "block";
-  loadPosts();
-});
+function renderPostCard(doc) {
+    const post = doc.data();
+    const postId = doc.id;
+    const postDate = post.createdAt ? timeAgo(post.createdAt.toDate()) : 'Just now';
+    const postCard = document.createElement('div');
+    postCard.className = 'post-card clickable';
+    postCard.dataset.postId = postId;
 
-// ----------------- SORT HANDLERS -----------------
-sortNewestBtn.addEventListener("click", () => {
-  currentSort = "newest";
-  sortNewestBtn.classList.add("active");
-  sortPopularBtn.classList.remove("active");
-  loadPosts();
-});
+    let mediaHTML = '';
+    if (post.mediaUrl) {
+        if (post.mediaType.startsWith('image/')) {
+            mediaHTML = `<div class="post-media-container"><img src="${post.mediaUrl}" alt="Post image"></div>`;
+        } else if (post.mediaType.startsWith('video/')) {
+            mediaHTML = `<div class="post-media-container"><video controls src="${post.mediaUrl}"></video></div>`;
+        }
+    }
+    postCard.innerHTML = `
+        <div class="post-header">
+            <div class="user-avatar">${post.authorAvatar || '👤'}</div>
+            <div class="post-meta">
+                <strong class="post-author">${post.authorAnonymousName}</strong>
+                <span class="post-date">${postDate}</span>
+            </div>
+        </div>
+        <p class="post-content">${post.questionText || ''}</p>
+        ${mediaHTML}
+        <div class="post-footer">
+            <div class="post-footer-item upvote-btn" data-id="${postId}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <span>${post.upvotes || 0}</span>
+            </div>
+            <div class="post-footer-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <span>${post.answerCount || 0} Threads</span>
+            </div>
+        </div>
+    `;
+    postsContainer.appendChild(postCard);
+}
 
-sortPopularBtn.addEventListener("click", () => {
-  currentSort = "popular";
-  sortPopularBtn.classList.add("active");
-  sortNewestBtn.classList.remove("active");
-  loadPosts();
-});
+// --- FETCHING & RENDERING (POST-DETAIL VIEW) ---
+function renderSinglePost(doc) {
+    const post = doc.data();
+    const postId = doc.id;
+    const postDate = post.createdAt ? post.createdAt.toDate().toLocaleString() : 'Just now';
+    let mediaHTML = '';
+    if (post.mediaUrl) {
+        if (post.mediaType.startsWith('image/')) {
+            mediaHTML = `<div class="post-media-container"><img src="${post.mediaUrl}" alt="Post image"></div>`;
+        } else if (post.mediaType.startsWith('video/')) {
+            mediaHTML = `<div class="post-media-container"><video controls src="${post.mediaUrl}"></video></div>`;
+        }
+    }
+    singlePostContainer.innerHTML = `
+        <div class="post-card">
+             <div class="post-header">
+                <div class="user-avatar">${post.authorAvatar || '👤'}</div>
+                 <div class="post-meta">
+                    <strong class="post-author">${post.authorAnonymousName}</strong>
+                    <span class="post-date">${postDate}</span>
+                </div>
+            </div>
+            <p class="post-content">${post.questionText || ''}</p>
+            ${mediaHTML}
+            <div class="post-footer">
+                <div class="post-footer-item upvote-btn" data-id="${postId}">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                     <span>${post.upvotes || 0}</span>
+                </div>
+            </div>
+        </div>
+        <div class="thread-form post-creator">
+            <h3>Add to the Thread</h3>
+            <textarea id="thread-textarea" placeholder="Contribute your thoughts..."></textarea>
+            <button id="thread-submit-btn" data-post-id="${postId}">Add Reply</button>
+        </div>
+    `;
+}
 
-// ----------------- INIT -----------------
-auth.onAuthStateChanged((user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  } else {
-    loadPosts();
-  }
+function fetchAndRenderThreads(postId) {
+    if (unsubscribeThreads) unsubscribeThreads();
+    
+    unsubscribeThreads = db.collection('posts').doc(postId).collection('answers').orderBy('createdAt', 'asc')
+        .onSnapshot(snapshot => {
+            threadsContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const thread = doc.data();
+                const threadCard = document.createElement('div');
+                threadCard.className = 'thread-card';
+                threadCard.innerHTML = `
+                    <p><strong>${thread.authorAnonymousName}</strong> replied:</p>
+                    <p>${thread.answerText}</p>`;
+                threadsContainer.appendChild(threadCard);
+            });
+        });
+}
+
+// --- EVENT DELEGATION for dynamic content ---
+document.body.addEventListener('click', e => {
+    // Navigate to detail view
+    const postCard = e.target.closest('.post-card.clickable');
+    if (postCard) {
+        if (e.target.closest('.upvote-btn')) return;
+        showPostDetailView(postCard.dataset.postId);
+        return;
+    }
+
+    // Handle upvoting
+    const upvoteBtn = e.target.closest('.upvote-btn');
+    if (upvoteBtn) {
+        const postId = upvoteBtn.dataset.id;
+        db.collection('posts').doc(postId).update({ upvotes: firebase.firestore.FieldValue.increment(1) });
+        return;
+    }
+
+    // Handle thread/answer submission in detail view
+    if (e.target.id === 'thread-submit-btn') {
+        const postId = e.target.dataset.postId;
+        const threadTextarea = document.getElementById('thread-textarea');
+        const threadText = threadTextarea.value.trim();
+        if (!threadText) return;
+
+        const anonymousData = generateAnonymousData();
+        db.collection('posts').doc(postId).collection('answers').add({
+            authorId: auth.currentUser.uid,
+            authorAnonymousName: anonymousData.name,
+            authorAvatar: anonymousData.avatar,
+            answerText: threadText,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            threadTextarea.value = '';
+            db.collection('posts').doc(postId).update({ answerCount: firebase.firestore.FieldValue.increment(1) });
+        });
+    }
 });
