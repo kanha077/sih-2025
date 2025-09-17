@@ -1,6 +1,6 @@
 // forum.js
 
-import { auth, db, storage } from './firebase-config.js';
+import { auth, db } from './firebase-config.js'; // Assuming you don't need storage for this version yet
 
 // --- DOM ELEMENT REFERENCES ---
 const logoutBtn = document.querySelector('.logout-btn');
@@ -8,34 +8,29 @@ const postTextarea = document.querySelector('.post-textarea');
 const postSubmitBtn = document.querySelector('.submit-btn');
 const postsFeed = document.querySelector('.posts-feed');
 const leftSidebar = document.querySelector('.sidebar');
-const rightSidebar = document.querySelector('.right-sidebar');
 const floatingActionBtn = document.querySelector('.floating-action');
+const loadingIndicator = document.querySelector('.loading');
+
+// --- STATE MANAGEMENT ---
+let currentUserId = null;
+// We'll make the sorting functional later. For now, it defaults to newest.
+let currentSortOrder = { field: 'createdAt', direction: 'desc' };
+let unsubscribePosts = null; // To manage our real-time listener
 
 // --- AUTHENTICATION CHECK ---
 auth.onAuthStateChanged(user => {
-    if (!user) {
+    if (user) {
+        currentUserId = user.uid;
+        fetchPosts(); // Initial fetch of posts
+    } else {
         // If no user is logged in, redirect to the login page.
         window.location.href = 'index.html'; 
     }
 });
 
-// --- STATE MANAGEMENT ---
-let currentUserId = null;
-let currentSortOrder = { field: 'createdAt', direction: 'desc' };
-let unsubscribePosts = null;
-
-auth.onAuthStateChanged(user => {
-    if (user) {
-        currentUserId = user.uid;
-        fetchPosts(); // Initial fetch
-    } else {
-        window.location.href = 'index.html';
-    }
-});
-
 // --- ANONYMOUS NAME & AVATAR GENERATOR ---
-const adjectives = ["Clever", "Wise", "Brave", "Silent", "Creative", "Humble"];
-const nouns = ["Falcon", "Panda", "Coyote", "Sparrow", "Chameleon", "Jaguar"];
+const adjectives = ["Clever", "Wise", "Brave", "Silent", "Creative", "Humble", "Curious", "Fearless"];
+const nouns = ["Falcon", "Panda", "Coyote", "Sparrow", "Chameleon", "Jaguar", "Lion", "Wolf", "Eagle"];
 const avatars = ["👤", "🎭", "🤓", "🌟", "💡", "🚀", "🎓", "🦉", "🧠"];
 
 function generateAnonymousData() {
@@ -48,7 +43,7 @@ function generateAnonymousData() {
     };
 }
 
-// --- TIME FORMATTING ---
+// --- TIME FORMATTING HELPER ---
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;
@@ -66,14 +61,16 @@ function timeAgo(date) {
 
 // --- CORE LOGIC: FETCHING & RENDERING POSTS ---
 function fetchPosts() {
-    if (unsubscribePosts) unsubscribePosts(); // Detach old listener
+    if (unsubscribePosts) unsubscribePosts(); // Detach old listener to prevent memory leaks
 
-    postsFeed.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+    loadingIndicator.style.display = 'flex'; // Show spinner
+    postsFeed.innerHTML = ''; // Clear previous posts
 
     unsubscribePosts = db.collection('posts')
         .orderBy(currentSortOrder.field, currentSortOrder.direction)
         .onSnapshot(snapshot => {
-            postsFeed.innerHTML = ''; // Clear feed
+            loadingIndicator.style.display = 'none'; // Hide spinner
+            postsFeed.innerHTML = ''; // Clear feed again before rendering
             if (snapshot.empty) {
                 postsFeed.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No posts yet. Be the first to share!</p>`;
                 return;
@@ -81,6 +78,10 @@ function fetchPosts() {
             snapshot.forEach(doc => {
                 renderPost(doc.id, doc.data());
             });
+        }, error => {
+            console.error("Error fetching posts: ", error);
+            loadingIndicator.style.display = 'none';
+            postsFeed.innerHTML = `<p style="text-align: center; color: var(--warning);">Could not load posts. Please check your connection and security rules.</p>`;
         });
 }
 
@@ -88,13 +89,14 @@ function renderPost(postId, postData) {
     const postArticle = document.createElement('article');
     postArticle.className = 'post-card fade-in';
     
-    // Check if the post belongs to the current user
+    // Check if the post belongs to the current user and add a special class
     if (postData.authorId === currentUserId) {
         postArticle.classList.add('user-post');
     }
 
-    const postDate = postData.createdAt ? timeAgo(postData.createdAt.toDate()) : '';
+    const postDate = postData.createdAt ? timeAgo(postData.createdAt.toDate()) : '...';
 
+    // The entire post card is now dynamically created
     postArticle.innerHTML = `
         <div class="post-header">
             <div class="user-avatar">${postData.authorAvatar}</div>
@@ -103,12 +105,25 @@ function renderPost(postId, postData) {
                 <div class="post-time">${postDate}</div>
             </div>
         </div>
-        <div class="post-content">${postData.textContent}</div>
+        <div class="post-content">
+            ${postData.textContent}
+        </div>
         <div class="post-footer">
-            <button class="action-btn">❤️ <span>${postData.likes || 0}</span></button>
-            <button class="action-btn">💬 <span>${postData.comments || 0}</span></button>
-            <button class="action-btn">🔄 <span>${postData.shares || 0}</span></button>
-            <button class="action-btn">🔖</button>
+            <button class="action-btn">
+                <span>❤️</span>
+                <span>${postData.likes || 0}</span>
+            </button>
+            <button class="action-btn">
+                <span>💬</span>
+                <span>${postData.comments || 0}</span>
+            </button>
+            <button class="action-btn">
+                <span>🔄</span>
+                <span>${postData.shares || 0}</span>
+            </button>
+            <button class="action-btn">
+                <span>🔖</span>
+            </button>
         </div>
     `;
     postsFeed.appendChild(postArticle);
@@ -116,7 +131,7 @@ function renderPost(postId, postData) {
 
 // --- EVENT LISTENERS ---
 
-// Logout
+// Logout button
 logoutBtn.addEventListener('click', () => {
     auth.signOut();
 });
@@ -131,6 +146,7 @@ postSubmitBtn.addEventListener('click', () => {
 
     const anonymousData = generateAnonymousData();
 
+    // Add the new post to Firestore
     db.collection('posts').add({
         authorId: currentUserId,
         authorName: anonymousData.name,
@@ -141,16 +157,17 @@ postSubmitBtn.addEventListener('click', () => {
         comments: 0,
         shares: 0
     }).then(() => {
-        postTextarea.value = '';
+        postTextarea.value = ''; // Clear the input field
     }).catch(error => {
         console.error("Error creating post: ", error);
+        alert("Could not create post. Please try again.");
     });
 });
 
 // Sidebar Sorting and Filtering
 leftSidebar.addEventListener('click', (e) => {
     if (e.target.matches('.filter-option')) {
-        // Deactivate all buttons in the same group
+        // Deactivate all buttons in the same group first
         const group = e.target.closest('.filter-group');
         group.querySelectorAll('.filter-option').forEach(btn => btn.classList.remove('active'));
         
@@ -158,13 +175,13 @@ leftSidebar.addEventListener('click', (e) => {
         e.target.classList.add('active');
 
         // Note: Full sorting/filtering logic would require more complex queries.
-        // For now, this just updates the UI.
-        alert(`Filtering by: ${e.target.textContent}`);
+        // This is a placeholder to show the UI is interactive.
+        alert(`Filtering by: ${e.target.textContent.trim()}`);
     }
 });
 
-// Floating action button to scroll to top/focus post creator
+// Floating action button to scroll to top and focus the post creator
 floatingActionBtn.addEventListener('click', () => {
-    postTextarea.focus();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    postTextarea.focus();
 });
