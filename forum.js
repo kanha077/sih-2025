@@ -107,7 +107,7 @@ function renderPost(postId, postData) {
             </div>
         </div>
         <div class="post-content">
-            ${postData.textContent}
+            <p>${postData.textContent}</p>
         </div>
         <div class="post-footer">
             <button class="action-btn">
