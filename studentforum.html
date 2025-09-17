@@ -5,972 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Forum | Anonymous Discussions</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         :root {
-            --background: hsl(231, 45%, 8%);
-            --card-background: hsl(228, 45%, 12%);
-            --accent: hsl(228, 45%, 18%);
-            --primary: hsl(348, 83%, 47%);
-            --primary-hover: hsl(348, 70%, 42%);
-            --text-primary: hsl(180, 100%, 94%);
-            --text-secondary: hsl(200, 25%, 65%);
-            --border: hsl(210, 18%, 30%);
-            --success: hsl(142, 76%, 36%);
-            --warning: hsl(38, 92%, 50%);
-            --gradient-primary: linear-gradient(135deg, hsl(348, 83%, 47%), hsl(348, 100%, 60%));
-            --gradient-card: linear-gradient(145deg, hsl(228, 45%, 12%), hsl(228, 45%, 10%));
-            --shadow: 0 4px 20px hsla(0, 0%, 0%, 0.3);
-            --shadow-hover: 0 8px 30px hsla(348, 83%, 47%, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, hsla(348, 83%, 47%, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, hsla(200, 100%, 50%, 0.1) 0%, transparent 50%);
-            z-index: -1;
-            animation: backgroundPulse 10s ease-in-out infinite alternate;
-        }
-
-        @keyframes backgroundPulse {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.7; }
-        }
-
-        /* Navigation */
-        .navbar {
-            background: var(--gradient-card);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow);
-        }
-
-        .navbar h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .theme-toggle, .notification-btn {
-            background: none;
-            border: 2px solid var(--border);
-            color: var(--text-secondary);
-            padding: 0.5rem;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .theme-toggle:hover, .notification-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: scale(1.1);
-        }
-
-        .logout-btn {
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Mobile Menu Toggle */
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* Main Layout */
-        .main-container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            display: grid;
-            grid-template-columns: 280px 1fr 280px;
-            gap: 2rem;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background: var(--gradient-card);
-            padding: 1.5rem;
-            border-radius: 15px;
-            height: fit-content;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 100px;
-        }
-
-        .sidebar h3 {
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--primary);
-            font-weight: 600;
-        }
-
-        .filter-group {
-            margin-bottom: 2rem;
-        }
-
-        .filter-option {
-            display: block;
-            width: 100%;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            text-align: left;
-            padding: 0.8rem 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .filter-option::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-primary);
-            transition: left 0.3s ease;
-            z-index: -1;
-        }
-
-        .filter-option:hover::before,
-        .filter-option.active::before {
-            left: 0;
-        }
-
-        .filter-option:hover,
-        .filter-option.active {
-            color: white;
-            transform: translateX(5px);
-        }
-
-        /* Right Sidebar */
-        .right-sidebar {
-            background: var(--gradient-card);
-            padding: 1.5rem;
-            border-radius: 15px;
-            height: fit-content;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 100px;
-        }
-
-        .trending-topics {
-            margin-bottom: 2rem;
-        }
-
-        .trending-topic {
-            padding: 0.8rem;
-            margin-bottom: 0.5rem;
-            background: var(--accent);
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .trending-topic:hover {
-            transform: translateX(5px);
-            background: var(--primary);
-        }
-
-        .topic-name {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .topic-count {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        /* Post Creator */
-        .post-creator {
-            background: var(--gradient-card);
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .post-creator::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, var(--primary), transparent);
-            animation: rotate 4s linear infinite;
-            opacity: 0.1;
-            z-index: 0;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .post-creator > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .post-textarea {
-            width: 100%;
-            min-height: 120px;
-            background: var(--accent);
-            color: var(--text-primary);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            resize: vertical;
-            transition: all 0.3s ease;
-        }
-
-        .post-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 20px hsla(348, 83%, 47%, 0.3);
-            transform: scale(1.02);
-        }
-
-        .post-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-        }
-
-        .post-options {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .option-btn {
-            background: var(--accent);
-            border: 2px solid var(--border);
-            color: var(--text-secondary);
-            padding: 0.6rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .option-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .submit-btn {
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Post Cards */
-        .post-card {
-            background: var(--gradient-card);
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .post-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 4px;
-            background: var(--gradient-primary);
-            transition: left 0.4s ease;
-        }
-
-        .post-card:hover::before {
-            left: 0;
-        }
-
-        .post-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary);
-        }
-
-        /* User's Own Posts */
-        .post-card.user-post {
-            border: 2px solid var(--primary);
-            background: linear-gradient(145deg, hsla(348, 83%, 47%, 0.1), var(--card-background));
-        }
-
-        .post-card.user-post::after {
-            content: 'Your Post';
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: var(--gradient-primary);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .post-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .post-meta {
-            flex: 1;
-        }
-
-        .post-author {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .post-time {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .post-content {
-            font-size: 1.1rem;
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
-            word-wrap: break-word;
-        }
-
-        .post-media {
-            margin: 1rem 0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .post-media img,
-        .post-media video {
-            width: 100%;
-            height: auto;
-            max-height: 400px;
-            object-fit: cover;
-        }
-
-        .post-footer {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .action-btn:hover {
-            background: var(--accent);
-            color: var(--text-primary);
-            transform: scale(1.05);
-        }
-
-        .action-btn.liked {
-            color: var(--primary);
-            background: hsla(348, 83%, 47%, 0.1);
-        }
-
-        /* Interactive Elements */
-        .floating-action {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .floating-action:hover {
-            transform: scale(1.1) rotate(180deg);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent);
-            color: var(--text-primary);
-            padding: 0.5rem;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .tooltip:hover::after {
-            opacity: 1;
-        }
+            --background-color: #1a1a2e; --card-background: #16213e; --accent-color: #0f3460;
+            --primary-action: #e94560; --primary-action-hover: #c63a50; --text-primary: #e0fbfc;
+            --text-secondary: #93b5c6; --border-color: #2c3e50;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-primary); overflow-x: hidden; }
+        .navbar { background-color: var(--card-background); padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .navbar h1 { margin: 0; font-size: 1.5rem; }
+        #logout-btn { background-color: var(--primary-action); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; }
+        
+        /* --- Views --- */
+        #post-detail-view { display: none; }
+        
+        /* --- Main Layout & Sidebar --- */
+        .main-layout { display: grid; grid-template-columns: 250px 1fr; gap: 2rem; max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .sidebar { background-color: var(--card-background); padding: 1.5rem; border-radius: 8px; height: fit-content; }
+        .sidebar h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        .sort-options button { display: block; width: 100%; background: none; border: none; color: var(--text-secondary); text-align: left; padding: 0.75rem; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s, color 0.2s; }
+        .sort-options button.active, .sort-options button:hover { background-color: var(--accent-color); color: var(--text-primary); }
+        
+        /* --- Post Creation & Feed Cards --- */
+        .post-creator { padding: 1.5rem; border-radius: 8px; background-color: var(--card-background); margin-bottom: 1.5rem; }
+        .post-creator textarea { width: 100%; min-height: 80px; background-color: var(--accent-color); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 5px; padding: 0.75rem; font-family: 'Inter', sans-serif; font-size: 1rem; margin-bottom: 1rem; }
+        .post-card { background-color: var(--card-background); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid var(--accent-color); transition: transform 0.2s, box-shadow 0.2s; }
+        .post-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); cursor: pointer; }
+        .post-header { display: flex; align-items: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
+        .post-author { font-weight: 600; color: var(--primary-action); }
+        .post-date { margin-left: auto; }
+        .post-content { font-size: 1.1rem; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
+        .post-footer { display: flex; align-items: center; gap: 1.5rem; color: var(--text-secondary); margin-top: 1.5rem; }
+        .post-footer-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.5rem; border-radius: 5px; transition: color 0.2s; }
+        .post-footer-item.upvote-btn { cursor: pointer; }
+        .post-footer-item.upvote-btn:hover { color: var(--primary-action); }
+
+        /* --- Post Detail View --- */
+        .detail-container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        #back-to-forum-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-bottom: 1.5rem; transition: background-color 0.2s; }
+        #back-to-forum-btn:hover { background-color: var(--accent-color); }
+        .thread-card { background-color: var(--accent-color); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 5px; margin-top: 1.5rem; }
+        .thread-form { margin-top: 2rem; }
+
+        /* --- Loader --- */
+        .loader { border: 4px solid var(--accent-color); border-top: 4px solid var(--primary-action); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 3rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- NEW STYLES FOR FILE UPLOAD --- */
+        .post-creator-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
+        #media-upload-label { cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: background-color 0.2s; }
+        #media-upload-label:hover { background-color: var(--accent-color); }
+        #media-upload { display: none; }
+        .progress-bar-container { width: 100%; height: 8px; background-color: var(--accent-color); border-radius: 4px; margin-top: 1rem; display: none; }
+        #upload-progress { width: 0%; height: 100%; background-color: var(--primary-action); border-radius: 4px; transition: width 0.3s; }
+        .post-media-container { margin-top: 1rem; }
+        .post-media-container img, .post-media-container video { max-width: 100%; max-height: 500px; border-radius: 8px; }
+        #post-submit-btn { background-color: var(--primary-action); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
 
-        /* Modal for Post Details */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: hsla(0, 0%, 0%, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--gradient-card);
-            padding: 2rem;
-            border-radius: 15px;
-            max-width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-            position: relative;
-            border: 1px solid var(--border);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        /* Loading Animation */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--accent);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .sidebar,
-            .right-sidebar {
-                position: static;
-                order: 2;
-            }
-
-            .right-sidebar {
-                order: 3;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 1rem;
-            }
-
-            .nav-actions {
-                gap: 0.5rem;
-            }
-
-            .main-container {
-                margin: 1rem auto;
-                padding: 0 0.5rem;
-            }
-
-            .post-creator,
-            .post-card {
-                padding: 1.5rem;
-                border-radius: 10px;
-            }
-
-            .mobile-menu-toggle {
-                display: block;
-            }
-
-            .nav-actions .theme-toggle,
-            .nav-actions .notification-btn {
-                display: none;
-            }
-
-            .floating-action {
-                bottom: 1rem;
-                right: 1rem;
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-            }
-
-            .post-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-
-            .post-actions {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .post-options {
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .navbar h1 {
-                font-size: 1.2rem;
-            }
-
-            .post-creator,
-            .post-card {
-                padding: 1rem;
-            }
-
-            .post-textarea {
-                min-height: 100px;
-            }
-
-            .post-footer {
-                flex-wrap: wrap;
-                gap: 1rem;
-            }
-
-            .action-btn {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-            }
-        }
-
-        /* Dark Mode Enhancements */
-        .glow-effect {
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 10px var(--primary);
-            }
-            to {
-                text-shadow: 0 0 20px var(--primary), 0 0 30px var(--primary);
-            }
-        }
-
-        /* Scroll Animations */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeIn 0.6s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
-        <h1 class="glow-effect">🎓 Student Forum</h1>
-        <div class="nav-actions">
-            <button class="theme-toggle tooltip" data-tooltip="Toggle Theme">🌙</button>
-            <button class="notification-btn tooltip" data-tooltip="Notifications">🔔</button>
-            <button class="mobile-menu-toggle">☰</button>
-            <button class="logout-btn">Logout</button>
-        </div>
+        <h1>Student Forum</h1>
+        <button id="logout-btn">Logout</button>
     </nav>
-
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Left Sidebar -->
-        <aside class="sidebar fade-in">
-            <div class="filter-group">
-                <h3>📋 Sort Posts</h3>
-                <button class="filter-option active">🆕 Newest</button>
-                <button class="filter-option">🔥 Hot</button>
-                <button class="filter-option">⭐ Top Rated</button>
-                <button class="filter-option">💬 Most Discussed</button>
-            </div>
-
-            <div class="filter-group">
-                <h3>🏷️ Categories</h3>
-                <button class="filter-option">📚 Academic</button>
-                <button class="filter-option">🎯 Career</button>
-                <button class="filter-option">💼 Internships</button>
-                <button class="filter-option">🏆 Achievements</button>
-                <button class="filter-option">❓ General</button>
-            </div>
-
-            <div class="filter-group">
-                <h3>🎓 Year</h3>
-                <button class="filter-option">1️⃣ First Year</button>
-                <button class="filter-option">2️⃣ Second Year</button>
-                <button class="filter-option">3️⃣ Third Year</button>
-                <button class="filter-option">4️⃣ Final Year</button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Post Creator -->
-            <div class="post-creator fade-in">
-                <textarea class="post-textarea" placeholder="💭 Share your thoughts anonymously... What's on your mind?"></textarea>
-                <div class="post-actions">
-                    <div class="post-options">
-                        <button class="option-btn tooltip" data-tooltip="Add Image">📷</button>
-                        <button class="option-btn tooltip" data-tooltip="Add Poll">📊</button>
-                        <button class="option-btn tooltip" data-tooltip="Add Link">🔗</button>
-                        <button class="option-btn tooltip" data-tooltip="Add Tags">🏷️</button>
-                    </div>
-                    <button class="submit-btn">✨ Post Anonymously</button>
+    
+    <div id="feed-view">
+        <main class="main-layout">
+            <aside class="sidebar">
+                <h3>Sort Posts</h3>
+                <div class="sort-options">
+                    <button id="sort-newest" class="active">Newest</button>
+                    <button id="sort-popular">Most Popular</button>
                 </div>
-            </div>
-
-            <!-- Posts Feed -->
-            <div class="posts-feed">
-                <!-- User's Own Post Example -->
-                <article class="post-card user-post fade-in">
-                    <div class="post-header">
-                        <div class="user-avatar">👤</div>
-                        <div class="post-meta">
-                            <div class="post-author">Anonymous Student</div>
-                            <div class="post-time">2 hours ago</div>
-                        </div>
+            </aside>
+            <section class="main-content">
+                <div class="post-creator">
+                    <textarea id="post-textarea" placeholder="Ask a question anonymously..."></textarea>
+                    <div class="progress-bar-container" id="progress-container">
+                        <div id="upload-progress"></div>
                     </div>
-                    <div class="post-content">
-                        Has anyone else struggled with the advanced algorithms course? I'm finding it really challenging to keep up with the pace. Any study tips or resources that helped you understand dynamic programming better? 🤔
+                    <div class="post-creator-actions">
+                        <label for="media-upload" id="media-upload-label" title="Add Photo or Video">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                        </label>
+                        <input type="file" id="media-upload" accept="image/*,video/*">
+                        <button id="post-submit-btn">Post</button>
                     </div>
-                    <div class="post-footer">
-                        <button class="action-btn liked">
-                            <span>❤️</span>
-                            <span>24</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>💬</span>
-                            <span>12</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔄</span>
-                            <span>3</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔖</span>
-                        </button>
-                    </div>
-                </article>
-
-                <!-- Regular Post Examples -->
-                <article class="post-card fade-in">
-                    <div class="post-header">
-                        <div class="user-avatar">🎭</div>
-                        <div class="post-meta">
-                            <div class="post-author">Anonymous Scholar</div>
-                            <div class="post-time">4 hours ago</div>
-                        </div>
-                    </div>
-                    <div class="post-content">
-                        Just got my internship offer from a major tech company! 🎉 The interview process was intense but totally worth it. Happy to share my experience and tips with anyone preparing for similar interviews.
-                    </div>
-                    <div class="post-media">
-                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=300&fit=crop" alt="Celebration">
-                    </div>
-                    <div class="post-footer">
-                        <button class="action-btn">
-                            <span>❤️</span>
-                            <span>89</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>💬</span>
-                            <span>45</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔄</span>
-                            <span>12</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔖</span>
-                        </button>
-                    </div>
-                </article>
-
-                <article class="post-card fade-in">
-                    <div class="post-header">
-                        <div class="user-avatar">🤓</div>
-                        <div class="post-meta">
-                            <div class="post-author">Study Buddy</div>
-                            <div class="post-time">6 hours ago</div>
-                        </div>
-                    </div>
-                    <div class="post-content">
-                        Looking for study partners for the upcoming machine learning final exam. Anyone interested in forming a study group? We could meet virtually and work through practice problems together. 📚✨
-                    </div>
-                    <div class="post-footer">
-                        <button class="action-btn">
-                            <span>❤️</span>
-                            <span>34</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>💬</span>
-                            <span>28</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔄</span>
-                            <span>8</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔖</span>
-                        </button>
-                    </div>
-                </article>
-
-                <article class="post-card fade-in">
-                    <div class="post-header">
-                        <div class="user-avatar">🌟</div>
-                        <div class="post-meta">
-                            <div class="post-author">Curious Mind</div>
-                            <div class="post-time">8 hours ago</div>
-                        </div>
-                    </div>
-                    <div class="post-content">
-                        Has anyone attended the career fair this year? I'm a bit nervous about approaching recruiters. Any advice on how to make a good first impression? What questions should I prepare? 🎯
-                    </div>
-                    <div class="post-footer">
-                        <button class="action-btn">
-                            <span>❤️</span>
-                            <span>67</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>💬</span>
-                            <span>52</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔄</span>
-                            <span>15</span>
-                        </button>
-                        <button class="action-btn">
-                            <span>🔖</span>
-                        </button>
-                    </div>
-                </article>
-
-                <!-- Loading Indicator -->
-                <div class="loading">
-                    <div class="spinner"></div>
                 </div>
-            </div>
+                <div id="posts-container">
+                    <div class="loader"></div>
+                </div>
+            </section>
         </main>
-
-        <!-- Right Sidebar -->
-        <aside class="right-sidebar fade-in">
-            <div class="trending-topics">
-                <h3>🔥 Trending Topics</h3>
-                <div class="trending-topic">
-                    <div class="topic-name">#FinalExams</div>
-                    <div class="topic-count">156 posts</div>
-                </div>
-                <div class="trending-topic">
-                    <div class="topic-name">#Internships2024</div>
-                    <div class="topic-count">89 posts</div>
-                </div>
-                <div class="trending-topic">
-                    <div class="topic-name">#StudyTips</div>
-                    <div class="topic-count">234 posts</div>
-                </div>
-                <div class="trending-topic">
-                    <div class="topic-name">#CareerAdvice</div>
-                    <div class="topic-count">178 posts</div>
-                </div>
-            </div>
-
-            <div class="online-stats">
-                <h3>📊 Community Stats</h3>
-                <div style="background: var(--accent); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-                    <div style="color: var(--success); font-weight: 600;">🟢 342 Active Now</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">👥 2,847 Total Members</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">📝 12,456 Posts Today</div>
-                </div>
-            </div>
-
-            <div class="quick-actions">
-                <h3>⚡ Quick Actions</h3>
-                <button class="filter-option" style="margin-bottom: 0.5rem;">🆘 Need Help</button>
-                <button class="filter-option" style="margin-bottom: 0.5rem;">📢 Make Announcement</button>
-                <button class="filter-option" style="margin-bottom: 0.5rem;">📋 Create Poll</button>
-                <button class="filter-option">🎉 Share Achievement</button>
-            </div>
-        </aside>
     </div>
 
-    <!-- Floating Action Button -->
-    <button class="floating-action tooltip" data-tooltip="Create New Post">✏️</button>
-
-    <!-- Modal Overlay -->
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close">✕</button>
-            <div class="modal-body">
-                <!-- Modal content will be inserted here -->
-            </div>
+    <div id="post-detail-view">
+        <div class="detail-container">
+            <button id="back-to-forum-btn">&larr; Back to Forum</button>
+            <div id="single-post-container"></div>
+            <div id="threads-container"></div>
         </div>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script> <script src="firebase-config.js" type="module"></script>
+    <script src="forum.js" type="module"></script>
 </body>
 </html>
