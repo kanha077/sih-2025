@@ -1,13 +1,8 @@
-
-
-
 // firebase-config.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
-        const firebaseConfig = {
+// Your Firebase configuration object
+      
+          const firebaseConfig = {
   apiKey: "AIzaSyBr347m53UAvyMcTOjQwrIN_kOFYcenIMM",
   authDomain: "ananda-74477.firebaseapp.com",
   databaseURL: "https://ananda-74477-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -17,11 +12,13 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-s
   appId: "1:525918416681:web:fb89b43c7a395816021138",
   measurementId: "G-CL5KLMJD6N"
 };
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 
-// ✅ Export
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export default app;
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Initialize and export Firebase services
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage(); // THIS IS NEW
+
+export { auth, db, storage }; // ADD STORAGE HERE
