@@ -16,9 +16,9 @@
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Initialize Firebase services
+// Initialize and export Firebase services
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage(); // THIS IS NEW
 
-// Export the services to be used in other files
-export { auth, db };
+export { auth, db, storage }; // ADD STORAGE HERE
