@@ -1,19 +1,17 @@
 import { auth, db } from './firebase-config.js';
 
 // --- DOM REFERENCES ---
+const feedView = document.getElementById('feed-view');
+const postDetailView = document.getElementById('post-detail-view');
+const singlePostContainer = document.getElementById('single-post-container');
+const threadsContainer = document.getElementById('threads-container');
+const backToForumBtn = document.getElementById('back-to-forum-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const postTextarea = document.getElementById('post-textarea');
 const postSubmitBtn = document.getElementById('post-submit-btn');
 const postsContainer = document.getElementById('posts-container');
 const sortNewestBtn = document.getElementById('sort-newest');
 const sortPopularBtn = document.getElementById('sort-popular');
-
-// View containers
-const feedView = document.getElementById('feed-view');
-const postDetailView = document.getElementById('post-detail-view');
-const singlePostContainer = document.getElementById('single-post-container');
-const threadsContainer = document.getElementById('threads-container');
-const backToForumBtn = document.getElementById('back-to-forum-btn');
 
 let currentSortOrder = { field: 'createdAt', direction: 'desc' };
 let unsubscribePosts = null; // To store our real-time listeners
@@ -22,14 +20,19 @@ let unsubscribeThreads = null;
 // --- ANONYMOUS NAME GENERATOR ---
 const adjectives = ["Clever", "Curious", "Brave", "Wise", "Silent", "Scholarly", "Creative", "Fearless", "Humble"];
 const nouns = ["Falcon", "Panda", "Coyote", "Sparrow", "Chameleon", "Jaguar", "Lion", "Wolf", "Eagle"];
-function generateAnonymousName() { /* ... same as before ... */ }
+
+function generateAnonymousName() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    return `${adj} ${noun}`;
+}
 
 // --- AUTHENTICATION & INITIALIZATION ---
 auth.onAuthStateChanged(user => {
     if (user) {
         fetchPosts(); // Load the forum posts on page load
     } else {
-        window.location.href = 'index.html';
+        window.location.href = 'index.html'; // Or your login page file name
     }
 });
 
@@ -53,6 +56,7 @@ function showPostDetailView(postId) {
             fetchAndRenderThreads(postId);
         } else {
             console.error("No such post found!");
+            showFeedView(); // Go back if post doesn't exist
         }
     });
 }
@@ -62,10 +66,35 @@ backToForumBtn.addEventListener('click', showFeedView);
 // --- CORE APP LOGIC ---
 logoutBtn.addEventListener('click', () => auth.signOut());
 
-postSubmitBtn.addEventListener('click', () => { /* ... same as before ... */ });
+postSubmitBtn.addEventListener('click', () => {
+    const questionText = postTextarea.value.trim();
+    if (!questionText) return;
 
-sortNewestBtn.addEventListener('click', () => { /* ... same as before ... */ });
-sortPopularBtn.addEventListener('click', () => { /* ... same as before ... */ });
+    db.collection('posts').add({
+        authorId: auth.currentUser.uid,
+        authorAnonymousName: generateAnonymousName(),
+        questionText: questionText,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        upvotes: 0,
+        answerCount: 0
+    }).then(() => {
+        postTextarea.value = '';
+    }).catch(error => console.error("Error adding post: ", error));
+});
+
+sortNewestBtn.addEventListener('click', () => {
+    currentSortOrder = { field: 'createdAt', direction: 'desc' };
+    sortNewestBtn.classList.add('active');
+    sortPopularBtn.classList.remove('active');
+    fetchPosts();
+});
+
+sortPopularBtn.addEventListener('click', () => {
+    currentSortOrder = { field: 'upvotes', direction: 'desc' };
+    sortPopularBtn.classList.add('active');
+    sortNewestBtn.classList.remove('active');
+    fetchPosts();
+});
 
 
 // --- FETCHING & RENDERING (FEED VIEW) ---
@@ -77,7 +106,7 @@ function fetchPosts() {
         .orderBy(currentSortOrder.field, currentSortOrder.direction)
         .onSnapshot(snapshot => {
             if (snapshot.empty) {
-                postsContainer.innerHTML = `<p>No questions yet. Be the first!</p>`;
+                postsContainer.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">No questions yet. Be the first!</p>`;
                 return;
             }
             postsContainer.innerHTML = '';
@@ -166,6 +195,8 @@ document.body.addEventListener('click', e => {
     // Navigate to detail view
     const postCard = e.target.closest('.post-card.clickable');
     if (postCard) {
+        // Check if the click was on the upvote button inside the card, if so, don't navigate
+        if (e.target.closest('.upvote-btn')) return;
         showPostDetailView(postCard.dataset.postId);
         return;
     }
@@ -196,10 +227,3 @@ document.body.addEventListener('click', e => {
         });
     }
 });
-
-// Helper function for name generator
-function generateAnonymousName() {
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    return `${adj} ${noun}`;
-}
