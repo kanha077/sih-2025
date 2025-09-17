@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Student Forum</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --background-color: #f0f2f5;
+            --form-background: #ffffff;
+            --text-color: #333;
+            --input-border: #ccc;
+            --input-focus-border: #007bff;
+            --success-color: #1e8e3e;
+            --error-color: #d93025;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+        
+        /* --- HEADER STYLES --- */
+        .page-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header .logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 1rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        /* --- FORM CONTAINER & SLIDING ANIMATION --- */
+        .container {
+            background-color: var(--form-background);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            overflow: hidden; /* This is key for the sliding animation */
+        }
+        
+        .forms-wrapper {
+            display: flex;
+            width: 200%; /* Makes space for two forms */
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        /* This class will be toggled by JS to slide the forms */
+        .container.show-signup .forms-wrapper {
+            transform: translateX(-50%);
+        }
+
+        .form-view {
+            width: 50%; /* Each form takes up half of the wrapper */
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .form-view h2 {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        /* --- INPUTS, BUTTONS & LINKS --- */
+        .input-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+            position: relative; /* For password icon positioning */
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+        }
+        
+        .password-toggle-icon {
+            position: absolute;
+            top: 68%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .password-toggle-icon:hover {
+            color: var(--text-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98); /* Click feedback */
+        }
+
+        .toggle-link {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .toggle-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+
+        .message-area {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 40px;
+            line-height: 1.4;
+        }
+
+        .message-area.error { color: var(--error-color); }
+        .message-area.success { color: var(--success-color); }
+        .message-area .suggestions {
+            font-size: 0.8rem;
+            color: #555;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>Student Forum</h1>
+    </header>
+
+    <div class="container" id="main-container">
+        <div class="forms-wrapper">
+            <div class="form-view" id="login-view">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required>
+                        <span class="password-toggle-icon" id="toggle-login-password">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.816 1.57-2.43 2.825-4.223 3.499C9.366 11.83 8.71 12 8 12c-.71 0-1.365-.17-1.996-.499a11.177 11.177 0 0 1-2.203-1.42A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
+                        </span>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+                <p class="message-area" id="login-message"></p>
+                <p class="toggle-link">Not registered? <a href="#" id="show-signup">Create an account</a></p>
+            </div>
+
+            <div class="form-view" id="signup-view">
+                <h2>Create Account</h2>
+                <form id="signup-form">
+                    <div class="input-group">
+                        <label for="signup-username">Choose a Username</label>
+                        <input type="text" id="signup-username" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password">Choose a Password</label>
+                        <input type="password" id="signup-password" name="password" required>
+                         <span class="password-toggle-icon" id="toggle-signup-password">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.816 1.57-2.43 2.825-4.223 3.499C9.366 11.83 8.71 12 8 12c-.71 0-1.365-.17-1.996-.499a11.177 11.177 0 0 1-2.203-1.42A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
+                        </span>
+                    </div>
+                    <button type="submit">Create</button>
+                </form>
+                <p class="message-area" id="signup-message"></p>
+                <p class="toggle-link">Already have an account? <a href="#" id="show-login">Back to Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // =======================================================================
+            // --- FIREBASE INITIALIZATION ---
+            //
+            // IMPORTANT: The details below WILL BE VISIBLE to anyone who inspects
+            // your site's code. This is normal for web apps.
+            // Your app's security depends on FIREBASE SECURITY RULES in your
+            // Firebase project console, NOT on hiding these keys.
+            //
+            // =======================================================================
+            const firebaseConfig = {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_AUTH_DOMAIN",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_STORAGE_BUCKET",
+                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // --- DOM ELEMENT SELECTION ---
+            const mainContainer = document.getElementById('main-container');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const loginMessage = document.getElementById('login-message');
+            const signupMessage = document.getElementById('signup-message');
+            const showSignupLink = document.getElementById('show-signup');
+            const showLoginLink = document.getElementById('show-login');
+
+            // --- VIEW TOGGLING FOR SLIDING ANIMATION ---
+            showSignupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                mainContainer.classList.add('show-signup');
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                mainContainer.classList.remove('show-signup');
+            });
+            
+            // --- SHOW/HIDE PASSWORD LOGIC ---
+            const eyeIconHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.816 1.57-2.43 2.825-4.223 3.499C9.366 11.83 8.71 12 8 12c-.71 0-1.365-.17-1.996-.499a11.177 11.177 0 0 1-2.203-1.42A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>`;
+            const eyeSlashIconHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.94 5.94 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.14-.119.277-.185.415l.777.771z"/><path d="M12.5 10a4.5 4.5 0 0 1-1.378-8.625L10.46 2.04A6.98 6.98 0 0 0 8 2c-2.43 0-4.314 1.11-5.68 2.522l.77.772A5.94 5.94 0 0 1 8 3.5c.712 0 1.397.158 2.022.44l.636.636A3.486 3.486 0 0 0 8 5.5a3.5 3.5 0 0 0-3.5 3.5c0 .358.055.706.157 1.037l.636.636A2.498 2.498 0 0 1 8 8.5a2.5 2.5 0 0 1 2.5 2.5c0 .298-.053.585-.148.854l.77.772a4.5 4.5 0 0 1-2.122.99A6.979 6.979 0 0 0 8 14c-2.43 0-4.314-1.11-5.68-2.522l.77.772A5.94 5.94 0 0 1 8 12.5c.712 0 1.397.158 2.022.44l.636.636a3.5 3.5 0 0 0 1.84-1.575zM2.04 4.302l.77.771A13.134 13.134 0 0 0 1.172 8l.055.145c.816 1.57 2.43 2.825 4.223 3.499l.77.772A7.029 7.029 0 0 1 8 14c.66 0 1.298-.095 1.89-.27l.77.772A8.5 8.5 0 0 1 8 15c-4.477 0-7.175-4.5-7.92-5.817a13.627 13.627 0 0 1 1.96-2.88zM4.5 8a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0z"/><path d="M1.323 1.323l13.354 13.354-1.414 1.414L1.323 2.737 1.323 1.323z"/></svg>`;
+            
+            function setupPasswordToggle(inputId, toggleId) {
+                const passwordInput = document.getElementById(inputId);
+                const toggleIcon = document.getElementById(toggleId);
+                
+                toggleIcon.addEventListener('click', () => {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        toggleIcon.innerHTML = eyeSlashIconHTML;
+                    } else {
+                        passwordInput.type = 'password';
+                        toggleIcon.innerHTML = eyeIconHTML;
+                    }
+                });
+            }
+            
+            setupPasswordToggle('login-password', 'toggle-login-password');
+            setupPasswordToggle('signup-password', 'toggle-signup-password');
+
+            // --- FIREBASE FORM SUBMISSION LOGIC ---
+
+            // Handle Signup
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = signupForm.username.value.trim();
+                const password = signupForm.password.value;
+                const email = `${username}@studentforum.com`;
+                
+                signupMessage.textContent = '';
+                signupMessage.className = 'message-area';
+
+                try {
+                    const usernameDoc = await db.collection('usernames').doc(username).get();
+                    if (usernameDoc.exists) {
+                        const suggestion1 = `${username}${Math.floor(Math.random() * 100)}`;
+                        const suggestion2 = `${username}_${new Date().getFullYear() % 100}`;
+                        signupMessage.innerHTML = `Username "${username}" already exists. <div class="suggestions">Try: ${suggestion1} or ${suggestion2}</div>`;
+                        signupMessage.className = 'message-area error';
+                        return;
+                    }
+
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    const user = userCredential.user;
+
+                    await db.collection('usernames').doc(username).set({ uid: user.uid });
+
+                    signupMessage.textContent = 'Account created! You can now log in.';
+                    signupMessage.className = 'message-area success';
+                    signupForm.reset();
+
+                } catch (error) {
+                    signupMessage.textContent = error.message;
+                    signupMessage.className = 'message-area error';
+                }
+            });
+
+            // Handle Login
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = loginForm.username.value.trim();
+                const password = loginForm.password.value;
+                const email = `${username}@studentforum.com`;
+
+                loginMessage.textContent = '';
+                loginMessage.className = 'message-area';
+
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    loginMessage.textContent = `Welcome back, ${username}! Login successful.`;
+                    loginMessage.className = 'message-area success';
+                } catch (error) {
+                    loginMessage.textContent = 'Invalid username or password.';
+                    loginMessage.className = 'message-area error';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
