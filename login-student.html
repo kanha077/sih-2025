@@ -240,15 +240,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // =======================================================================
-            // --- FIREBASE INITIALIZATION ---
-            //
-            // IMPORTANT: The details below WILL BE VISIBLE to anyone who inspects
-            // your site's code. This is normal for web apps.
-            // Your app's security depends on FIREBASE SECURITY RULES in your
-            // Firebase project console, NOT on hiding these keys.
-            //
-            // =======================================================================
+      
           const firebaseConfig = {
   apiKey: "AIzaSyBr347m53UAvyMcTOjQwrIN_kOFYcenIMM",
   authDomain: "ananda-74477.firebaseapp.com",
@@ -355,9 +347,17 @@
                 loginMessage.className = 'message-area';
 
                 try {
-                    await auth.signInWithEmailAndPassword(email, password);
-                    loginMessage.textContent = `Welcome back, ${username}! Login successful.`;
-                    loginMessage.className = 'message-area success';
+                   // ... inside the loginForm event listener's try block
+await auth.signInWithEmailAndPassword(email, password);
+
+// 1. Show a success message to the user
+loginMessage.textContent = `Welcome back, ${username}! Redirecting...`;
+loginMessage.className = 'message-area success';
+
+// 2. Wait 1.5 seconds, then redirect to the new page
+setTimeout(() => {
+    window.location.href = 'studentforum.html';
+}, 1500); // 1500 milliseconds = 1.5 seconds
                 } catch (error) {
                     loginMessage.textContent = 'Invalid username or password.';
                     loginMessage.className = 'message-area error';
