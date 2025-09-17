@@ -1,7 +1,10 @@
-// firebase-config.js
 
-// Your Firebase configuration object
-      
+
+// firebase-config.js
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
           const firebaseConfig = {
   apiKey: "AIzaSyBr347m53UAvyMcTOjQwrIN_kOFYcenIMM",
   authDomain: "ananda-74477.firebaseapp.com",
@@ -14,11 +17,10 @@
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-// Initialize and export Firebase services
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage(); // THIS IS NEW
-
-export { auth, db, storage }; // ADD STORAGE HERE
+// ✅ Export properly
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export default app;
