@@ -3,56 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Forum | Anonymous Discussions</title>
+    <title>Student Forum</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
         :root {
-            --background-color: #1a1a2e; --card-background: #16213e; --accent-color: #0f3460;
-            --primary-action: #e9ced2; --primary-action-hover: #da99a3; --text-primary: #e0fbfc;
-            --text-secondary: #93b5c6; --border-color: #2c3e50;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --background-color: #1a1a2e;
+            --card-background: #16213e;
+            --accent-color: #0f3460;
+            --text-primary: #e0fbfc;
+            --text-secondary: #93b5c6;
+            --border-color: #2c3e50;
+            --primary-action: #e94560;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-primary); overflow-x: hidden; }
-        .navbar { background-color: var(--card-background); padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: var(--card-background);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .navbar h1 { margin: 0; font-size: 1.5rem; }
-        #logout-btn { background-color: var(--primary-action); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; }
-        
-        /* --- Views --- */
-        #post-detail-view { display: none; }
-        
-        /* --- Main Layout & Sidebar --- */
-        .main-layout { display: grid; grid-template-columns: 250px 1fr; gap: 2rem; max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-        .sidebar { background-color: var(--card-background); padding: 1.5rem; border-radius: 8px; height: fit-content; }
+        #logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .sidebar {
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            height: fit-content;
+        }
         .sidebar h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-        .sort-options button { display: block; width: 100%; background: none; border: none; color: var(--text-secondary); text-align: left; padding: 0.75rem; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s, color 0.2s; }
-        .sort-options button.active, .sort-options button:hover { background-color: var(--accent-color); color: var(--text-primary); }
-        
-        /* --- Post Creation & Feed Cards --- */
-        .post-creator { padding: 1.5rem; border-radius: 8px; background-color: var(--card-background); margin-bottom: 1.5rem; }
-        .post-creator textarea { width: 100%; min-height: 80px; background-color: var(--accent-color); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 5px; padding: 0.75rem; font-family: 'Inter', sans-serif; font-size: 1rem; margin-bottom: 1rem; }
-        .post-card { background-color: var(--card-background); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid var(--accent-color); transition: transform 0.2s, box-shadow 0.2s; }
-        .post-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); cursor: pointer; }
-        .post-header { display: flex; align-items: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
+        .sort-options button {
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            text-align: left;
+            padding: 0.75rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sort-options button.active, .sort-options button:hover {
+            background-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+        .post-creator {
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .post-creator textarea {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 0.75rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            resize: vertical;
+            background-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+        .post-card {
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent-color);
+        }
+        .post-card.clickable {
+             transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .post-card.clickable:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
         .post-author { font-weight: 600; color: var(--primary-action); }
-        .post-date { margin-left: auto; }
-        .post-content { font-size: 1.1rem; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
-        .post-footer { display: flex; align-items: center; gap: 1.5rem; color: var(--text-secondary); margin-top: 1.5rem; }
-        .post-footer-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.5rem; border-radius: 5px; transition: color 0.2s; }
-        .post-footer-item.upvote-btn { cursor: pointer; }
+        .post-date { margin-left: auto; font-size: 0.9rem; color: var(--text-secondary); }
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .post-footer {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            color: var(--text-secondary);
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .post-footer-item { display: flex; align-items: center; gap: 0.5rem; }
+        .post-footer-item.upvote-btn { cursor: pointer; transition: color 0.2s; }
         .post-footer-item.upvote-btn:hover { color: var(--primary-action); }
-
-        /* --- Post Detail View --- */
         .detail-container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
         #back-to-forum-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-bottom: 1.5rem; transition: background-color 0.2s; }
         #back-to-forum-btn:hover { background-color: var(--accent-color); }
         .thread-card { background-color: var(--accent-color); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 5px; margin-top: 1.5rem; }
         .thread-form { margin-top: 2rem; }
-
-        /* --- Loader --- */
         .loader { border: 4px solid var(--accent-color); border-top: 4px solid var(--primary-action); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 3rem auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* --- NEW STYLES FOR FILE UPLOAD --- */
         .post-creator-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
         #media-upload-label { cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: background-color 0.2s; }
         #media-upload-label:hover { background-color: var(--accent-color); }
@@ -62,7 +150,6 @@
         .post-media-container { margin-top: 1rem; }
         .post-media-container img, .post-media-container video { max-width: 100%; max-height: 500px; border-radius: 8px; }
         #post-submit-btn { background-color: var(--primary-action); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
-
     </style>
 </head>
 <body>
@@ -94,6 +181,7 @@
                         <button id="post-submit-btn">Post</button>
                     </div>
                 </div>
+                
                 <div id="posts-container">
                     <div class="loader"></div>
                 </div>
@@ -101,7 +189,7 @@
         </main>
     </div>
 
-    <div id="post-detail-view">
+    <div id="post-detail-view" style="display: none;">
         <div class="detail-container">
             <button id="back-to-forum-btn">&larr; Back to Forum</button>
             <div id="single-post-container"></div>
@@ -112,7 +200,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script> <script src="firebase-config.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script> 
+    
+    <script src="firebase-config.js" type="module"></script>
     <script src="forum.js" type="module"></script>
 </body>
 </html>
