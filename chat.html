@@ -89,218 +89,217 @@
         </main>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
     <script type="module">
-    import { supabase } from './supBaseClient.js';
+        // Import the initialized services from your config file
+        import { auth, db, rtdb } from './firebaseConfig.js';
 
-    let currentUser = null;
-    let activeChatId = null;
-    let messageSubscription = null;
-    
-    const userListEl = document.getElementById('user-list');
-    const initialViewEl = document.getElementById('initial-view');
-    const chatAreaEl = document.getElementById('chat-area');
-    const sendButton = document.getElementById('send-button');
-    const messageListEl = document.getElementById('message-list');
+        let currentUser = null;
+        let userRole = null;
+        let activeChatId = null;
+        let unsubscribeMessages = null; // To stop listening to old chats
 
-    async function initialize() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            window.location.href = '/login.html';
-            return;
-        }
+        const userListEl = document.getElementById('user-list');
+        const initialViewEl = document.getElementById('initial-view');
+        const chatAreaEl = document.getElementById('chat-area');
+        const sendButton = document.getElementById('send-button');
+        const messageListEl = document.getElementById('message-list');
 
-        currentUser = session.user;
-        const userRole = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
-        const dashboardLink = document.getElementById('dashboard-link');
-        
-        if (dashboardLink) {
-            dashboardLink.href = userRole === 'counselor' ? 'counselor.html' : 'student.html';
-        }
-        
-        if (userRole === 'counselor') {
-            sendButton.className = 'counselor';
-            document.getElementById('sidebar-title').textContent = 'Students';
-            document.getElementById('sidebar-subtitle').textContent = 'Your conversations';
-            await loadStudentListForCounselor();
-        } else {
-            sendButton.className = 'student';
-            document.getElementById('sidebar-title').textContent = 'Counselors';
-            document.getElementById('sidebar-subtitle').textContent = 'Select a counselor to talk to';
-            await loadCounselorList();
-        }
-    }
-
-    async function loadCounselorList() {
-        const { data: counselors } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .eq('role', 'counselor');
-        if (counselors) displayUserList(counselors, 'counselor');
-    }
-
-    async function loadStudentListForCounselor() {
-        const { data: convos } = await supabase
-            .from('conversations')
-            .select('student_id')
-            .eq('counselor_id', currentUser.id);
-        if (!convos || convos.length === 0) {
-            return displayUserList([], 'student');
-        }
-        const studentIds = convos.map(c => c.student_id);
-        const { data: students } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .in('id', studentIds);
-        if (students) displayUserList(students, 'student');
-    }
-
-    function displayUserList(users, role) {
-        userListEl.innerHTML = '';
-        if (users.length === 0) {
-            userListEl.innerHTML = `<li style="padding: 20px; color: #888;">No contacts found.</li>`;
-            return;
-        }
-        for (const user of users) {
-            const item = document.createElement('li');
-            item.className = 'user-item';
-            item.dataset.userId = user.id;
-            const avatarColorClass = role === 'student' ? 'counselor' : 'student';
-            item.innerHTML = `
-                <div class="user-avatar ${avatarColorClass}">${(user.full_name || '?').charAt(0)}</div>
-                <div class="user-info">
-                    <div class="name">${user.full_name || 'Unnamed User'}</div>
-                    <div class="status">
-                        <span class="status-indicator offline"></span>
-                        <span>Offline</span>
-                    </div>
-                </div>`;
-            item.addEventListener('click', () => openChatWith(user.id, user.full_name));
-            userListEl.appendChild(item);
-        }
-        setupPresence();
-    }
-
-    function setupPresence() {
-        const channel = supabase.channel('online-users');
-        channel.on('presence', { event: 'sync' }, () => {
-            const presenceState = channel.presenceState();
-            document.querySelectorAll('.user-item').forEach(item => {
-                const isOnline = Object.keys(presenceState).includes(item.dataset.userId);
-                const indicator = item.querySelector('.status-indicator');
-                const text = item.querySelector('.status span:last-child');
-                indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
-                text.textContent = isOnline ? 'Online' : 'Offline';
-            });
-        }).subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await channel.track({
-                    user_id: currentUser.id,
-                    online_at: new Date().toISOString()
-                });
+        // Use onAuthStateChanged to detect the logged-in user
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await initialize();
+            } else {
+                // No user is signed in, redirect to login.
+                window.location.href = '/login.html';
             }
         });
-    }
 
-    async function openChatWith(otherUserId, otherUserName) {
-        // ✅ unsubscribe old channel
-        if (messageSubscription) {
-            await supabase.removeChannel(messageSubscription);
-            messageSubscription = null;
-        }
-        
-        document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-        document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
-        
-        const userRole = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
-        const studentId = userRole === 'student' ? currentUser.id : otherUserId;
-        const counselorId = userRole === 'counselor' ? currentUser.id : otherUserId;
+        async function initialize() {
+            // Get user role from custom claims
+            const tokenResult = await currentUser.getIdTokenResult();
+            userRole = tokenResult.claims.role; // Assumes you have set custom claims
 
-        let { data: convo, error } = await supabase
-            .from('conversations')
-            .select('id')
-            .eq('student_id', studentId)
-            .eq('counselor_id', counselorId)
-            .single();
+            const dashboardLink = document.getElementById('dashboard-link');
+            if (dashboardLink) {
+                dashboardLink.href = userRole === 'counselor' ? 'counselor.html' : 'student.html';
+            }
 
-        if (error && error.code !== 'PGRST116') {
-            console.error("Error finding conversation:", error);
-            return;
+            if (userRole === 'counselor') {
+                sendButton.className = 'counselor';
+                document.getElementById('sidebar-title').textContent = 'Students';
+                document.getElementById('sidebar-subtitle').textContent = 'Your conversations';
+                await loadStudentListForCounselor();
+            } else {
+                sendButton.className = 'student';
+                document.getElementById('sidebar-title').textContent = 'Counselors';
+                document.getElementById('sidebar-subtitle').textContent = 'Select a counselor to talk to';
+                await loadCounselorList();
+            }
+            setupPresence(); // Setup online/offline status
         }
 
-        if (!convo) {
-            const { data: newConvo, error: insertError } = await supabase
-                .from('conversations')
-                .insert({ student_id: studentId, counselor_id: counselorId })
-                .select('id')
-                .single();
-            if (insertError) {
-                console.error("Error creating conversation:", insertError);
+        // Query the 'users' collection for counselors
+        async function loadCounselorList() {
+            const counselorsSnapshot = await db.collection('users').where('role', '==', 'counselor').get();
+            const counselors = counselorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            displayUserList(counselors);
+        }
+
+        // Find conversations involving the counselor, then get student profiles
+        async function loadStudentListForCounselor() {
+            const convosSnapshot = await db.collection('conversations').where('participants', 'array-contains', currentUser.uid).get();
+            if (convosSnapshot.empty) {
+                return displayUserList([]);
+            }
+            
+            const studentIds = convosSnapshot.docs.map(doc => {
+                const participants = doc.data().participants;
+                return participants.find(id => id !== currentUser.uid); // Get the other user's ID
+            });
+
+            if (studentIds.length > 0) {
+                const studentsSnapshot = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', studentIds).get();
+                const students = studentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                displayUserList(students);
+            }
+        }
+
+        function displayUserList(users) {
+            userListEl.innerHTML = '';
+            if (users.length === 0) {
+                userListEl.innerHTML = `<li style="padding: 20px; color: #888;">No contacts found.</li>`;
                 return;
             }
-            convo = newConvo;
+            for (const user of users) {
+                const item = document.createElement('li');
+                item.className = 'user-item';
+                item.dataset.userId = user.id;
+                const avatarColorClass = user.role === 'student' ? 'student' : 'counselor';
+
+                item.innerHTML = `
+                    <div class="user-avatar ${avatarColorClass}">${(user.fullName || '?').charAt(0)}</div>
+                    <div class="user-info">
+                        <div class="name">${user.fullName || 'Unnamed User'}</div>
+                        <div class="status">
+                            <span class="status-indicator offline"></span>
+                            <span>Offline</span>
+                        </div>
+                    </div>`;
+                item.addEventListener('click', () => openChatWith(user.id, user.fullName));
+                userListEl.appendChild(item);
+            }
         }
+        
+        // Use Realtime Database for presence
+        function setupPresence() {
+            const myConnectionsRef = rtdb.ref(`status/${currentUser.uid}`);
+            const connectedRef = rtdb.ref('.info/connected');
 
-        activeChatId = convo.id;
-        await loadMessages(activeChatId, otherUserName);
-        initialViewEl.style.display = 'none';
-        chatAreaEl.style.display = 'flex';
-    }
-
-    async function loadMessages(chatId, otherUserName) {
-        document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
-        messageListEl.innerHTML = '';
-
-        // load history
-        const { data: messages } = await supabase
-            .from('msg')
-            .select('*')
-            .eq('conversation_id', chatId)
-            .order('created_at');
-        if (messages) messages.forEach(msg => appendMessage(msg));
-
-        // realtime subscription
-        messageSubscription = supabase.channel(`conversation:${chatId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'msg',
-                filter: `conversation_id=eq.${chatId}`
-            }, (payload) => appendMessage(payload.new));
-
-        await messageSubscription.subscribe(); // 🔑 important
-    }
-
-    function appendMessage(message) {
-        const userRole = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
-        const bubble = document.createElement('div');
-        bubble.className = 'message-bubble ' +
-            (message.sender_id === currentUser.id ? `sent ${userRole}` : 'received');
-        bubble.textContent = message.content;
-        messageListEl.appendChild(bubble);
-        messageListEl.scrollTop = messageListEl.scrollHeight;
-    }
-
-    document.getElementById('message-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = document.getElementById('message-input');
-        const content = input.value.trim();
-        if (content && activeChatId) {
-            await supabase.from('msg').insert({
-                conversation_id: activeChatId,
-                sender_id: currentUser.id,
-                content: content
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    myConnectionsRef.set({ isOnline: true });
+                    // Set status to offline when the client disconnects
+                    myConnectionsRef.onDisconnect().set({ isOnline: false, lastOnline: firebase.database.ServerValue.TIMESTAMP });
+                }
             });
-            input.value = '';
+
+            // Listen for changes in status of all users
+            rtdb.ref('status').on('value', (snap) => {
+                const statuses = snap.val() || {};
+                document.querySelectorAll('.user-item').forEach(item => {
+                    const userId = item.dataset.userId;
+                    const isOnline = statuses[userId] && statuses[userId].isOnline;
+                    
+                    const indicator = item.querySelector('.status-indicator');
+                    const text = item.querySelector('.status span:last-child');
+                    indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+                    text.textContent = isOnline ? 'Online' : 'Offline';
+                });
+            });
         }
-    });
-    
-    window.logout = async function() {
-        await supabase.auth.signOut();
-        window.location.href = '/login.html';
-    }
 
-    initialize();
-</script>
+        async function openChatWith(otherUserId, otherUserName) {
+            // Unsubscribe from the previous chat's real-time updates
+            if (unsubscribeMessages) {
+                unsubscribeMessages();
+            }
+            
+            document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
 
+            // Create a consistent conversation ID by sorting UIDs
+            const participants = [currentUser.uid, otherUserId].sort();
+            activeChatId = participants.join('_');
+
+            // Find or create the conversation document
+            const convoRef = db.collection('conversations').doc(activeChatId);
+            const convoDoc = await convoRef.get();
+
+            if (!convoDoc.exists) {
+                await convoRef.set({ participants });
+            }
+            
+            await loadMessages(activeChatId, otherUserName);
+            initialViewEl.style.display = 'none';
+            chatAreaEl.style.display = 'flex';
+        }
+
+        async function loadMessages(chatId, otherUserName) {
+            document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
+            messageListEl.innerHTML = '';
+            
+            // Use onSnapshot for real-time message updates
+            const messagesQuery = db.collection('conversations').doc(chatId).collection('messages').orderBy('createdAt');
+            
+            unsubscribeMessages = messagesQuery.onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        appendMessage(change.doc.data());
+                    }
+                });
+            });
+        }
+
+        function appendMessage(message) {
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble ' +
+                (message.senderId === currentUser.uid ? `sent ${userRole}` : 'received');
+            bubble.textContent = message.content;
+            messageListEl.appendChild(bubble);
+            messageListEl.scrollTop = messageListEl.scrollHeight;
+        }
+
+        document.getElementById('message-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (content && activeChatId) {
+                // Add a new document to the 'messages' subcollection
+                await db.collection('conversations').doc(activeChatId).collection('messages').add({
+                    content: content,
+                    senderId: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                input.value = '';
+            }
+        });
+        
+        // Use auth.signOut()
+        window.logout = async function() {
+            // Before signing out, update presence status in RTDB
+            if (currentUser) {
+              await rtdb.ref(`status/${currentUser.uid}`).set({ isOnline: false, lastOnline: firebase.database.ServerValue.TIMESTAMP });
+            }
+            await auth.signOut();
+            // The onAuthStateChanged listener will handle the redirect
+        }
+
+    </script>
 </body>
 </html>
