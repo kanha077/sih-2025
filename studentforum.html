@@ -3,182 +3,932 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Forum</title>
+    <title>Student Forum | Ananda</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         :root {
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-            --background-color: #1a1a2e;
-            --card-background: #16213e;
-            --accent-color: #0f3460;
-            --text-primary: #e0fbfc;
-            --text-secondary: #93b5c6;
-            --border-color: #2c3e50;
-            --primary-action: #e94560;
+            /* Ananda Brand Colors - Light Mode */
+            --background: 0 0% 100%;
+            --foreground: 158 25% 15%;
+            --card: 0 0% 100%;
+            --card-foreground: 158 25% 15%;
+            --primary: 158 64% 52%;
+            --primary-foreground: 0 0% 100%;
+            --primary-light: 158 64% 65%;
+            --primary-dark: 158 64% 35%;
+            --secondary: 35 91% 62%;
+            --secondary-foreground: 0 0% 100%;
+            --secondary-light: 35 91% 75%;
+            --secondary-dark: 35 91% 45%;
+            --accent: 270 50% 70%;
+            --accent-foreground: 0 0% 100%;
+            --accent-light: 270 50% 80%;
+            --accent-dark: 270 50% 55%;
+            --muted: 158 20% 96%;
+            --muted-foreground: 158 25% 45%;
+            --destructive: 0 84% 60%;
+            --destructive-foreground: 0 0% 100%;
+            --border: 158 20% 90%;
+            --input: 158 20% 95%;
+            --ring: 158 64% 52%;
+            
+            /* Custom theme variables */
+            --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-light)) 100%);
+            --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-light)) 100%);
+            --gradient-accent: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--accent-light)) 100%);
+            --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
+            --shadow-primary: 0 10px 40px hsl(var(--primary) / 0.2);
+            --shadow-secondary: 0 10px 40px hsl(var(--secondary) / 0.2);
+            --shadow-accent: 0 10px 40px hsl(var(--accent) / 0.2);
+            --shadow-elegant: 0 20px 60px hsl(158 25% 15% / 0.1);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-primary);
+
+        [data-theme="dark"] {
+            --background: 158 25% 8%;
+            --foreground: 158 20% 95%;
+            --card: 158 25% 10%;
+            --card-foreground: 158 20% 95%;
+            --primary: 158 64% 55%;
+            --primary-foreground: 0 0% 100%;
+            --primary-light: 158 64% 68%;
+            --primary-dark: 158 64% 42%;
+            --secondary: 35 91% 65%;
+            --secondary-foreground: 0 0% 100%;
+            --secondary-light: 35 91% 78%;
+            --secondary-dark: 35 91% 52%;
+            --accent: 270 50% 75%;
+            --accent-foreground: 158 25% 8%;
+            --accent-light: 270 50% 85%;
+            --accent-dark: 270 50% 65%;
+            --muted: 158 25% 15%;
+            --muted-foreground: 158 20% 65%;
+            --destructive: 0 84% 65%;
+            --destructive-foreground: 0 0% 100%;
+            --border: 158 25% 20%;
+            --input: 158 25% 15%;
+            --ring: 158 64% 55%;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.6;
+            transition: var(--transition-smooth);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 25% 25%, hsl(var(--primary) / 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, hsl(var(--secondary) / 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 50%, hsl(var(--accent) / 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+            animation: backgroundMove 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundMove {
+            0%, 100% { transform: translateX(0) translateY(0) scale(1); }
+            25% { transform: translateX(-10px) translateY(-20px) scale(1.02); }
+            50% { transform: translateX(20px) translateY(10px) scale(0.98); }
+            75% { transform: translateX(-5px) translateY(15px) scale(1.01); }
+        }
+
+        /* Enhanced Navbar */
         .navbar {
-            background-color: var(--card-background);
+            background: hsl(var(--card) / 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid hsl(var(--border));
             padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-elegant);
         }
-        .navbar h1 { margin: 0; font-size: 1.5rem; }
-        #logout-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle, .notification-btn {
+            background: none;
+            border: 2px solid hsl(var(--border));
+            color: hsl(var(--muted-foreground));
+            padding: 0.6rem;
+            border-radius: 50%;
             cursor: pointer;
-            font-weight: 500;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            position: relative;
         }
-        .main-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-            max-width: 1200px;
+
+        .theme-toggle:hover, .notification-btn:hover {
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary));
+            transform: scale(1.1);
+        }
+
+        .logout-btn {
+            background: var(--gradient-secondary);
+            color: hsl(var(--secondary-foreground));
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: var(--transition-bounce);
+            box-shadow: var(--shadow-secondary);
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px hsl(var(--secondary) / 0.4);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: hsl(var(--foreground));
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Enhanced Layout */
+        .main-container {
+            max-width: 1400px;
             margin: 2rem auto;
             padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 2rem;
+            animation: fadeInUp 0.6s ease-out;
         }
-        .sidebar {
-            background-color: var(--card-background);
-            padding: 1.5rem;
-            border-radius: 8px;
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Sidebar */
+        .sidebar, .right-sidebar {
+            background: hsl(var(--card) / 0.8);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
             height: fit-content;
+            border: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-elegant);
+            position: sticky;
+            top: 120px;
         }
-        .sidebar h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-        .sort-options button {
+
+        .sidebar h3, .right-sidebar h3 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: hsl(var(--primary));
+            border-bottom: 2px solid hsl(var(--primary) / 0.2);
+            padding-bottom: 0.75rem;
+        }
+
+        .filter-group {
+            margin-bottom: 2rem;
+        }
+
+        .filter-option {
             display: block;
             width: 100%;
             background: none;
             border: none;
-            color: var(--text-secondary);
+            color: hsl(var(--muted-foreground));
             text-align: left;
-            padding: 0.75rem;
-            border-radius: 5px;
+            padding: 1rem;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
-            transition: background-color 0.2s, color 0.2s;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
         }
-        .sort-options button.active, .sort-options button:hover {
-            background-color: var(--accent-color);
-            color: var(--text-primary);
+
+        .filter-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: var(--transition-smooth);
+            z-index: -1;
         }
-        .post-creator {
-            background-color: var(--card-background);
-            padding: 1.5rem;
-            border-radius: 8px;
+
+        .filter-option.active,
+        .filter-option:hover {
+            color: hsl(var(--primary-foreground));
+            transform: translateX(5px);
+        }
+
+        .filter-option.active::before,
+        .filter-option:hover::before {
+            left: 0;
+        }
+
+        /* Trending Topics */
+        .trending-topics {
             margin-bottom: 2rem;
         }
-        .post-creator textarea {
+
+        .trending-topic {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: hsl(var(--muted) / 0.5);
+            border-radius: 12px;
+            border-left: 4px solid hsl(var(--primary));
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .trending-topic:hover {
+            transform: translateX(5px);
+            background: hsl(var(--primary) / 0.1);
+            border-left-color: hsl(var(--secondary));
+        }
+
+        .topic-name {
+            font-weight: 600;
+            color: hsl(var(--card-foreground));
+            margin-bottom: 0.25rem;
+        }
+
+        .topic-count {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Enhanced Post Creator */
+        .post-creator {
+            background: hsl(var(--card) / 0.8);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-elegant);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-creator::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, hsl(var(--primary) / 0.1), transparent);
+            animation: rotate 4s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .post-creator > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .post-creator:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .post-textarea {
             width: 100%;
-            min-height: 80px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            padding: 0.75rem;
-            font-family: 'Poppins', sans-serif;
+            min-height: 120px;
+            border: 2px solid hsl(var(--border));
+            border-radius: 16px;
+            padding: 1.25rem;
+            font-family: 'Inter', sans-serif;
             font-size: 1rem;
-            margin-bottom: 1rem;
-            resize: vertical;
-            background-color: var(--accent-color);
-            color: var(--text-primary);
-        }
-        .post-card {
-            background-color: var(--card-background);
-            padding: 1.5rem;
-            border-radius: 8px;
             margin-bottom: 1.5rem;
-            border-left: 4px solid var(--accent-color);
+            resize: vertical;
+            background: hsl(var(--input));
+            color: hsl(var(--foreground));
+            transition: var(--transition-smooth);
+            line-height: 1.6;
         }
-        .post-card.clickable {
-             transition: transform 0.2s, box-shadow 0.2s;
+
+        .post-textarea:focus {
+            outline: none;
+            border-color: hsl(var(--primary));
+            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+            background: hsl(var(--background));
+            transform: scale(1.01);
         }
-        .post-card.clickable:hover {
+
+        .post-textarea::placeholder {
+            color: hsl(var(--muted-foreground));
+            font-weight: 400;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .post-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .option-btn {
+            background: hsl(var(--muted));
+            border: 2px solid hsl(var(--border));
+            color: hsl(var(--muted-foreground));
+            padding: 0.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option-btn:hover {
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.1);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            background: var(--gradient-primary);
+            color: hsl(var(--primary-foreground));
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: var(--transition-bounce);
+            box-shadow: var(--shadow-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px hsl(var(--primary) / 0.4);
+        }
+
+        .submit-btn:active::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Enhanced Post Cards */
+        .post-card {
+            background: hsl(var(--card) / 0.8);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-elegant);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
             cursor: pointer;
         }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: var(--transition-smooth);
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-primary);
+            border-color: hsl(var(--primary) / 0.5);
+        }
+
+        .post-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* User's Own Posts */
+        .post-card.user-post {
+            border: 2px solid hsl(var(--primary));
+            background: linear-gradient(145deg, hsl(var(--primary) / 0.1), hsl(var(--card)));
+        }
+
+        .post-card.user-post::after {
+            content: '✨ Your Post';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-primary);
+        }
+
         .post-header {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        .post-author { font-weight: 600; color: var(--primary-action); }
-        .post-date { margin-left: auto; font-size: 0.9rem; color: var(--text-secondary); }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .post-meta {
+            flex: 1;
+        }
+
+        .post-author {
+            font-weight: 600;
+            color: hsl(var(--card-foreground));
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .post-time {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
+
         .post-content {
             font-size: 1.1rem;
-            line-height: 1.6;
+            line-height: 1.7;
             white-space: pre-wrap;
             word-wrap: break-word;
+            color: hsl(var(--card-foreground));
+            margin-bottom: 1.5rem;
         }
+
+        .post-media {
+            margin: 1.5rem 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-elegant);
+        }
+
+        .post-media img,
+        .post-media video {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+        }
+
         .post-footer {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
-            color: var(--text-secondary);
-            margin-top: 1.5rem;
+            gap: 2rem;
+            color: hsl(var(--muted-foreground));
             padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid hsl(var(--border));
         }
-        .post-footer-item { display: flex; align-items: center; gap: 0.5rem; }
-        .post-footer-item.upvote-btn { cursor: pointer; transition: color 0.2s; }
-        .post-footer-item.upvote-btn:hover { color: var(--primary-action); }
-        .detail-container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-        #back-to-forum-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-bottom: 1.5rem; transition: background-color 0.2s; }
-        #back-to-forum-btn:hover { background-color: var(--accent-color); }
-        .thread-card { background-color: var(--accent-color); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 5px; margin-top: 1.5rem; }
-        .thread-form { margin-top: 2rem; }
-        .loader { border: 4px solid var(--accent-color); border-top: 4px solid var(--primary-action); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 3rem auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .post-creator-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
-        #media-upload-label { cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: background-color 0.2s; }
-        #media-upload-label:hover { background-color: var(--accent-color); }
-        #media-upload { display: none; }
-        .progress-bar-container { width: 100%; height: 8px; background-color: var(--accent-color); border-radius: 4px; margin-top: 1rem; display: none; }
-        #upload-progress { width: 0%; height: 100%; background-color: var(--primary-action); border-radius: 4px; transition: width 0.3s; }
-        .post-media-container { margin-top: 1rem; }
-        .post-media-container img, .post-media-container video { max-width: 100%; max-height: 500px; border-radius: 8px; }
-        #post-submit-btn { background-color: var(--primary-action); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: none;
+            border: none;
+            color: hsl(var(--muted-foreground));
+            cursor: pointer;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            transition: var(--transition-smooth);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background: hsl(var(--muted) / 0.5);
+            color: hsl(var(--card-foreground));
+            transform: scale(1.05);
+        }
+
+        .action-btn.liked {
+            color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.1);
+        }
+
+        /* Floating Action Button */
+        .floating-action {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-primary);
+            transition: var(--transition-bounce);
+            z-index: 50;
+        }
+
+        .floating-action:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 20px 40px hsl(var(--primary) / 0.4);
+        }
+
+        /* Detail View */
+        .detail-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        #back-to-forum-btn {
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground));
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-bottom: 2rem;
+            transition: var(--transition-smooth);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #back-to-forum-btn:hover {
+            background: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+            transform: translateX(-5px);
+        }
+
+        .thread-card {
+            background: hsl(var(--muted) / 0.5);
+            border: 1px solid hsl(var(--border));
+            padding: 2rem;
+            border-radius: 16px;
+            margin-top: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .thread-form {
+            margin-top: 2rem;
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: hsl(var(--muted));
+            border-radius: 50px;
+            margin: 1rem 0;
+            display: none;
+            overflow: hidden;
+        }
+
+        #upload-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 50px;
+            transition: width 0.3s ease;
+        }
+
+        /* Enhanced Loader */
+        .loader {
+            border: 4px solid hsl(var(--muted));
+            border-top: 4px solid hsl(var(--primary));
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 4rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 250px 1fr;
+            }
+            
+            .right-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .navbar h1 {
+                font-size: 1.5rem;
+            }
+
+            .nav-actions {
+                gap: 0.5rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+
+            .sidebar {
+                position: static;
+                order: 2;
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+
+            .post-creator,
+            .post-card {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+
+            .post-textarea {
+                min-height: 100px;
+                padding: 1rem;
+            }
+
+            .post-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .submit-btn {
+                width: 100%;
+                padding: 1rem;
+            }
+
+            .post-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .detail-container {
+                padding: 0 0.5rem;
+            }
+
+            .floating-action {
+                bottom: 1rem;
+                right: 1rem;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0.75rem;
+            }
+
+            .navbar h1 {
+                font-size: 1.25rem;
+            }
+
+            .post-creator,
+            .post-card {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+
+            .sidebar {
+                padding: 1rem;
+            }
+
+            .post-content {
+                font-size: 1rem;
+            }
+
+            .post-options {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Enhanced focus states for accessibility */
+        button:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid hsl(var(--primary));
+            outline-offset: 2px;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection styles */
+        ::selection {
+            background: hsl(var(--primary) / 0.2);
+            color: hsl(var(--foreground));
+        }
+
+        /* Hidden state management */
+        #post-detail-view {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <h1>Student Forum</h1>
-        <button id="logout-btn">Logout</button>
+        <div class="nav-actions">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </button>
+            <button class="notification-btn" title="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </button>
+            <button class="mobile-menu-toggle">☰</button>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
     </nav>
     
     <div id="feed-view">
-        <main class="main-layout">
+        <main class="main-container">
             <aside class="sidebar">
-                <h3>Sort Posts</h3>
-                <div class="sort-options">
-                    <button id="sort-newest" class="active">Newest</button>
-                    <button id="sort-popular">Most Popular</button>
+                <h3>📂 Categories</h3>
+                <div class="filter-group">
+                    <button class="filter-option active" data-filter="all">🌟 All Posts</button>
+                    <button class="filter-option" data-filter="academic">📚 Academic Help</button>
+                    <button class="filter-option" data-filter="social">👥 Social</button>
+                    <button class="filter-option" data-filter="mental-health">🧘 Mental Health</button>
+                    <button class="filter-option" data-filter="career">💼 Career Advice</button>
+                </div>
+                
+                <h3>📊 Sort By</h3>
+                <div class="filter-group">
+                    <button id="sort-newest" class="filter-option active">⏰ Newest</button>
+                    <button id="sort-popular" class="filter-option">🔥 Most Popular</button>
+                    <button class="filter-option">💬 Most Discussed</button>
                 </div>
             </aside>
+            
             <section class="main-content">
                 <div class="post-creator">
-                    <textarea id="post-textarea" placeholder="Ask a question anonymously..."></textarea>
+                    <textarea id="post-textarea" class="post-textarea" placeholder="Share your thoughts anonymously... What's on your mind? 💭"></textarea>
                     <div class="progress-bar-container" id="progress-container">
                         <div id="upload-progress"></div>
                     </div>
-                    <div class="post-creator-actions">
-                        <label for="media-upload" id="media-upload-label" title="Add Photo or Video">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                        </label>
-                        <input type="file" id="media-upload" accept="image/*,video/*">
-                        <button id="post-submit-btn">Post</button>
+                    <div class="post-actions">
+                        <div class="post-options">
+                            <label for="media-upload" class="option-btn" title="Add Photo or Video">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="9" cy="9" r="2"/>
+                                    <path d="M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                </svg>
+                            </label>
+                            <input type="file" id="media-upload" accept="image/*,video/*" style="display: none;">
+                            <button class="option-btn" title="Add Poll">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 3v18h18"/>
+                                    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                                </svg>
+                            </button>
+                            <button class="option-btn" title="Anonymous Mode">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                    <line x1="2" y1="2" x2="22" y2="22"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button id="post-submit-btn" class="submit-btn">✨ Post</button>
                     </div>
                 </div>
                 
@@ -186,16 +936,58 @@
                     <div class="loader"></div>
                 </div>
             </section>
+            
+            <aside class="right-sidebar">
+                <h3>🔥 Trending Topics</h3>
+                <div class="trending-topics">
+                    <div class="trending-topic">
+                        <div class="topic-name">#StudyTips</div>
+                        <div class="topic-count">142 posts</div>
+                    </div>
+                    <div class="trending-topic">
+                        <div class="topic-name">#MentalHealth</div>
+                        <div class="topic-count">89 posts</div>
+                    </div>
+                    <div class="trending-topic">
+                        <div class="topic-name">#CareerAdvice</div>
+                        <div class="topic-count">67 posts</div>
+                    </div>
+                    <div class="trending-topic">
+                        <div class="topic-name">#StudentLife</div>
+                        <div class="topic-count">234 posts</div>
+                    </div>
+                </div>
+                
+                <h3>📢 Quick Actions</h3>
+                <div class="filter-group">
+                    <button class="filter-option">💡 Ask Question</button>
+                    <button class="filter-option">📝 Share Experience</button>
+                    <button class="filter-option">🤝 Find Study Buddy</button>
+                    <button class="filter-option">📅 Study Schedule</button>
+                </div>
+            </aside>
         </main>
     </div>
 
-    <div id="post-detail-view" style="display: none;">
+    <div id="post-detail-view">
         <div class="detail-container">
-            <button id="back-to-forum-btn">&larr; Back to Forum</button>
+            <button id="back-to-forum-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Forum
+            </button>
             <div id="single-post-container"></div>
             <div id="threads-container"></div>
         </div>
     </div>
+
+    <button class="floating-action" title="Quick Post">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+    </button>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
@@ -204,5 +996,161 @@
     
     <script src="firebase-config.js" type="module"></script>
     <script src="forum.js" type="module"></script>
+    
+    <script>
+        // Dark mode toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const themeIcon = themeToggle.querySelector('svg');
+
+        // Check for saved theme or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.innerHTML = `
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                `;
+            } else {
+                themeIcon.innerHTML = `
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                `;
+            }
+        }
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+        });
+
+        // Filter functionality
+        const filterOptions = document.querySelectorAll('.filter-option');
+        filterOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                filterOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+            });
+        });
+
+        // Floating action button functionality
+        const floatingAction = document.querySelector('.floating-action');
+        const postTextarea = document.getElementById('post-textarea');
+        
+        floatingAction.addEventListener('click', () => {
+            postTextarea.focus();
+            postTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // Enhanced loading animation
+        const loader = document.querySelector('.loader');
+        if (loader) {
+            setTimeout(() => {
+                loader.style.animation = 'spin 0.8s linear infinite';
+            }, 100);
+        }
+
+        // Add smooth animations on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const animateElements = document.querySelectorAll('.post-card, .sidebar, .post-creator, .right-sidebar');
+            animateElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.style.opacity = '0';
+                el.style.animation = 'fadeInUp 0.6s ease-out forwards';
+            });
+        });
+
+        // Notification bell animation
+        const notificationBtn = document.querySelector('.notification-btn');
+        setInterval(() => {
+            notificationBtn.style.animation = 'pulse 0.5s ease-in-out';
+            setTimeout(() => {
+                notificationBtn.style.animation = '';
+            }, 500);
+        }, 30000); // Pulse every 30 seconds
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('post-textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+        });
+
+        // Trending topics click functionality
+        const trendingTopics = document.querySelectorAll('.trending-topic');
+        trendingTopics.forEach(topic => {
+            topic.addEventListener('click', () => {
+                const topicName = topic.querySelector('.topic-name').textContent;
+                postTextarea.value = `${topicName} `;
+                postTextarea.focus();
+            });
+        });
+
+        // Quick action buttons
+        const quickActions = document.querySelectorAll('.right-sidebar .filter-option');
+        quickActions.forEach(action => {
+            action.addEventListener('click', () => {
+                const actionText = action.textContent.trim();
+                let placeholder = '';
+                
+                switch(actionText) {
+                    case '💡 Ask Question':
+                        placeholder = 'I have a question about...';
+                        break;
+                    case '📝 Share Experience':
+                        placeholder = 'I want to share my experience with...';
+                        break;
+                    case '🤝 Find Study Buddy':
+                        placeholder = 'Looking for a study buddy for...';
+                        break;
+                    case '📅 Study Schedule':
+                        placeholder = 'Here\'s my study schedule...';
+                        break;
+                }
+                
+                postTextarea.value = placeholder;
+                postTextarea.focus();
+                postTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+
+        // Progress bar animation (mock)
+        document.getElementById('media-upload').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const progressContainer = document.getElementById('progress-container');
+                const progressBar = document.getElementById('upload-progress');
+                
+                progressContainer.style.display = 'block';
+                let progress = 0;
+                
+                const interval = setInterval(() => {
+                    progress += Math.random() * 30;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            progressContainer.style.display = 'none';
+                            progressBar.style.width = '0%';
+                        }, 500);
+                    }
+                    progressBar.style.width = progress + '%';
+                }, 200);
+            }
+        });
+    </script>
 </body>
 </html>
