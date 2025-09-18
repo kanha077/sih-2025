@@ -1603,29 +1603,61 @@
         }
 
         // Contact Form
-        function initContactForm() {
-            const form = document.getElementById('contact-form');
-            const successAnimation = document.getElementById('success-animation');
+      // Contact Form
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    const successAnimation = document.getElementById('success-animation');
+    
+    // ⬇️ PASTE THE WEB APP URL YOU COPIED FROM GOOGLE APPS SCRIPT HERE ⬇️
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxRCtRRWCSM5U3KrpSaZEC2nkcQbci5YCgK5qPK1EV8dBFbITNUr3fwkgQMJ78gkOacDg/exec';
 
-            if (!form) return;
+    if (!form) return;
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+
+        // Get the form data as a JavaScript object
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Send the data to your Google Apps Script
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.result === 'success') {
+                form.style.display = 'none';
+                successAnimation.classList.add('show');
                 
-                // Simulate form submission
                 setTimeout(() => {
-                    form.style.display = 'none';
-                    successAnimation.classList.add('show');
-                    
-                    // Reset form after 3 seconds
-                    setTimeout(() => {
-                        form.style.display = 'block';
-                        successAnimation.classList.remove('show');
-                        form.reset();
-                    }, 3000);
-                }, 1000);
-            });
-        }
+                    form.style.display = 'block';
+                    successAnimation.classList.remove('show');
+                    form.reset();
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Send Message';
+                }, 4000);
+            } else {
+                // If the script returns an error, show it
+                throw new Error(response.error || 'Something went wrong.');
+            }
+        })
+        .catch(error => {
+            console.error('Error!', error.message);
+            alert('Error sending message: ' + error.message);
+            submitButton.disabled = false;
+            submitButton.textContent = 'Send Message';
+        });
+    });
+}
 
         // Theme Toggle Logic
         function initThemeToggle() {
