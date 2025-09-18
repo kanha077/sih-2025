@@ -10,1102 +10,166 @@
 
     <script>
         (function() {
+            // Theme persistence
             const theme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (theme === 'dark' || (!theme && prefersDark)) {
                 document.documentElement.classList.add('dark');
             }
+            
+            // Language persistence
+            const savedLanguage = localStorage.getItem('language') || 'en';
+            document.documentElement.setAttribute('lang', savedLanguage);
         })();
     </script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: 220 70% 50%;
-            --primary-foreground: 0 0% 98%;
-            --secondary: 280 60% 50%;
-            --secondary-foreground: 0 0% 98%;
-            --accent: 340 75% 55%;
-            --accent-foreground: 0 0% 98%;
-            --background: 0 0% 100%;
-            --foreground: 224 71.4% 4.1%;
-            --muted: 220 14.3% 95.9%;
-            --muted-foreground: 220 8.9% 46.1%;
-            --border: 220 13% 91%;
-            --ring: 220 70% 50%;
-            --card: 0 0% 100%;
-            --card-foreground: 224 71.4% 4.1%;
-            
-            --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(280 65% 60%));
-            --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(260 70% 55%));
-            --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(320 80% 60%));
-            --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
-            --morphing-gradient: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)), hsl(var(--primary)));
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            
-            --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-            --shadow-primary: 0 0 40px hsl(var(--primary) / 0.4);
-            --shadow-secondary: 0 0 40px hsl(var(--secondary) / 0.4);
-            --shadow-accent: 0 0 40px hsl(var(--accent) / 0.4);
-            --shadow-glow: 0 0 60px hsl(var(--primary) / 0.6);
-            
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* --- DARK MODE THEME --- */
-        .dark {
-            --primary: 220 70% 55%;
-            --secondary: 280 60% 55%;
-            --accent: 340 75% 60%;
-            --background: 224 71.4% 4.1%;
-            --foreground: 0 0% 98%;
-            --muted: 220 13% 18%;
-            --muted-foreground: 220 8.9% 64.9%;
-            --border: 220 13% 24%;
-            --card: 224 71.4% 6%;
-            --card-foreground: 0 0% 98%;
-            --glass-bg: rgba(10, 10, 20, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: hsl(var(--foreground));
-            background: hsl(var(--background));
-            overflow-x: hidden;
-            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
-        }
-
-        /* --- THEME TOGGLE BUTTON STYLES --- */
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: hsl(var(--muted));
-            border: 1px solid hsl(var(--border));
-            border-radius: 50%;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-
-        .theme-toggle:hover {
-            background: hsl(var(--muted) / 0.5);
-            border-color: hsl(var(--primary));
-        }
-
-        .theme-toggle .icon {
-            color: hsl(var(--foreground));
-        }
-
-        /* Show sun icon in dark mode, moon in light mode */
-        .dark .theme-toggle .sun-icon { display: block; }
-        .dark .theme-toggle .moon-icon { display: none; }
-        html:not(.dark) .theme-toggle .sun-icon { display: none; }
-        html:not(.dark) .theme-toggle .moon-icon { display: block; }
-
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        /* Particle Background */
-        .particle-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            background: hsl(var(--primary) / 0.1);
-            border-radius: 50%;
-            animation: float 15s infinite linear;
-        }
-
-        .particle:nth-child(odd) {
-            background: hsl(var(--secondary) / 0.1);
-            animation-duration: 20s;
-        }
-
-        .particle:nth-child(3n) {
-            background: hsl(var(--accent) / 0.1);
-            animation-duration: 25s;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* Morphing Background */
-        .morphing-gradient {
-            background: var(--morphing-gradient);
-            background-size: 300% 300%;
-            animation: morph 8s ease-in-out infinite;
-        }
-
-        @keyframes morph {
-            0%, 100% { background-position: 0% 50%; }
-            25% { background-position: 100% 50%; }
-            50% { background-position: 100% 100%; }
-            75% { background-position: 0% 100%; }
-        }
-
-        /* Glass Effect */
-        .glass-effect {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Shimmer Text */
-        .shimmer-text {
-            background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)), hsl(var(--primary)));
-            background-size: 200% 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 200% 0; }
-            50% { background-position: -200% 0; }
-        }
-
-        /* Pulse Glow */
-        .pulse-glow {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: var(--shadow-elegant); }
-            50% { box-shadow: var(--shadow-glow); }
-        }
-
-        /* Hover Glow */
-        .hover-glow:hover {
-            box-shadow: var(--shadow-primary);
-            transform: translateY(-2px);
-        }
-
-        /* 3D Tilt Effect */
-        .tilt-card {
-            perspective: 1000px;
-            transition: var(--transition-smooth);
-        }
-
-        .tilt-card:hover {
-            transform: rotateY(5deg) rotateX(5deg);
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: var(--transition-smooth);
-            border: none;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-hero {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: var(--shadow-primary);
-        }
-
-        .btn-hero:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .btn-secondary {
-            background: var(--gradient-secondary);
-            color: white;
-            box-shadow: var(--shadow-secondary);
-        }
-
-        .btn-secondary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px hsl(var(--secondary) / 0.6);
-        }
-
-        .btn-outline {
-            border: 1px solid hsl(var(--border));
-            background: transparent;
-            color: hsl(var(--foreground));
-        }
-
-        .dark .btn-outline {
-             border-color: hsl(var(--border));
-        }
-
-        .btn-outline:hover {
-            background: hsl(var(--primary) / 0.05);
-            border-color: hsl(var(--primary) / 0.4);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: hsl(var(--foreground));
-        }
-
-        .btn-ghost:hover {
-            background: hsl(var(--muted) / 0.5);
-        }
-
-        .btn-white {
-            background: white;
-            color: hsl(var(--primary));
-        }
-
-        .btn-white:hover {
-            background: hsl(0 0% 90%);
-            transform: scale(1.05);
-        }
-
-        /* Cards */
-        .card {
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: 1rem;
-            padding: 2rem;
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted) / 0.3));
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .card > * {
-            position: relative;
-            z-index: 10;
-        }
-
-        .card:hover {
-            transform: translateY(-0.5rem);
-        }
-
-        .card-primary:hover {
-            box-shadow: var(--shadow-primary);
-        }
-
-        .card-secondary:hover {
-            box-shadow: var(--shadow-secondary);
-        }
-
-        .card-accent:hover {
-            box-shadow: var(--shadow-accent);
-        }
-
-        /* Header */
-        .header {
-            background: hsl(var(--background) / 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid hsl(var(--border));
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            transition: var(--transition-smooth);
-        }
-
-        .header.scrolled {
-            background: hsl(var(--background) / 0.95);
-            box-shadow: var(--shadow-elegant);
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 0;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: hsl(var(--foreground));
-        }
-
-        .logo img {
-            height: 40px;
-            border-radius: 50%;
-        }
-
-        .nav {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav a {
-            text-decoration: none;
-            color: hsl(var(--foreground));
-            font-weight: 500;
-            transition: var(--transition-smooth);
-            position: relative;
-        }
-
-        .nav a:hover {
-            color: hsl(var(--primary));
-        }
-
-        .nav a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: hsl(var(--primary));
-            transition: width 0.3s ease;
-        }
-
-        .nav a:hover::after {
-            width: 100%;
-        }
-
-        .header-buttons {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        /* Mobile Menu */
-        .mobile-menu-btn {
-            display: none;
-            flex-direction: column;
-            gap: 4px;
-            padding: 8px;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .mobile-menu-btn span {
-            width: 25px;
-            height: 3px;
-            background: hsl(var(--foreground));
-            border-radius: 2px;
-            transition: var(--transition-smooth);
-        }
-
-        .mobile-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: hsl(var(--background) / 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid hsl(var(--border));
-            padding: 1rem;
-        }
-
-        .mobile-menu.active {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .mobile-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            list-style: none;
-            margin-bottom: 1rem;
-        }
-
-        .mobile-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .mobile-buttons .theme-toggle {
-            align-self: flex-start; /* Align theme toggle in mobile menu */
-        }
-
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            padding-top: 5rem;
-            background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.1));
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(circle at 2px 2px, hsl(var(--foreground) / 0.02) 1px, transparent 0);
-            background-size: 40px 40px;
-        }
-
-        .floating-element {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.2;
-            animation: floating 6s ease-in-out infinite;
-        }
-
-        .floating-1 {
-            top: 5rem;
-            left: 2.5rem;
-            width: 5rem;
-            height: 5rem;
-            background: var(--gradient-secondary);
-        }
-
-        .floating-2 {
-            bottom: 5rem;
-            right: 2.5rem;
-            width: 4rem;
-            height: 4rem;
-            background: var(--gradient-accent);
-            animation-delay: 1s;
-        }
-
-        .floating-3 {
-            top: 50%;
-            right: 5rem;
-            width: 3rem;
-            height: 3rem;
-            background: var(--gradient-primary);
-            animation-delay: 2s;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .hero-content {
-            text-align: center;
-            max-width: 5xl;
-            position: relative;
-            z-index: 10;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            font-weight: 700;
-            background: var(--gradient-hero);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: hsl(var(--muted-foreground));
-            margin-bottom: 2rem;
-            max-width: 48rem;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 3rem;
-        }
-
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 2rem;
-            max-width: 32rem;
-            margin: 0 auto 2rem;
-        }
-
-        .stat-item {
-            text-align: center;
-            transition: var(--transition-smooth);
-        }
-
-        .stat-item:hover {
-            transform: scale(1.1);
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-        }
-
-        .trust-indicators {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem;
-            opacity: 0.6;
-            margin-top: 2rem;
-        }
-
-        .trust-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 6rem 0;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-header h2 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .section-subtitle {
-            font-size: 1.25rem;
-            color: hsl(var(--muted-foreground));
-            max-width: 48rem;
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            text-align: center;
-            position: relative;
-        }
-
-        .feature-icon {
-            width: 4rem;
-            height: 4rem;
-            margin: 0 auto 1.5rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .feature-card h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: hsl(var(--card-foreground));
-        }
-
-        .feature-card p {
-            color: hsl(var(--muted-foreground));
-            margin-bottom: 1.5rem;
-        }
-
-        /* Stats Section */
-        .stats {
-            padding: 4rem 0;
-            background: linear-gradient(135deg, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.1));
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 3rem;
-        }
-
-        .stat-card {
-            text-align: center;
-            transition: var(--transition-smooth);
-        }
-
-        .stat-card:hover {
-            transform: scale(1.05);
-        }
-
-        .stat-card .stat-number {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Testimonials */
-        .testimonials {
-            padding: 6rem 0;
-        }
-
-        .testimonials-carousel {
-            position: relative;
-            overflow: hidden;
-            border-radius: 1rem;
-        }
-
-        .testimonials-track {
-            display: flex;
-            transition: transform 0.5s ease;
-        }
-
-        .testimonial-card {
-            min-width: 100%;
-            padding: 3rem 2rem;
-            text-align: center;
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-        }
-
-        .testimonial-quote {
-            font-size: 1.25rem;
-            font-style: italic;
-            margin-bottom: 2rem;
-            color: hsl(var(--muted-foreground));
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .author-avatar {
-            width: 3rem;
-            height: 3rem;
-            background: var(--gradient-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .author-info h4 {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: hsl(var(--card-foreground));
-        }
-
-        .author-info p {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-        }
-
-        .carousel-controls {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-        }
-
-        .carousel-dot {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background: hsl(var(--muted));
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-
-        .carousel-dot.active {
-            background: hsl(var(--primary));
-            transform: scale(1.2);
-        }
-
-        /* Why Choose Section */
-        .why-choose {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.1));
-        }
-
-        .why-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .why-item {
-            text-align: center;
-            transition: var(--transition-smooth);
-        }
-
-        .why-item:hover {
-            transform: translateY(-0.5rem);
-        }
-
-        .why-icon {
-            width: 4rem;
-            height: 4rem;
-            margin: 0 auto 1rem;
-            background: hsl(var(--primary) / 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-        }
-
-        .why-item:hover .why-icon {
-            background: hsl(var(--primary) / 0.2);
-            transform: scale(1.1);
-        }
-
-        /* Contact Form */
-        .contact-form {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: hsl(var(--card));
-            border-radius: 1rem;
-            box-shadow: var(--shadow-elegant);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: hsl(var(--foreground));
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid hsl(var(--border));
-            border-radius: 0.5rem;
-            background: hsl(var(--background));
-            color: hsl(var(--foreground));
-            transition: var(--transition-smooth);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: hsl(var(--primary));
-            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        /* Success Animation */
-        .success-animation {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-            animation: successPop 0.6s ease-out;
-        }
-
-        .success-animation.show {
-            display: block;
-        }
-
-        @keyframes successPop {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .success-icon {
-            width: 4rem;
-            height: 4rem;
-            background: hsl(120 100% 40%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            color: white;
-            font-size: 1.5rem;
-        }
-
-        /* CTA Section */
-        .cta {
-            padding: 6rem 0;
-            background: var(--morphing-gradient);
-            background-size: 300% 300%;
-            animation: morph 8s ease-in-out infinite;
-            color: white;
-            text-align: center;
-        }
-
-        .cta h2 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--primary-foreground);
-        }
-
-        .cta p {
-            font-size: 1.25rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-            max-width: 48rem;
-            margin-left: auto;
-            margin-right: auto;
-            color: var(--primary-foreground);
-        }
-
-        .cta-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        /* Footer */
-        .footer {
-            background: hsl(var(--muted));
-            padding: 3rem 0 1rem;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .footer h3 {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: hsl(var(--foreground));
-        }
-
-        .footer ul {
-            list-style: none;
-        }
-
-        .footer ul li {
-            margin-bottom: 0.5rem;
-        }
-
-        .footer a {
-            color: hsl(var(--muted-foreground));
-            text-decoration: none;
-            transition: var(--transition-smooth);
-        }
-
-        .footer a:hover {
-            color: hsl(var(--primary));
-        }
-
-        .footer-bottom {
-            border-top: 1px solid hsl(var(--border));
-            padding-top: 1rem;
-            text-align: center;
-            color: hsl(var(--muted-foreground));
-        }
-
-        /* Scroll Animations */
-        .scroll-reveal {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.6s ease;
-        }
-
-        .scroll-reveal.revealed {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav {
-                display: none;
-            }
-
-            .header-buttons {
-                display: none;
-            }
-
-            .mobile-menu-btn {
-                display: flex;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .hero-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-
-            .trust-indicators {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .section-header h2 {
-                font-size: 2rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 2rem;
-            }
-
-            .why-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .cta h2 {
-                font-size: 2rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .floating-element {
-                display: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 0 0.5rem;
-            }
-
-            .hero {
-                padding-top: 4rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .features {
-                padding: 4rem 0;
-            }
-
-            .stats {
-                padding: 3rem 0;
-            }
-
-            .testimonials {
-                padding: 4rem 0;
-            }
-
-            .why-choose {
-                padding: 4rem 0;
-            }
-
-            .cta {
-                padding: 4rem 0;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Icon Styles */
-        .icon {
-            width: 1.5rem;
-            height: 1.5rem;
-            fill: currentColor;
-        }
-
-        .icon-lg {
-            width: 2rem;
-            height: 2rem;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: 220 70% 50%; --primary-foreground: 0 0% 98%; --secondary: 280 60% 50%; --secondary-foreground: 0 0% 98%; --accent: 340 75% 55%; --accent-foreground: 0 0% 98%; --background: 0 0% 100%; --foreground: 224 71.4% 4.1%; --muted: 220 14.3% 95.9%; --muted-foreground: 220 8.9% 46.1%; --border: 220 13% 91%; --ring: 220 70% 50%; --card: 0 0% 100%; --card-foreground: 224 71.4% 4.1%; --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(280 65% 60%)); --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(260 70% 55%)); --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(320 80% 60%)); --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent))); --morphing-gradient: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)), hsl(var(--primary))); --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3); --shadow-primary: 0 0 40px hsl(var(--primary) / 0.4); --shadow-secondary: 0 0 40px hsl(var(--secondary) / 0.4); --shadow-accent: 0 0 40px hsl(var(--accent) / 0.4); --shadow-glow: 0 0 60px hsl(var(--primary) / 0.6); --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .dark { --primary: 220 70% 55%; --secondary: 280 60% 55%; --accent: 340 75% 60%; --background: 224 71.4% 4.1%; --foreground: 0 0% 98%; --muted: 220 13% 18%; --muted-foreground: 220 8.9% 64.9%; --border: 220 13% 24%; --card: 224 71.4% 6%; --card-foreground: 0 0% 98%; --glass-bg: rgba(10, 10, 20, 0.2); --glass-border: rgba(255, 255, 255, 0.1); --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: hsl(var(--foreground)); background: hsl(var(--background)); overflow-x: hidden; transition: background 0.3s ease-in-out, color 0.3s ease-in-out; }
+        .theme-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: hsl(var(--muted)); border: 1px solid hsl(var(--border)); border-radius: 50%; cursor: pointer; transition: var(--transition-smooth); }
+        .theme-toggle:hover { background: hsl(var(--muted) / 0.5); border-color: hsl(var(--primary)); }
+        .theme-toggle .icon { color: hsl(var(--foreground)); }
+        .dark .theme-toggle .sun-icon { display: block; } .dark .theme-toggle .moon-icon { display: none; } html:not(.dark) .theme-toggle .sun-icon { display: none; } html:not(.dark) .theme-toggle .moon-icon { display: block; }
+        .lang-btn { padding: 0.5rem 0.75rem; border: 1px solid hsl(var(--border)); background: transparent; color: hsl(var(--foreground)); cursor: pointer; border-radius: 0.5rem; font-weight: 600; transition: var(--transition-smooth); }
+        .lang-btn:hover { background: hsl(var(--muted)); border-color: hsl(var(--primary)); }
+        .lang-btn.active { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-color: hsl(var(--primary)); }
+        :root[lang="en"] [lang="hi"], :root[lang="hi"] [lang="en"] { display: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .particle-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+        .particle { position: absolute; background: hsl(var(--primary) / 0.1); border-radius: 50%; animation: float 15s infinite linear; }
+        .particle:nth-child(odd) { background: hsl(var(--secondary) / 0.1); animation-duration: 20s; }
+        .particle:nth-child(3n) { background: hsl(var(--accent) / 0.1); animation-duration: 25s; }
+        @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100px) rotate(360deg); opacity: 0; } }
+        .morphing-gradient { background: var(--morphing-gradient); background-size: 300% 300%; animation: morph 8s ease-in-out infinite; }
+        @keyframes morph { 0%, 100% { background-position: 0% 50%; } 25% { background-position: 100% 50%; } 50% { background-position: 100% 100%; } 75% { background-position: 0% 100%; } }
+        .glass-effect { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+        .shimmer-text { background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)), hsl(var(--primary))); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s ease-in-out infinite; }
+        @keyframes shimmer { 0%, 100% { background-position: 200% 0; } 50% { background-position: -200% 0; } }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: var(--shadow-elegant); } 50% { box-shadow: var(--shadow-glow); } }
+        .hover-glow:hover { box-shadow: var(--shadow-primary); transform: translateY(-2px); }
+        .tilt-card { perspective: 1000px; transition: var(--transition-smooth); }
+        .tilt-card:hover { transform: rotateY(5deg) rotateX(5deg); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; transition: var(--transition-smooth); border: none; cursor: pointer; position: relative; overflow: hidden; }
+        .btn-hero { background: var(--gradient-primary); color: white; box-shadow: var(--shadow-primary); }
+        .btn-hero:hover { transform: scale(1.05); box-shadow: var(--shadow-glow); }
+        .btn-secondary { background: var(--gradient-secondary); color: white; box-shadow: var(--shadow-secondary); }
+        .btn-secondary:hover { transform: scale(1.05); box-shadow: 0 0 40px hsl(var(--secondary) / 0.6); }
+        .btn-outline { border: 1px solid hsl(var(--border)); background: transparent; color: hsl(var(--foreground)); }
+        .dark .btn-outline { border-color: hsl(var(--border)); }
+        .btn-outline:hover { background: hsl(var(--primary) / 0.05); border-color: hsl(var(--primary) / 0.4); }
+        .btn-ghost { background: transparent; color: hsl(var(--foreground)); }
+        .btn-ghost:hover { background: hsl(var(--muted) / 0.5); }
+        .btn-white { background: white; color: hsl(var(--primary)); }
+        .btn-white:hover { background: hsl(0 0% 90%); transform: scale(1.05); }
+        .card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 1rem; padding: 2rem; transition: var(--transition-smooth); position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted) / 0.3)); opacity: 0.5; pointer-events: none; }
+        .card > * { position: relative; z-index: 10; }
+        .card:hover { transform: translateY(-0.5rem); }
+        .card-primary:hover { box-shadow: var(--shadow-primary); }
+        .card-secondary:hover { box-shadow: var(--shadow-secondary); }
+        .card-accent:hover { box-shadow: var(--shadow-accent); }
+        .header { background: hsl(var(--background) / 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid hsl(var(--border)); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: var(--transition-smooth); }
+        .header.scrolled { background: hsl(var(--background) / 0.95); box-shadow: var(--shadow-elegant); }
+        .header-content { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; font-size: 1.5rem; font-weight: 700; color: hsl(var(--foreground)); }
+        .logo img { height: 40px; border-radius: 50%; }
+        .nav { display: flex; gap: 2rem; list-style: none; }
+        .nav a { text-decoration: none; color: hsl(var(--foreground)); font-weight: 500; transition: var(--transition-smooth); position: relative; }
+        .nav a:hover { color: hsl(var(--primary)); }
+        .nav a::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: hsl(var(--primary)); transition: width 0.3s ease; }
+        .nav a:hover::after { width: 100%; }
+        .header-buttons { display: flex; align-items: center; gap: 1rem; }
+        .mobile-menu-btn { display: none; flex-direction: column; gap: 4px; padding: 8px; background: none; border: none; cursor: pointer; }
+        .mobile-menu-btn span { width: 25px; height: 3px; background: hsl(var(--foreground)); border-radius: 2px; transition: var(--transition-smooth); }
+        .mobile-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; background: hsl(var(--background) / 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid hsl(var(--border)); padding: 1rem; }
+        .mobile-menu.active { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .mobile-nav { display: flex; flex-direction: column; gap: 1rem; list-style: none; margin-bottom: 1rem; }
+        .mobile-buttons { display: flex; flex-direction: column; gap: 0.5rem; }
+        .mobile-buttons .theme-toggle { align-self: flex-start; }
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding-top: 5rem; background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.1)); }
+        .hero::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 2px 2px, hsl(var(--foreground) / 0.02) 1px, transparent 0); background-size: 40px 40px; }
+        .floating-element { position: absolute; border-radius: 50%; opacity: 0.2; animation: floating 6s ease-in-out infinite; }
+        .floating-1 { top: 5rem; left: 2.5rem; width: 5rem; height: 5rem; background: var(--gradient-secondary); }
+        .floating-2 { bottom: 5rem; right: 2.5rem; width: 4rem; height: 4rem; background: var(--gradient-accent); animation-delay: 1s; }
+        .floating-3 { top: 50%; right: 5rem; width: 3rem; height: 3rem; background: var(--gradient-primary); animation-delay: 2s; }
+        @keyframes floating { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .hero-content { text-align: center; max-width: 5xl; position: relative; z-index: 10; animation: fadeInUp 1s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        .hero h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 700; background: var(--gradient-hero); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; margin-bottom: 1.5rem; }
+        .hero p { font-size: 1.25rem; color: hsl(var(--muted-foreground)); margin-bottom: 2rem; max-width: 48rem; margin-left: auto; margin-right: auto; }
+        .hero-buttons { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 3rem; }
+        .hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 2rem; max-width: 32rem; margin: 0 auto 2rem; }
+        .stat-item { text-align: center; transition: var(--transition-smooth); }
+        .stat-item:hover { transform: scale(1.1); }
+        .stat-number { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .stat-label { font-size: 0.875rem; color: hsl(var(--muted-foreground)); }
+        .trust-indicators { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; opacity: 0.6; margin-top: 2rem; }
+        .trust-badge { padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; }
+        .features { padding: 6rem 0; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-header h2 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
+        .section-subtitle { font-size: 1.25rem; color: hsl(var(--muted-foreground)); max-width: 48rem; margin: 0 auto; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+        .feature-card { text-align: center; position: relative; }
+        .feature-icon { width: 4rem; height: 4rem; margin: 0 auto 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth); }
+        .feature-card:hover .feature-icon { transform: scale(1.1) rotate(5deg); }
+        .feature-card h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: hsl(var(--card-foreground)); }
+        .feature-card p { color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
+        .stats { padding: 4rem 0; background: linear-gradient(135deg, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.1)); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; }
+        .stat-card { text-align: center; transition: var(--transition-smooth); }
+        .stat-card:hover { transform: scale(1.05); }
+        .stat-card .stat-number { font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .testimonials { padding: 6rem 0; }
+        .testimonials-carousel { position: relative; overflow: hidden; border-radius: 1rem; }
+        .testimonials-track { display: flex; transition: transform 0.5s ease; }
+        .testimonial-card { min-width: 100%; padding: 3rem 2rem; text-align: center; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); }
+        .testimonial-quote { font-size: 1.25rem; font-style: italic; margin-bottom: 2rem; color: hsl(var(--muted-foreground)); }
+        .testimonial-author { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .author-avatar { width: 3rem; height: 3rem; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        .author-info h4 { font-weight: 600; margin-bottom: 0.25rem; color: hsl(var(--card-foreground)); }
+        .author-info p { font-size: 0.875rem; color: hsl(var(--muted-foreground)); }
+        .carousel-controls { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .carousel-dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: hsl(var(--muted)); cursor: pointer; transition: var(--transition-smooth); }
+        .carousel-dot.active { background: hsl(var(--primary)); transform: scale(1.2); }
+        .why-choose { padding: 6rem 0; background: linear-gradient(135deg, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.1)); }
+        .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .why-item { text-align: center; transition: var(--transition-smooth); }
+        .why-item:hover { transform: translateY(-0.5rem); }
+        .why-icon { width: 4rem; height: 4rem; margin: 0 auto 1rem; background: hsl(var(--primary) / 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth); }
+        .why-item:hover .why-icon { background: hsl(var(--primary) / 0.2); transform: scale(1.1); }
+        .contact-form { max-width: 600px; margin: 0 auto; padding: 2rem; background: hsl(var(--card)); border-radius: 1rem; box-shadow: var(--shadow-elegant); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: hsl(var(--foreground)); }
+        .form-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid hsl(var(--border)); border-radius: 0.5rem; background: hsl(var(--background)); color: hsl(var(--foreground)); transition: var(--transition-smooth); }
+        .form-input:focus { outline: none; border-color: hsl(var(--primary)); box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1); }
+        .form-textarea { resize: vertical; min-height: 120px; }
+        .success-animation { display: none; text-align: center; padding: 2rem; animation: successPop 0.6s ease-out; }
+        .success-animation.show { display: block; }
+        @keyframes successPop { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        .success-icon { width: 4rem; height: 4rem; background: hsl(120 100% 40%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem; }
+        .cta { padding: 6rem 0; background: var(--morphing-gradient); background-size: 300% 300%; animation: morph 8s ease-in-out infinite; color: white; text-align: center; }
+        .cta h2 { font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary-foreground); }
+        .cta p { font-size: 1.25rem; opacity: 0.9; margin-bottom: 2rem; max-width: 48rem; margin-left: auto; margin-right: auto; color: var(--primary-foreground); }
+        .cta-buttons { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+        .footer { background: hsl(var(--muted)); padding: 3rem 0 1rem; }
+        .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .footer h3 { font-weight: 600; margin-bottom: 1rem; color: hsl(var(--foreground)); }
+        .footer ul { list-style: none; }
+        .footer ul li { margin-bottom: 0.5rem; }
+        .footer a { color: hsl(var(--muted-foreground)); text-decoration: none; transition: var(--transition-smooth); }
+        .footer a:hover { color: hsl(var(--primary)); }
+        .footer-bottom { border-top: 1px solid hsl(var(--border)); padding-top: 1rem; text-align: center; color: hsl(var(--muted-foreground)); }
+        .scroll-reveal { opacity: 0; transform: translateY(50px); transition: all 0.6s ease; }
+        .scroll-reveal.revealed { opacity: 1; transform: translateY(0); }
+        @media (max-width: 768px) { .nav, .header-buttons { display: none; } .mobile-menu-btn { display: flex; } .hero h1 { font-size: 2.5rem; } .hero-buttons, .trust-indicators, .cta-buttons { flex-direction: column; align-items: center; } .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 1rem; } .section-header h2, .cta h2 { font-size: 2rem; } .features-grid, .why-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; } .floating-element { display: none; } }
+        @media (max-width: 480px) { .container { padding: 0 0.5rem; } .hero { padding-top: 4rem; } .hero p { font-size: 1rem; } .features, .testimonials, .why-choose, .cta { padding: 4rem 0; } .stats { padding: 3rem 0; } .stats-grid { grid-template-columns: 1fr; } }
+        .icon { width: 1.5rem; height: 1.5rem; fill: currentColor; }
+        .icon-lg { width: 2rem; height: 2rem; }
     </style>
 </head>
 <body>
@@ -1116,176 +180,107 @@
                     <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo">
                     <span>ANANDA</span>
                 </a>
-
                 <nav>
                     <ul class="nav">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#features"><span lang="en">Features</span><span lang="hi">विशेषताएँ</span></a></li>
+                        <li><a href="#about"><span lang="en">About</span><span lang="hi">हमारे बारे में</span></a></li>
+                        <li><a href="#contact"><span lang="en">Contact</span><span lang="hi">संपर्क</span></a></li>
                     </ul>
                 </nav>
-                
                 <div class="header-buttons">
+                    <button id="lang-en" class="lang-btn" title="English">EN</button>
+                    <button id="lang-hi" class="lang-btn" title="हिंदी">HI</button>
                     <button class="theme-toggle" title="Toggle theme">
                         <svg class="sun-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                         <svg class="moon-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                     </button>
-                    <a href="login.html" class="btn btn-outline">Login</a>
-                    <a href="signup.html" class="btn btn-hero">Sign Up</a>
+                    <a href="login.html" class="btn btn-outline"><span lang="en">Login</span><span lang="hi">लॉग इन</span></a>
+                    <a href="signup.html" class="btn btn-hero"><span lang="en">Sign Up</span><span lang="hi">साइन अप</span></a>
                 </div>
-
-                <button class="mobile-menu-btn" id="mobile-menu-btn">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+                <button class="mobile-menu-btn" id="mobile-menu-btn"><span></span><span></span><span></span></button>
             </div>
-
             <div class="mobile-menu" id="mobile-menu">
                 <ul class="mobile-nav">
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#features"><span lang="en">Features</span><span lang="hi">विशेषताएँ</span></a></li>
+                    <li><a href="#about"><span lang="en">About</span><span lang="hi">हमारे बारे में</span></a></li>
+                    <li><a href="#contact"><span lang="en">Contact</span><span lang="hi">संपर्क</span></a></li>
                 </ul>
                 <div class="mobile-buttons">
-                    <a href="login.html" class="btn btn-outline">Login</a>
-                    <a href="signup.html" class="btn btn-hero">Sign Up</a>
-                    <button class="theme-toggle" title="Toggle theme">
-                        <svg class="sun-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                        <svg class="moon-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                    </button>
+                    <a href="login.html" class="btn btn-outline"><span lang="en">Login</span><span lang="hi">लॉग इन</span></a>
+                    <a href="signup.html" class="btn btn-hero"><span lang="en">Sign Up</span><span lang="hi">साइन अप</span></a>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button id="lang-en-mobile" class="lang-btn" title="English">EN</button>
+                        <button id="lang-hi-mobile" class="lang-btn" title="हिंदी">HI</button>
+                        <button class="theme-toggle" title="Toggle theme">
+                            <svg class="sun-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                            <svg class="moon-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
-
+    
     <section class="hero" id="hero">
-        <div class="particle-background" id="particles"></div>
-        
-        <div class="floating-element floating-1"></div>
-        <div class="floating-element floating-2"></div>
-        <div class="floating-element floating-3"></div>
-        
+        <div class="particle-background" id="particles"></div><div class="floating-element floating-1"></div><div class="floating-element floating-2"></div><div class="floating-element floating-3"></div>
         <div class="container">
             <div class="hero-content">
                 <div class="scroll-reveal">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary)); animation: pulse 2s infinite;">
-                            <path d="m9 12 2 2 4-4"/>
-                            <path d="M21 12c.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896"/>
-                        </svg>
-                        <span style="color: hsl(var(--primary)); font-weight: 600;">Revolutionizing Mental Health Care</span>
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary)); animation: pulse 2s infinite;">
-                            <path d="m9 12 2 2 4-4"/>
-                            <path d="M21 12c.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896"/>
-                        </svg>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary)); animation: pulse 2s infinite;"><path d="m9 12 2 2 4-4"/><path d="M21 12c.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896"/></svg>
+                        <span style="color: hsl(var(--primary)); font-weight: 600;"><span lang="en">Revolutionizing Mental Health Care</span><span lang="hi">मानसिक स्वास्थ्य देखभाल में क्रांति</span></span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary)); animation: pulse 2s infinite;"><path d="m9 12 2 2 4-4"/><path d="M21 12c.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896.552 0 1.448-.348 1.448-.896 0-.548-.896-.896-1.448-.896"/></svg>
                     </div>
-                    
-                    <h1>Your Mental Wellness Journey <span class="shimmer-text">Starts Here</span></h1>
+                    <h1><span lang="en">Your Mental Wellness Journey <span class="shimmer-text">Starts Here</span></span><span lang="hi">आपकी मानसिक स्वास्थ्य यात्रा <span class="shimmer-text">यहां से शुरू होती है</span></span></h1>
                 </div>
-                
-                <p class="scroll-reveal" style="animation-delay: 0.2s;">Connect with certified counselors, take personalized assessments, and access AI-powered support whenever you need it.</p>
-                
+                <p class="scroll-reveal" style="animation-delay: 0.2s;"><span lang="en">Connect with certified counselors, take personalized assessments, and access AI-powered support whenever you need it.</span><span lang="hi">प्रमाणित सलाहकारों से जुड़ें, व्यक्तिगत मूल्यांकन करें, और जब भी आपको आवश्यकता हो, एआई-संचालित सहायता प्राप्त करें।</span></p>
                 <div class="hero-buttons scroll-reveal" style="animation-delay: 0.4s;">
-                    <a href="signup.html" class="btn btn-hero pulse-glow">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
-                        </svg>
-                        Start Your Journey
-                    </a>
-                    <a href="login-student.html" class="btn btn-secondary hover-glow">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="m22 21-3-3m0-8a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"/>
-                        </svg>
-                        Open Student Forum
-                    </a>
-                    <a href="anonymous.html" class="btn btn-outline glass-effect hover-glow">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
-                        </svg>
-                        Try Anonymous Support
-                    </a>
+                    <a href="signup.html" class="btn btn-hero pulse-glow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg><span lang="en">Start Your Journey</span><span lang="hi">अपनी यात्रा शुरू करें</span></a>
+                    <a href="login-student.html" class="btn btn-secondary hover-glow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m22 21-3-3m0-8a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"/></svg><span lang="en">Open Student Forum</span><span lang="hi">छात्र मंच खोलें</span></a>
+                    <a href="anonymous.html" class="btn btn-outline glass-effect hover-glow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg><span lang="en">Try Anonymous Support</span><span lang="hi">अज्ञात सहायता आज़माएं</span></a>
                 </div>
-
                 <div class="scroll-reveal" style="animation-delay: 0.6s;">
-                    <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem;">
-                        Trusted by thousands of students and professionals worldwide
-                    </p>
-                    
+                    <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem;"><span lang="en">Trusted by thousands of students and professionals worldwide</span><span lang="hi">दुनिया भर में हजारों छात्रों और पेशेवरों द्वारा विश्वसनीय</span></p>
                     <div class="hero-stats">
-                        <div class="stat-item">
-                            <div class="stat-number" style="color: hsl(var(--primary));" data-count="24">0</div>
-                            <div class="stat-label">Support</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number" style="color: hsl(var(--secondary));" data-count="50000">0</div>
-                            <div class="stat-label">Users Helped</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number" style="color: hsl(var(--accent));" data-count="100">0</div>
-                            <div class="stat-label">Confidential</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number" style="color: hsl(var(--primary));" data-count="98">0</div>
-                            <div class="stat-label">Satisfaction</div>
-                        </div>
+                        <div class="stat-item"><div class="stat-number" style="color: hsl(var(--primary));" data-count="24">0</div><div class="stat-label"><span lang="en">Support</span><span lang="hi">सहायता</span></div></div>
+                        <div class="stat-item"><div class="stat-number" style="color: hsl(var(--secondary));" data-count="50000">0</div><div class="stat-label"><span lang="en">Users Helped</span><span lang="hi">उपयोगकर्ताओं की मदद की</span></div></div>
+                        <div class="stat-item"><div class="stat-number" style="color: hsl(var(--accent));" data-count="100">0</div><div class="stat-label"><span lang="en">Confidential</span><span lang="hi">गोपनीय</span></div></div>
+                        <div class="stat-item"><div class="stat-number" style="color: hsl(var(--primary));" data-count="98">0</div><div class="stat-label"><span lang="en">Satisfaction</span><span lang="hi">संतुष्टि</span></div></div>
                     </div>
                 </div>
-
                 <div class="trust-indicators scroll-reveal" style="animation-delay: 0.8s;">
-                    <div class="trust-badge glass-effect">HIPAA Compliant</div>
-                    <div class="trust-badge glass-effect">Licensed Professionals</div>
-                    <div class="trust-badge glass-effect">End-to-End Encrypted</div>
+                    <div class="trust-badge glass-effect"><span lang="en">HIPAA Compliant</span><span lang="hi">HIPAA अनुपालक</span></div>
+                    <div class="trust-badge glass-effect"><span lang="en">Licensed Professionals</span><span lang="hi">लाइसेंस प्राप्त पेशेवर</span></div>
+                    <div class="trust-badge glass-effect"><span lang="en">End-to-End Encrypted</span><span lang="hi">एंड-टू-एंड एन्क्रिप्टेड</span></div>
                 </div>
             </div>
         </div>
     </section>
-
+    
     <section class="features" id="features">
         <div class="container">
             <div class="section-header scroll-reveal">
-                <h2>Comprehensive Mental Health Support</h2>
-                <p class="section-subtitle">Our platform offers multiple pathways to mental wellness, tailored to your unique needs and preferences.</p>
+                <h2><span lang="en">Comprehensive Mental Health Support</span><span lang="hi">व्यापक मानसिक स्वास्थ्य सहायता</span></h2>
+                <p class="section-subtitle"><span lang="en">Our platform offers multiple pathways to mental wellness, tailored to your unique needs and preferences.</span><span lang="hi">हमारा मंच मानसिक कल्याण के लिए कई रास्ते प्रदान करता है, जो आपकी अनूठी जरूरतों और प्राथमिकताओं के अनुरूप हैं।</span></p>
             </div>
-
             <div class="features-grid">
                 <div class="card card-primary feature-card tilt-card scroll-reveal">
-                    <div class="feature-icon" style="background: var(--gradient-primary);">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: white;">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
-                    </div>
-                    <h3>AI Chat Support</h3>
-                    <p>Get instant, personalized support from our AI counselor. Available 24/7 for immediate guidance and emotional support.</p>
-                    <a href="chatbot.html" class="btn btn-hero">Start Chatting</a>
+                    <div class="feature-icon" style="background: var(--gradient-primary);"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: white;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                    <h3><span lang="en">AI Chat Support</span><span lang="hi">एआई चैट सहायता</span></h3>
+                    <p><span lang="en">Get instant, personalized support from our AI counselor. Available 24/7 for immediate guidance and emotional support.</span><span lang="hi">हमारे एआई सलाहकार से तत्काल, व्यक्तिगत सहायता प्राप्त करें। तत्काल मार्गदर्शन और भावनात्मक समर्थन के लिए 24/7 उपलब्ध।</span></p>
+                    <a href="chatbot.html" class="btn btn-hero"><span lang="en">Start Chatting</span><span lang="hi">चैटिंग शुरू करें</span></a>
                 </div>
-
                 <div class="card card-secondary feature-card tilt-card scroll-reveal">
-                    <div class="feature-icon" style="background: var(--gradient-secondary);">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: white;">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="m22 21-3-3m0-8a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"/>
-                        </svg>
-                    </div>
-                    <h3>Professional Counseling</h3>
-                    <p>Connect with licensed counselors for personalized therapy sessions and professional mental health support.</p>
-                    <a href="an-counselor.html" class="btn btn-secondary">Find a Counselor</a>
+                    <div class="feature-icon" style="background: var(--gradient-secondary);"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: white;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m22 21-3-3m0-8a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"/></svg></div>
+                    <h3><span lang="en">Professional Counseling</span><span lang="hi">पेशेवर परामर्श</span></h3>
+                    <p><span lang="en">Connect with licensed counselors for personalized therapy sessions and professional mental health support.</span><span lang="hi">व्यक्तिगत चिकित्सा सत्रों और पेशेवर मानसिक स्वास्थ्य सहायता के लिए लाइसेंस प्राप्त सलाहकारों से जुड़ें।</span></p>
+                    <a href="an-counselor.html" class="btn btn-secondary"><span lang="en">Find a Counselor</span><span lang="hi">एक सलाहकार खोजें</span></a>
                 </div>
-
                 <div class="card card-accent feature-card tilt-card scroll-reveal">
-                    <div class="feature-icon" style="background: var(--gradient-accent);">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: white;">
-                            <path d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z"/>
-                            <path d="M13 7h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/>
-                            <path d="M17 3h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
-                        </svg>
-                    </div>
-                    <h3>Mental Health Screening</h3>
-                    <p>Take scientifically-backed assessments to understand your mental health and get personalized recommendations.</p>
-                    <a href="screening.html" class="btn" style="background: var(--gradient-accent); color: white;">Take Assessment</a>
+                    <div class="feature-icon" style="background: var(--gradient-accent);"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: white;"><path d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z"/><path d="M13 7h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M17 3h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></div>
+                    <h3><span lang="en">Mental Health Screening</span><span lang="hi">मानसिक स्वास्थ्य जांच</span></h3>
+                    <p><span lang="en">Take scientifically-backed assessments to understand your mental health and get personalized recommendations.</span><span lang="hi">अपने मानसिक स्वास्थ्य को समझने और व्यक्तिगत सिफारिशें प्राप्त करने के लिए वैज्ञानिक रूप से समर्थित मूल्यांकन करें।</span></p>
+                    <a href="screening.html" class="btn" style="background: var(--gradient-accent); color: white;"><span lang="en">Take Assessment</span><span lang="hi">मूल्यांकन करें</span></a>
                 </div>
             </div>
         </div>
@@ -1294,22 +289,10 @@
     <section class="stats scroll-reveal">
         <div class="container">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" style="color: hsl(var(--primary));" data-count="10000">0</div>
-                    <div class="stat-label">Students Supported</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: hsl(var(--secondary));" data-count="500">0</div>
-                    <div class="stat-label">Licensed Counselors</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: hsl(var(--accent));" data-count="95">0</div>
-                    <div class="stat-label">Success Rate</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: hsl(var(--primary));" data-count="50">0</div>
-                    <div class="stat-label">Countries Served</div>
-                </div>
+                <div class="stat-card"><div class="stat-number" style="color: hsl(var(--primary));" data-count="10000">0</div><div class="stat-label"><span lang="en">Students Supported</span><span lang="hi">छात्रों को सहायता</span></div></div>
+                <div class="stat-card"><div class="stat-number" style="color: hsl(var(--secondary));" data-count="500">0</div><div class="stat-label"><span lang="en">Licensed Counselors</span><span lang="hi">लाइसेंस प्राप्त सलाहकार</span></div></div>
+                <div class="stat-card"><div class="stat-number" style="color: hsl(var(--accent));" data-count="95">0</div><div class="stat-label"><span lang="en">Success Rate</span><span lang="hi">सफलता दर</span></div></div>
+                <div class="stat-card"><div class="stat-number" style="color: hsl(var(--primary));" data-count="50">0</div><div class="stat-label"><span lang="en">Countries Served</span><span lang="hi">सेवाकृत देश</span></div></div>
             </div>
         </div>
     </section>
@@ -1317,57 +300,25 @@
     <section class="testimonials scroll-reveal" id="testimonials">
         <div class="container">
             <div class="section-header">
-                <h2>What Our Users Say</h2>
-                <p class="section-subtitle">Real stories from people who found their path to better mental health with Ananda.</p>
+                <h2><span lang="en">What Our Users Say</span><span lang="hi">हमारे उपयोगकर्ता क्या कहते हैं</span></h2>
+                <p class="section-subtitle"><span lang="en">Real stories from people who found their path to better mental health with Ananda.</span><span lang="hi">उन लोगों की सच्ची कहानियाँ जिन्होंने आनंदा के साथ बेहतर मानसिक स्वास्थ्य का मार्ग पाया।</span></p>
             </div>
-
             <div class="testimonials-carousel">
                 <div class="testimonials-track" id="testimonials-track">
                     <div class="testimonial-card">
-                        <div class="testimonial-quote">
-                            "Ananda changed my life. The AI support was there when I needed it most, and connecting with a professional counselor was seamless."
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">A</div>
-                            <div class="author-info">
-                                <h4>Anonymous User</h4>
-                                <p>College Student</p>
-                            </div>
-                        </div>
+                        <div class="testimonial-quote"><span lang="en">"Ananda changed my life. The AI support was there when I needed it most, and connecting with a professional counselor was seamless."</span><span lang="hi">"आनंदा ने मेरी जिंदगी बदल दी। जब मुझे सबसे ज्यादा जरूरत थी, तब एआई सहायता मौजूद थी, और एक पेशेवर सलाहकार से जुड़ना सहज था।"</span></div>
+                        <div class="testimonial-author"><div class="author-avatar">A</div><div class="author-info"><h4><span lang="en">Anonymous User</span><span lang="hi">अज्ञात उपयोगकर्ता</span></h4><p><span lang="en">College Student</span><span lang="hi">कॉलेज छात्र</span></p></div></div>
                     </div>
-                    
                     <div class="testimonial-card">
-                        <div class="testimonial-quote">
-                            "The mental health screening helped me understand my needs better. The personalized recommendations were spot-on."
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">S</div>
-                            <div class="author-info">
-                                <h4>yash vijay.</h4>
-                                <p>JUET</p>
-                            </div>
-                        </div>
+                        <div class="testimonial-quote"><span lang="en">"The mental health screening helped me understand my needs better. The personalized recommendations were spot-on."</span><span lang="hi">"मानसिक स्वास्थ्य जांच ने मुझे अपनी जरूरतों को बेहतर ढंग से समझने में मदद की। व्यक्तिगत सिफारिशें सटीक थीं।"</span></div>
+                        <div class="testimonial-author"><div class="author-avatar">S</div><div class="author-info"><h4>yash vijay.</h4><p>JUET</p></div></div>
                     </div>
-                    
                     <div class="testimonial-card">
-                        <div class="testimonial-quote">
-                            "Having 24/7 support available gave me the confidence to work on my mental health. The platform is incredibly user-friendly."
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">M</div>
-                            <div class="author-info">
-                                <h4>SHREE.</h4>
-                                <p> Student</p>
-                            </div>
-                        </div>
+                        <div class="testimonial-quote"><span lang="en">"Having 24/7 support available gave me the confidence to work on my mental health. The platform is incredibly user-friendly."</span><span lang="hi">"24/7 सहायता उपलब्ध होने से मुझे अपने मानसिक स्वास्थ्य पर काम करने का आत्मविश्वास मिला। यह मंच अविश्वसनीय रूप से उपयोगकर्ता-अनुकूल है।"</span></div>
+                        <div class="testimonial-author"><div class="author-avatar">M</div><div class="author-info"><h4>SHREE.</h4><p><span lang="en">Student</span><span lang="hi">छात्रा</span></p></div></div>
                     </div>
                 </div>
-                
-                <div class="carousel-controls">
-                    <div class="carousel-dot active" data-slide="0"></div>
-                    <div class="carousel-dot" data-slide="1"></div>
-                    <div class="carousel-dot" data-slide="2"></div>
-                </div>
+                <div class="carousel-controls"><div class="carousel-dot active" data-slide="0"></div><div class="carousel-dot" data-slide="1"></div><div class="carousel-dot" data-slide="2"></div></div>
             </div>
         </div>
     </section>
@@ -1375,53 +326,29 @@
     <section class="why-choose scroll-reveal" id="about">
         <div class="container">
             <div class="section-header">
-                <h2>Why Choose Ananda?</h2>
-                <p class="section-subtitle">We're committed to providing the highest quality mental health support with cutting-edge technology and compassionate care.</p>
+                <h2><span lang="en">Why Choose Ananda?</span><span lang="hi">आनंदा क्यों चुनें?</span></h2>
+                <p class="section-subtitle"><span lang="en">We're committed to providing the highest quality mental health support with cutting-edge technology and compassionate care.</span><span lang="hi">हम अत्याधुनिक तकनीक और दयालु देखभाल के साथ उच्चतम गुणवत्ता वाली मानसिक स्वास्थ्य सहायता प्रदान करने के लिए प्रतिबद्ध हैं।</span></p>
             </div>
-
             <div class="why-grid">
                 <div class="why-item">
-                    <div class="why-icon">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary));">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                    </div>
-                    <h3>100% Confidential</h3>
-                    <p>Your privacy is our priority. All conversations are encrypted and secure.</p>
+                    <div class="why-icon"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary));"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <h3><span lang="en">100% Confidential</span><span lang="hi">100% गोपनीय</span></h3>
+                    <p><span lang="en">Your privacy is our priority. All conversations are encrypted and secure.</span><span lang="hi">आपकी गोपनीयता हमारी प्राथमिकता है। सभी बातचीत एन्क्रिप्टेड और सुरक्षित हैं।</span></p>
                 </div>
-
                 <div class="why-item">
-                    <div class="why-icon" style="background: hsl(var(--secondary) / 0.1);">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--secondary));">
-                            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
-                            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
-                        </svg>
-                    </div>
-                    <h3>AI-Powered Insights</h3>
-                    <p>Advanced AI provides personalized recommendations and support.</p>
+                    <div class="why-icon" style="background: hsl(var(--secondary) / 0.1);"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--secondary));"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg></div>
+                    <h3><span lang="en">AI-Powered Insights</span><span lang="hi">एआई-संचालित अंतर्दृष्टि</span></h3>
+                    <p><span lang="en">Advanced AI provides personalized recommendations and support.</span><span lang="hi">उन्नत एआई व्यक्तिगत सिफारिशें और सहायता प्रदान करता है।</span></p>
                 </div>
-
                 <div class="why-item">
-                    <div class="why-icon" style="background: hsl(var(--accent) / 0.1);">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--accent));">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                    </div>
-                    <h3>Compassionate Care</h3>
-                    <p>Every interaction is designed with empathy and understanding.</p>
+                    <div class="why-icon" style="background: hsl(var(--accent) / 0.1);"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--accent));"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+                    <h3><span lang="en">Compassionate Care</span><span lang="hi">दयालु देखभाल</span></h3>
+                    <p><span lang="en">Every interaction is designed with empathy and understanding.</span><span lang="hi">प्रत्येक बातचीत सहानुभूति और समझ के साथ डिज़ाइन की गई है।</span></p>
                 </div>
-
                 <div class="why-item">
-                    <div class="why-icon">
-                        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary));">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                    </div>
-                    <h3>Expert Network</h3>
-                    <p>Access to licensed counselors and mental health professionals.</p>
+                    <div class="why-icon"><svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: hsl(var(--primary));"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <h3><span lang="en">Expert Network</span><span lang="hi">विशेषज्ञ नेटवर्क</span></h3>
+                    <p><span lang="en">Access to licensed counselors and mental health professionals.</span><span lang="hi">लाइसेंस प्राप्त सलाहकारों और मानसिक स्वास्थ्य पेशेवरों तक पहुंच।</span></p>
                 </div>
             </div>
         </div>
@@ -1430,39 +357,21 @@
     <section class="features scroll-reveal" id="contact">
         <div class="container">
             <div class="section-header">
-                <h2>Get in Touch</h2>
-                <p class="section-subtitle">Have questions? We're here to help you on your mental wellness journey.</p>
+                <h2><span lang="en">Get in Touch</span><span lang="hi">संपर्क करें</span></h2>
+                <p class="section-subtitle"><span lang="en">Have questions? We're here to help you on your mental wellness journey.</span><span lang="hi">कोई सवाल है? हम आपकी मानसिक स्वास्थ्य यात्रा में आपकी मदद करने के लिए यहां हैं।</span></p>
             </div>
-
             <div class="contact-form">
                 <form id="contact-form">
-                    <div class="form-group">
-                        <label class="form-label" for="name">Name</label>
-                        <input class="form-input" type="text" id="name" name="name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="email">Email</label>
-                        <input class="form-input" type="email" id="email" name="email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="subject">Subject</label>
-                        <input class="form-input" type="text" id="subject" name="subject" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="message">Message</label>
-                        <textarea class="form-input form-textarea" id="message" name="message" required></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-hero" style="width: 100%;">Send Message</button>
+                    <div class="form-group"><label class="form-label" for="name"><span lang="en">Name</span><span lang="hi">नाम</span></label><input class="form-input" type="text" id="name" name="name" required></div>
+                    <div class="form-group"><label class="form-label" for="email"><span lang="en">Email</span><span lang="hi">ईमेल</span></label><input class="form-input" type="email" id="email" name="email" required></div>
+                    <div class="form-group"><label class="form-label" for="subject"><span lang="en">Subject</span><span lang="hi">विषय</span></label><input class="form-input" type="text" id="subject" name="subject" required></div>
+                    <div class="form-group"><label class="form-label" for="message"><span lang="en">Message</span><span lang="hi">संदेश</span></label><textarea class="form-input form-textarea" id="message" name="message" required></textarea></div>
+                    <button type="submit" class="btn btn-hero" style="width: 100%;"><span lang="en">Send Message</span><span lang="hi">संदेश भेजें</span></button>
                 </form>
-
                 <div class="success-animation" id="success-animation">
                     <div class="success-icon">✓</div>
-                    <h3>Message Sent Successfully!</h3>
-                    <p>Thank you for reaching out. We'll get back to you within 24 hours.</p>
+                    <h3><span lang="en">Message Sent Successfully!</span><span lang="hi">संदेश सफलतापूर्वक भेजा गया!</span></h3>
+                    <p><span lang="en">Thank you for reaching out. We'll get back to you within 24 hours.</span><span lang="hi">संपर्क करने के लिए धन्यवाद। हम 24 घंटे के भीतर आपसे संपर्क करेंगे।</span></p>
                 </div>
             </div>
         </div>
@@ -1470,11 +379,11 @@
 
     <section class="cta scroll-reveal">
         <div class="container">
-            <h2>Take the First Step Towards Better Mental Health</h2>
-            <p>Join thousands who have transformed their mental wellness journey with Ananda. Your path to healing starts with a single step.</p>
+            <h2><span lang="en">Take the First Step Towards Better Mental Health</span><span lang="hi">बेहतर मानसिक स्वास्थ्य की ओर पहला कदम उठाएं</span></h2>
+            <p><span lang="en">Join thousands who have transformed their mental wellness journey with Ananda. Your path to healing starts with a single step.</span><span lang="hi">उन हजारों लोगों से जुड़ें जिन्होंने आनंदा के साथ अपनी मानसिक स्वास्थ्य यात्रा को बदल दिया है। आपके स्वस्थ होने का मार्ग एक ही कदम से शुरू होता है।</span></p>
             <div class="cta-buttons">
-                <a href="signup.html" class="btn btn-white">Get Started Free</a>
-                <a href="login.html" class="btn btn-outline glass-effect" style="border-color: rgba(255,255,255,0.3); color: white;">I Have an Account</a>
+                <a href="signup.html" class="btn btn-white"><span lang="en">Get Started Free</span><span lang="hi">मुफ़्त में शुरू करें</span></a>
+                <a href="login.html" class="btn btn-outline glass-effect" style="border-color: rgba(255,255,255,0.3); color: white;"><span lang="en">I Have an Account</span><span lang="hi">मेरा एक खाता है</span></a>
             </div>
         </div>
     </section>
@@ -1482,217 +391,55 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div>
-                    <h3>Platform</h3>
-                    <ul>
-                        <li><a href="chatbot.html">AI Chat Support</a></li>
-                        <li><a href="an-counselor">Professional Counseling</a></li>
-                        <li><a href="screening.html">Mental Health Screening</a></li>
-                        <li><a href="resources.html">Resources</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>Support</h3>
-                    <ul>
-                        <li><a href="#help">Help Center</a></li>
-                        <li><a href="#contact">Contact Us</a></li>
-                        <li><a href="#emergency">Emergency Resources</a></li>
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>Company</h3>
-                    <ul>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#team">Our Team</a></li>
-                        <li><a href="#terms">Terms of Service</a></li>
-                    </ul>
-                </div>
+                <div><h3><span lang="en">Platform</span><span lang="hi">मंच</span></h3><ul><li><a href="chatbot.html"><span lang="en">AI Chat Support</span><span lang="hi">एआई चैट सहायता</span></a></li><li><a href="an-counselor"><span lang="en">Professional Counseling</span><span lang="hi">पेशेवर परामर्श</span></a></li><li><a href="screening.html"><span lang="en">Mental Health Screening</span><span lang="hi">मानसिक स्वास्थ्य जांच</span></a></li><li><a href="resources.html"><span lang="en">Resources</span><span lang="hi">संसाधन</span></a></li></ul></div>
+                <div><h3><span lang="en">Support</span><span lang="hi">सहायता</span></h3><ul><li><a href="#help"><span lang="en">Help Center</span><span lang="hi">सहायता केंद्र</span></a></li><li><a href="#contact"><span lang="en">Contact Us</span><span lang="hi">हमसे संपर्क करें</span></a></li><li><a href="#emergency"><span lang="en">Emergency Resources</span><span lang="hi">आपातकालीन संसाधन</span></a></li><li><a href="#privacy"><span lang="en">Privacy Policy</span><span lang="hi">गोपनीयता नीति</span></a></li></ul></div>
+                <div><h3><span lang="en">Company</span><span lang="hi">कंपनी</span></h3><ul><li><a href="#about"><span lang="en">About Us</span><span lang="hi">हमारे बारे में</span></a></li><li><a href="#team"><span lang="en">Our Team</span><span lang="hi">हमारी टीम</span></a></li><li><a href="#terms"><span lang="en">Terms of Service</span><span lang="hi">सेवा की शर्तें</span></a></li></ul></div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Ananda. All rights reserved. | Mental health support you can trust.</p>
+                <p><span lang="en">&copy; 2025 Ananda. All rights reserved. | Mental health support you can trust.</span><span lang="hi">&copy; २०२५ आनंदा। सर्वाधिकार सुरक्षित। | मानसिक स्वास्थ्य सहायता जिस पर आप भरोसा कर सकते हैं।</span></p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Particle Background
-        function createParticles() {
-            const container = document.getElementById('particles');
-            const particleCount = 20;
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = particle.style.height = (Math.random() * 6 + 4) + 'px';
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
-                container.appendChild(particle);
-            }
-        }
-
-        // Animated Counter
-        function animateCounter(element, target, suffix = '') {
-            let current = 0;
-            const increment = target / 100;
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                element.textContent = Math.floor(current) + suffix;
-            }, 20);
-        }
-
-        // Scroll Reveal Animation
-        function revealOnScroll() {
-            const reveals = document.querySelectorAll('.scroll-reveal');
-            
-            reveals.forEach(reveal => {
-                const windowHeight = window.innerHeight;
-                const revealTop = reveal.getBoundingClientRect().top;
-                const revealPoint = 150;
-
-                if (revealTop < windowHeight - revealPoint) {
-                    reveal.classList.add('revealed');
-                }
-            });
-        }
-
-        // Header Scroll Effect
-        function handleHeaderScroll() {
-            const header = document.getElementById('header');
-            if (window.scrollY > 100) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        }
-
-        // Mobile Menu Toggle
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('active');
-        }
-
-        // Testimonials Carousel
-        function initCarousel() {
-            const track = document.getElementById('testimonials-track');
-            const dots = document.querySelectorAll('.carousel-dot');
-            let currentSlide = 0;
-
-            function goToSlide(slideIndex) {
-                if (!track) return;
-                track.style.transform = `translateX(-${slideIndex * 100}%)`;
-                dots.forEach(dot => dot.classList.remove('active'));
-                dots[slideIndex].classList.add('active');
-                currentSlide = slideIndex;
-            }
-
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => goToSlide(index));
-            });
-
-            // Auto-advance carousel
-            setInterval(() => {
-                currentSlide = (currentSlide + 1) % dots.length;
-                goToSlide(currentSlide);
-            }, 5000);
-        }
-
-        // Contact Form
-        function initContactForm() {
-            const form = document.getElementById('contact-form');
-            const successAnimation = document.getElementById('success-animation');
-
-            if (!form) return;
-
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                
-                // Simulate form submission
-                setTimeout(() => {
-                    form.style.display = 'none';
-                    successAnimation.classList.add('show');
-                    
-                    // Reset form after 3 seconds
-                    setTimeout(() => {
-                        form.style.display = 'block';
-                        successAnimation.classList.remove('show');
-                        form.reset();
-                    }, 3000);
-                }, 1000);
-            });
-        }
-
-        // Theme Toggle Logic
-        function initThemeToggle() {
-            const themeToggleBtns = document.querySelectorAll('.theme-toggle');
-
-            themeToggleBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.documentElement.classList.toggle('dark');
-                    const isDark = document.documentElement.classList.contains('dark');
-                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                });
-            });
-        }
-
-
-        // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             initCarousel();
             initContactForm();
             initThemeToggle();
-            
-            // Mobile menu
+            initLanguageToggle();
             document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
-            
-            // Scroll events
-            window.addEventListener('scroll', () => {
-                revealOnScroll();
-                handleHeaderScroll();
-            });
-
-            // Initial reveal check
+            window.addEventListener('scroll', () => { revealOnScroll(); handleHeaderScroll(); });
             revealOnScroll();
-
-            // Animate counters when they come into view
             const counters = document.querySelectorAll('[data-count]');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const target = parseInt(entry.target.dataset.count);
-                        const suffix = entry.target.textContent.includes('/7') ? '/7' : 
-                                      entry.target.textContent.includes('+') ? '+' : 
-                                      entry.target.textContent.includes('%') ? '%' : '';
+                        const suffix = entry.target.textContent.includes('%') ? '%' : '';
                         animateCounter(entry.target, target, suffix);
                         observer.unobserve(entry.target);
                     }
                 });
             });
-
             counters.forEach(counter => observer.observe(counter));
-
-            // Smooth scrolling for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    const targetElement = document.querySelector(targetId);
-                    
-                    if (targetElement) {
-                        targetElement.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
+                    const targetElement = document.querySelector(this.getAttribute('href'));
+                    if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
                 });
             });
         });
+        function createParticles() { const container = document.getElementById('particles'); if (!container) return; const particleCount = 20; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'particle'; particle.style.left = Math.random() * 100 + '%'; particle.style.width = particle.style.height = (Math.random() * 6 + 4) + 'px'; particle.style.animationDelay = Math.random() * 15 + 's'; particle.style.animationDuration = (Math.random() * 10 + 15) + 's'; container.appendChild(particle); } }
+        function animateCounter(element, target, suffix = '') { let current = 0; const increment = target / 100; const timer = setInterval(() => { current += increment; if (current >= target) { current = target; clearInterval(timer); } element.textContent = Math.floor(current) + suffix; }, 20); }
+        function revealOnScroll() { const reveals = document.querySelectorAll('.scroll-reveal'); reveals.forEach(reveal => { if (reveal.getBoundingClientRect().top < window.innerHeight - 150) { reveal.classList.add('revealed'); } }); }
+        function handleHeaderScroll() { const header = document.getElementById('header'); if (window.scrollY > 100) { header.classList.add('scrolled'); } else { header.classList.remove('scrolled'); } }
+        function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('active'); }
+        function initCarousel() { const track = document.getElementById('testimonials-track'); const dots = document.querySelectorAll('.carousel-dot'); if (!track || dots.length === 0) return; let currentSlide = 0; const goToSlide = (slideIndex) => { track.style.transform = `translateX(-${slideIndex * 100}%)`; dots.forEach(dot => dot.classList.remove('active')); dots[slideIndex].classList.add('active'); currentSlide = slideIndex; }; dots.forEach((dot, index) => dot.addEventListener('click', () => goToSlide(index))); setInterval(() => { currentSlide = (currentSlide + 1) % dots.length; goToSlide(currentSlide); }, 5000); }
+        function initContactForm() { const form = document.getElementById('contact-form'); const successAnimation = document.getElementById('success-animation'); if (!form) return; form.addEventListener('submit', (e) => { e.preventDefault(); setTimeout(() => { form.style.display = 'none'; successAnimation.classList.add('show'); setTimeout(() => { form.style.display = 'block'; successAnimation.classList.remove('show'); form.reset(); }, 3000); }, 1000); }); }
+        function initThemeToggle() { const themeToggleBtns = document.querySelectorAll('.theme-toggle'); themeToggleBtns.forEach(btn => { btn.addEventListener('click', () => { document.documentElement.classList.toggle('dark'); const isDark = document.documentElement.classList.contains('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); }); }); }
+        function initLanguageToggle() { const langButtons = document.querySelectorAll('.lang-btn'); const setLanguage = (lang) => { document.documentElement.setAttribute('lang', lang); localStorage.setItem('language', lang); langButtons.forEach(btn => { if (btn.id.includes(`-${lang}`)) { btn.classList.add('active'); } else { btn.classList.remove('active'); } }); }; langButtons.forEach(btn => { btn.addEventListener('click', () => { if (btn.id.includes('-hi')) { setLanguage('hi'); } else { setLanguage('en'); } }); }); const currentLang = localStorage.getItem('language') || 'en'; setLanguage(currentLang); }
     </script>
 </body>
 </html>
