@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ananda - Your Mental Wellness Journey Starts Here</title>
     <meta name="description" content="Connect with certified counselors, take personalized assessments, and access AI-powered support for your mental wellness journey.">
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (theme === 'dark' || (!theme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -45,13 +58,61 @@
             --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* --- DARK MODE THEME --- */
+        .dark {
+            --primary: 220 70% 55%;
+            --secondary: 280 60% 55%;
+            --accent: 340 75% 60%;
+            --background: 224 71.4% 4.1%;
+            --foreground: 0 0% 98%;
+            --muted: 220 13% 18%;
+            --muted-foreground: 220 8.9% 64.9%;
+            --border: 220 13% 24%;
+            --card: 224 71.4% 6%;
+            --card-foreground: 0 0% 98%;
+            --glass-bg: rgba(10, 10, 20, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: hsl(var(--foreground));
             background: hsl(var(--background));
             overflow-x: hidden;
+            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
         }
+
+        /* --- THEME TOGGLE BUTTON STYLES --- */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .theme-toggle:hover {
+            background: hsl(var(--muted) / 0.5);
+            border-color: hsl(var(--primary));
+        }
+
+        .theme-toggle .icon {
+            color: hsl(var(--foreground));
+        }
+
+        /* Show sun icon in dark mode, moon in light mode */
+        .dark .theme-toggle .sun-icon { display: block; }
+        .dark .theme-toggle .moon-icon { display: none; }
+        html:not(.dark) .theme-toggle .sun-icon { display: none; }
+        html:not(.dark) .theme-toggle .moon-icon { display: block; }
+
 
         .container {
             max-width: 1200px;
@@ -206,9 +267,13 @@
         }
 
         .btn-outline {
-            border: 1px solid hsl(var(--primary) / 0.2);
+            border: 1px solid hsl(var(--border));
             background: transparent;
             color: hsl(var(--foreground));
+        }
+
+        .dark .btn-outline {
+             border-color: hsl(var(--border));
         }
 
         .btn-outline:hover {
@@ -351,6 +416,7 @@
 
         .header-buttons {
             display: flex;
+            align-items: center;
             gap: 1rem;
         }
 
@@ -408,6 +474,11 @@
             flex-direction: column;
             gap: 0.5rem;
         }
+
+        .mobile-buttons .theme-toggle {
+            align-self: flex-start; /* Align theme toggle in mobile menu */
+        }
+
 
         /* Hero Section */
         .hero {
@@ -605,6 +676,7 @@
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 1rem;
+            color: hsl(var(--card-foreground));
         }
 
         .feature-card p {
@@ -659,6 +731,8 @@
             min-width: 100%;
             padding: 3rem 2rem;
             text-align: center;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
         }
 
         .testimonial-quote {
@@ -690,6 +764,7 @@
         .author-info h4 {
             font-weight: 600;
             margin-bottom: 0.25rem;
+            color: hsl(var(--card-foreground));
         }
 
         .author-info p {
@@ -842,6 +917,7 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
+            color: var(--primary-foreground);
         }
 
         .cta p {
@@ -851,6 +927,7 @@
             max-width: 48rem;
             margin-left: auto;
             margin-right: auto;
+            color: var(--primary-foreground);
         }
 
         .cta-buttons {
@@ -876,6 +953,7 @@
         .footer h3 {
             font-weight: 600;
             margin-bottom: 1rem;
+            color: hsl(var(--foreground));
         }
 
         .footer ul {
@@ -1031,11 +1109,8 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header" id="header">
         <div class="container">
-            <link rel="icon" type="image/png" href="favicon.png">
-        
             <div class="header-content">
                 <a href="#" class="logo">
                     <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo">
@@ -1051,6 +1126,10 @@
                 </nav>
                 
                 <div class="header-buttons">
+                    <button class="theme-toggle" title="Toggle theme">
+                        <svg class="sun-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg class="moon-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
                     <a href="login.html" class="btn btn-outline">Login</a>
                     <a href="signup.html" class="btn btn-hero">Sign Up</a>
                 </div>
@@ -1071,12 +1150,15 @@
                 <div class="mobile-buttons">
                     <a href="login.html" class="btn btn-outline">Login</a>
                     <a href="signup.html" class="btn btn-hero">Sign Up</a>
+                    <button class="theme-toggle" title="Toggle theme">
+                        <svg class="sun-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg class="moon-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero" id="hero">
         <div class="particle-background" id="particles"></div>
         
@@ -1161,7 +1243,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
     <section class="features" id="features">
         <div class="container">
             <div class="section-header scroll-reveal">
@@ -1210,7 +1291,6 @@
         </div>
     </section>
 
-    <!-- Stats Section -->
     <section class="stats scroll-reveal">
         <div class="container">
             <div class="stats-grid">
@@ -1234,7 +1314,6 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
     <section class="testimonials scroll-reveal" id="testimonials">
         <div class="container">
             <div class="section-header">
@@ -1293,7 +1372,6 @@
         </div>
     </section>
 
-    <!-- Why Choose Us Section -->
     <section class="why-choose scroll-reveal" id="about">
         <div class="container">
             <div class="section-header">
@@ -1349,7 +1427,6 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section class="features scroll-reveal" id="contact">
         <div class="container">
             <div class="section-header">
@@ -1391,7 +1468,6 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="cta scroll-reveal">
         <div class="container">
             <h2>Take the First Step Towards Better Mental Health</h2>
@@ -1403,7 +1479,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -1430,7 +1505,6 @@
                     <ul>
                         <li><a href="#about">About Us</a></li>
                         <li><a href="#team">Our Team</a></li>
-                        <!--<li><a href="#careers">Careers</a></li>-->
                         <li><a href="#terms">Terms of Service</a></li>
                     </ul>
                 </div>
@@ -1510,6 +1584,7 @@
             let currentSlide = 0;
 
             function goToSlide(slideIndex) {
+                if (!track) return;
                 track.style.transform = `translateX(-${slideIndex * 100}%)`;
                 dots.forEach(dot => dot.classList.remove('active'));
                 dots[slideIndex].classList.add('active');
@@ -1532,6 +1607,8 @@
             const form = document.getElementById('contact-form');
             const successAnimation = document.getElementById('success-animation');
 
+            if (!form) return;
+
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
@@ -1550,11 +1627,26 @@
             });
         }
 
+        // Theme Toggle Logic
+        function initThemeToggle() {
+            const themeToggleBtns = document.querySelectorAll('.theme-toggle');
+
+            themeToggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.documentElement.classList.toggle('dark');
+                    const isDark = document.documentElement.classList.contains('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            });
+        }
+
+
         // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             initCarousel();
             initContactForm();
+            initThemeToggle();
             
             // Mobile menu
             document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
@@ -1575,8 +1667,8 @@
                     if (entry.isIntersecting) {
                         const target = parseInt(entry.target.dataset.count);
                         const suffix = entry.target.textContent.includes('/7') ? '/7' : 
-                                     entry.target.textContent.includes('+') ? '+' : 
-                                     entry.target.textContent.includes('%') ? '%' : '';
+                                      entry.target.textContent.includes('+') ? '+' : 
+                                      entry.target.textContent.includes('%') ? '%' : '';
                         animateCounter(entry.target, target, suffix);
                         observer.unobserve(entry.target);
                     }
