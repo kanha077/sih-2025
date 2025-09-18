@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Hub | Ananda Mental Health</title>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (theme === 'dark' || (!theme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {--primary: 220 70% 50%;--primary-foreground: 0 0% 98%;--secondary: 280 60% 50%;--secondary-foreground: 0 0% 98%;--accent: 340 75% 55%;--accent-foreground: 0 0% 98%;--background: 0 0% 100%;--foreground: 224 71.4% 4.1%;--muted: 220 14.3% 95.9%;--muted-foreground: 220 8.9% 46.1%;--border: 220 13% 91%;--ring: 220 70% 50%;--card: 0 0% 100%;--card-foreground: 224 71.4% 4.1%;--input: 220 14.3% 95.9%;--destructive: 0 84% 60%;--destructive-foreground: 0 0% 98%;--popover: 0 0% 100%;--popover-foreground: 224 71.4% 4.1%;--gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(280 65% 60%));--shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);--shadow-primary: 0 0 40px hsl(var(--primary) / 0.4);--shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);--transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);--transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);--radius: 0.75rem;--radius-lg: 1rem;--radius-xl: 1.5rem;--radius-full: 9999px;}
+        .dark {--primary: 220 70% 55%;--secondary: 280 60% 55%;--accent: 340 75% 60%;--background: 224 71.4% 4.1%;--foreground: 0 0% 98%;--muted: 220 13% 18%;--muted-foreground: 220 8.9% 64.9%;--border: 220 13% 24%;--card: 224 71.4% 6%;--card-foreground: 0 0% 98%;--input: 220 13% 18%;--popover: 224 71.4% 6%;--popover-foreground: 0 0% 98%;--shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);}
+        * {box-sizing: border-box;margin: 0;padding: 0;} html {scroll-behavior: smooth;}
+        body {font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;background: hsl(var(--background));color: hsl(var(--foreground));line-height: 1.6;transition: var(--transition-smooth);min-height: 100vh;position: relative;overflow-x: hidden;}
+        body::before {content: '';position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, hsl(var(--secondary) / 0.08) 0%, transparent 50%);pointer-events: none;z-index: -1;animation: backgroundFlow 30s ease-in-out infinite;}
+        @keyframes backgroundFlow {0%, 100% {transform: translate(0, 0) scale(1);filter: hue-rotate(0deg);} 50% {transform: translate(30px, -30px) scale(1.05);filter: hue-rotate(180deg);}}
+        .navbar {background: rgba(255, 255, 255, 0.1);backdrop-filter: blur(20px) saturate(180%);border-bottom: 1px solid hsl(var(--border) / 0.5);padding: 1.25rem 2rem;display: flex;justify-content: space-between;align-items: center;position: sticky;top: 0;z-index: 1000;box-shadow: var(--shadow-glass);}
+        .dark .navbar {background: rgba(0, 0, 0, 0.2);border-bottom: 1px solid hsl(var(--border) / 0.3);}
+        .navbar h1 {font-size: 1.875rem;font-weight: 800;background: var(--gradient-primary);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;text-shadow: 0 0 30px hsl(var(--primary) / 0.5);}
+        #back-to-forum-btn {background: var(--gradient-primary);color: hsl(var(--primary-foreground));border: none;padding: 0.875rem 1.75rem;border-radius: var(--radius-full);cursor: pointer;font-weight: 600;font-size: 0.875rem;transition: var(--transition-spring);box-shadow: var(--shadow-primary);text-decoration: none;display: inline-flex;align-items: center;gap: 0.5rem;}
+        #back-to-forum-btn:hover {transform: translateY(-3px) scale(1.05);}
+        .chat-container {max-width: 800px;margin: 2.5rem auto;padding: 2.5rem;background: rgba(255, 255, 255, 0.1);backdrop-filter: blur(20px) saturate(180%);border-radius: var(--radius-xl);border: 1px solid hsl(var(--border) / 0.5);box-shadow: var(--shadow-glass);animation: slideInUp 0.8s ease-out;}
+        .dark .chat-container {background: rgba(0, 0, 0, 0.2);}
+        @keyframes slideInUp {from {opacity: 0;transform: translateY(50px);} to {opacity: 1;transform: translateY(0);}}
+        .chat-messages {display: flex;flex-direction: column;gap: 1.5rem;height: 100%;}
+        .message {display: flex;gap: 1rem;align-items: flex-start;max-width: 90%;} .bot-message {align-self: flex-start;}
+        .avatar {width: 48px;height: 48px;border-radius: 50%;background: var(--gradient-primary);display: flex;align-items: center;justify-content: center;color: white;font-weight: 700;font-size: 1.25rem;box-shadow: var(--shadow-primary);flex-shrink: 0;border: 3px solid hsl(var(--card));}
+        .message-content {background: hsl(var(--card) / 0.8);backdrop-filter: blur(10px);padding: 1.25rem;border-radius: var(--radius-lg);border: 1px solid hsl(var(--border) / 0.7);}
+        .message-content p {margin: 0;line-height: 1.7;} .options-grid {display: grid;grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));gap: 1rem;margin-top: 1.5rem;}
+        .option-button {display: block;width: 100%;background: hsl(var(--card) / 0.6);backdrop-filter: blur(10px);border: 1px solid hsl(var(--border) / 0.5);color: hsl(var(--muted-foreground));text-align: left;padding: 1rem 1.25rem;border-radius: var(--radius);cursor: pointer;font-size: 0.95rem;font-weight: 500;margin-bottom: 0.75rem;transition: var(--transition-spring);position: relative;overflow: hidden;}
+        .option-button::before {content: '';position: absolute;top: 0;left: -100%;width: 100%;height: 100%;background: var(--gradient-primary);transition: var(--transition-spring);z-index: -1;}
+        .option-button:hover {color: hsl(var(--primary-foreground));transform: translateX(8px) scale(1.02);border-color: hsl(var(--primary) / 0.5);box-shadow: var(--shadow-primary);}
+        .option-button:hover::before {left: 0;} .bot-response {margin-top: 1.5rem;display: none;}
+        @media (max-width: 768px) {.navbar {padding: 1rem;} .navbar h1 {font-size: 1.5rem;} #back-to-forum-btn {padding: 0.75rem 1.25rem;font-size: 0.8rem;} .chat-container {margin: 1.5rem;padding: 1.5rem;}}
+    </style>
+</head>
+<body>
+    <nav class="navbar"><h1>🎉 Social Hub</h1><a href="forum.html" id="back-to-forum-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back to Forum</a></nav>
+    <main class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message" id="initial-message">
+                <div class="avatar">🤖</div>
+                <div class="message-content">
+                    <p>Welcome to the Social Hub! This is the place to connect with fellow students. <strong>How would you like to get started?</strong></p>
+                    <div class="options-grid">
+                        <button class="option-button" data-response="events">📅 Find Events</button>
+                        <button class="option-button" data-response="clubs">🏛️ Join a Club</button>
+                        <button class="option-button" data-response="connect">👋 Connect with Classmates</button>
+                        <button class="option-button" data-response="share">🥳 Share a Fun Experience</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatMessages = document.getElementById('chat-messages');
+            const initialMessage = document.getElementById('initial-message');
+            const responses = {
+                events: 'Looking for something to do? Check the <strong>#Social</strong> category on the forum for posts about campus events, parties, and meetups. You can also create a post to organize your own!',
+                clubs: 'Joining a club is a fantastic way to meet people. Head to the forum and search for tags like <strong>#Clubs</strong> or <strong>#Hobbies</strong> to find groups that match your interests, from coding to hiking.',
+                connect: 'Want to find people from your classes? Create a post in the <strong>#Social</strong> category! Mention your course or major, and you might find a new friend or study buddy.',
+                share: 'Had a great time at an event? Want to talk about a cool place you found near campus? Share it on the forum! Your post could inspire someone else to have a great experience too.'
+            };
+            initialMessage.addEventListener('click', (e) => {
+                if (e.target.classList.contains('option-button')) {
+                    const responseKey = e.target.dataset.response;
+                    initialMessage.style.display = 'none';
+                    const newResponse = document.createElement('div');
+                    newResponse.className = 'message bot-message';
+                    newResponse.style.animation = 'slideInUp 0.5s ease-out';
+                    newResponse.innerHTML = `<div class="avatar">🤖</div><div class="message-content"><p>${responses[responseKey]}</p><button class="option-button" style="margin-top: 1rem;" onclick="resetChat()">⬅️ Go Back</button></div>`;
+                    chatMessages.appendChild(newResponse);
+                }
+            });
+        });
+        function resetChat() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.querySelectorAll('.bot-message:not(#initial-message)').forEach(el => el.remove());
+            document.getElementById('initial-message').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
