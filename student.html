@@ -1052,7 +1052,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                     // Create default profile
                     const defaultProfile = {
                         id: user.id,
-                        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+                        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'student',
                         email: user.email,
                         created_at: new Date(),
                         updated_at: new Date()
@@ -1075,7 +1075,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
         }
 
         function updateUI(profile) {
-            const fullName = profile.full_name || 'User';
+            const fullName = profile.full_name || 'student';
             const firstName = fullName.split(' ')[0];
             
             // Update header and welcome
@@ -1140,8 +1140,8 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                     course: document.getElementById('course').value,
                     updated_at: new Date()
                 };
-                
-                const { error } = await _supabase.from('profiles').upsert(updates);
+               // Correct usage
+                const { error } = await _supabase.from('profiles').upsert([updates]);
                 if (error) { throw error; }
                 
                 // Show success message
