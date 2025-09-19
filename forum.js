@@ -3,6 +3,10 @@
 // IMPORTANT: Your existing firebase-config.js is still needed for the database!
 import { auth, db } from './firebase-config.js';
 
+// --- NEW: Add your Google AI API Key here ---
+// Get your free key from https://aistudio.google.com/
+const GEMINI_API_KEY = 'AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ';
+
 // --- DOM REFERENCES ---
 const feedView = document.getElementById('feed-view');
 const postDetailView = document.getElementById('post-detail-view');
@@ -24,7 +28,6 @@ const createPollBtn = document.getElementById('create-poll-btn');
 const pollCreatorContainer = document.getElementById('poll-creator-container');
 const pollOptionsInputs = document.getElementById('poll-options-inputs');
 const addPollOptionBtn = document.getElementById('add-poll-option-btn');
-// --- NEW: TOPIC FILTER REFERENCES ---
 const topicFilterDropdown = document.getElementById('topic-filter-dropdown');
 const postTopicSelect = document.getElementById('post-topic-select');
 
@@ -33,7 +36,7 @@ const postTopicSelect = document.getElementById('post-topic-select');
 let currentUserId = null;
 let currentSortOrder = { field: 'createdAt', direction: 'desc' };
 let currentAuthorFilter = null; 
-let currentTopicFilter = 'all'; // New state for topic filter
+let currentTopicFilter = 'all';
 let unsubscribePosts = null;
 let unsubscribeThreads = null;
 let fileToUpload = null;
@@ -70,13 +73,7 @@ addPollOptionBtn.addEventListener('click', () => { const optionInputs = pollOpti
 postSubmitBtn.addEventListener('click', () => {
     const questionText = postTextarea.value.trim();
     const topic = postTopicSelect.value;
-
-    // --- NEW: Validate that a topic is selected ---
-    if (!topic) {
-        alert("You must select a topic for your post.");
-        return;
-    }
-
+    if (!topic) { alert("You must select a topic for your post."); return; }
     let pollData = null;
     if (isPollActive) {
         const pollOptions = Array.from(pollOptionsInputs.querySelectorAll('.poll-option-input')).map(input => input.value.trim()).filter(text => text !== '');
@@ -110,20 +107,16 @@ const CLOUDINARY_CLOUD_NAME = "dcukf2sdm"; // Find in your Cloudinary dashboard
 
 function createPost(text, mediaUrl, mediaType, pollData, topic) {
     const anonymousData = generateAnonymousData();
-    const postObject = { 
-        authorId: auth.currentUser.uid, 
-        authorAnonymousName: anonymousData.name, 
-        authorAvatar: anonymousData.avatar, 
-        questionText: text, 
-        mediaUrl: mediaUrl, 
-        mediaType: mediaType, 
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-        upvotes: 0, 
-        answerCount: 0,
-        topic: topic // --- NEW: Save the topic to the post
-    };
+    const postObject = { authorId: auth.currentUser.uid, authorAnonymousName: anonymousData.name, authorAvatar: anonymousData.avatar, questionText: text, mediaUrl: mediaUrl, mediaType: mediaType, createdAt: firebase.firestore.FieldValue.serverTimestamp(), upvotes: 0, answerCount: 0, topic: topic };
     if (pollData) { postObject.poll = pollData; }
-    db.collection('posts').add(postObject).then(() => { resetPostCreator(); }).catch(error => { console.error("Error creating post: ", error); resetPostCreator(); });
+    db.collection('posts').add(postObject).then((docRef) => {
+        resetPostCreator();
+        showPostDetailView(docRef.id); 
+        setTimeout(() => {
+            // Pass the post text to the AI helper
+            displayAiHelperMessage(topic, text); 
+        }, 500);
+    }).catch(error => { console.error("Error creating post: ", error); resetPostCreator(); });
 }
 
 function resetPostCreator() { postTextarea.value = ''; mediaUploadInput.value = ''; fileToUpload = null; progressContainer.style.display = 'none'; uploadProgress.style.width = '0%'; postSubmitBtn.disabled = false; isPollActive = false; pollCreatorContainer.style.display = 'none'; createPollBtn.classList.remove('active'); pollOptionsInputs.innerHTML = '<input type="text" class="poll-option-input" placeholder="Poll Option 1" maxlength="80"><input type="text" class="poll-option-input" placeholder="Poll Option 2" maxlength="80">'; postTopicSelect.value = ""; }
@@ -131,73 +124,28 @@ function resetPostCreator() { postTextarea.value = ''; mediaUploadInput.value = 
 // --- SORTING & FILTERING ---
 sortNewestBtn.addEventListener('click', () => { currentSortOrder = { field: 'createdAt', direction: 'desc' }; fetchPosts(); });
 sortPopularBtn.addEventListener('click', () => { currentSortOrder = { field: 'upvotes', direction: 'desc' }; fetchPosts(); });
-allPostsBtn.addEventListener('click', () => { currentAuthorFilter = null; fetchPosts(); });
-myPostsBtn.addEventListener('click', () => { if (currentUserId) { currentAuthorFilter = currentUserId; fetchPosts(); } });
-// --- NEW: TOPIC FILTER EVENT LISTENER ---
-topicFilterDropdown.addEventListener('change', (e) => {
-    currentTopicFilter = e.target.value;
-    fetchPosts();
-});
-
+allPostsBtn.addEventListener('click', () => { currentAuthorFilter = null; allPostsBtn.classList.add('active'); myPostsBtn.classList.remove('active'); fetchPosts(); });
+myPostsBtn.addEventListener('click', () => { if (currentUserId) { currentAuthorFilter = currentUserId; myPostsBtn.classList.add('active'); allPostsBtn.classList.remove('active'); fetchPosts(); } });
+topicFilterDropdown.addEventListener('change', (e) => { currentTopicFilter = e.target.value; currentAuthorFilter = null; allPostsBtn.classList.add('active'); myPostsBtn.classList.remove('active'); fetchPosts(); });
 
 // --- FETCHING & RENDERING (FEED VIEW) ---
 function fetchPosts() {
     if (unsubscribePosts) unsubscribePosts();
     postsContainer.innerHTML = `<div class="loader"></div>`;
     let query = db.collection('posts');
-
-    // --- NEW: Apply topic filter ---
-    if (currentTopicFilter && currentTopicFilter !== 'all') {
-        query = query.where('topic', '==', currentTopicFilter);
-    }
-
+    if (currentTopicFilter && currentTopicFilter !== 'all') { query = query.where('topic', '==', currentTopicFilter); }
     if (currentAuthorFilter) { query = query.where('authorId', '==', currentAuthorFilter); }
     query = query.orderBy(currentSortOrder.field, currentSortOrder.direction);
     unsubscribePosts = query.onSnapshot(snapshot => {
         if (snapshot.empty) { postsContainer.innerHTML = `<p style="text-align:center; color: var(--muted-foreground);">No posts found.</p>`; return; }
         postsContainer.innerHTML = '';
         snapshot.forEach(doc => renderPostCard(doc));
-    }, error => { console.error("Error fetching posts:", error); postsContainer.innerHTML = `<p style="text-align:center; color: red;">Error loading posts.</p>`; });
+    }, error => { console.error("Error fetching posts:", error); postsContainer.innerHTML = `<p style="text-align:center; color: red;">Error loading posts. You may need to create a Firestore index.</p>`; });
 }
 
 function renderPostCard(doc) {
-    const post = doc.data();
-    const postId = doc.id;
-    const postDate = post.createdAt ? timeAgo(post.createdAt.toDate()) : 'Just now';
-    const postCard = document.createElement('div');
-    const isUserPost = post.authorId === currentUserId;
-    postCard.className = `post-card clickable ${isUserPost ? 'user-post' : ''}`;
-    postCard.dataset.postId = postId;
-    let mediaHTML = '';
-    if (post.mediaUrl) { if (post.mediaType === 'image') { mediaHTML = `<div class="post-media"><img src="${post.mediaUrl}" alt="Post image"></div>`; } else if (post.mediaType === 'video') { mediaHTML = `<div class="post-media"><video controls src="${post.mediaUrl}"></video></div>`; } }
-    let pollHTML = '';
-    if (post.poll) { const userVote = post.poll.voters ? post.poll.voters[currentUserId] : null; const optionsHTML = post.poll.options.map(option => { const percentage = post.poll.totalVotes > 0 ? (option.votes / post.poll.totalVotes) * 100 : 0; const isVoted = userVote === option.text; return `<div class="poll-option ${isVoted ? 'voted' : ''}" data-post-id="${postId}" data-option-text="${option.text}"><div class="poll-option-fill" style="width: ${percentage}%;"></div><div class="poll-option-info"><span class="poll-option-text">${option.text}</span><span class="poll-option-percent">${Math.round(percentage)}%</span></div></div>`; }).join(''); pollHTML = `<div class="poll-container">${optionsHTML}</div>`; }
-    const authorDisplayName = isUserPost ? 'You (Anonymous)' : post.authorAnonymousName;
-    const deleteBtnHTML = isUserPost ? `<button class="delete-post-btn" title="Delete Post" data-post-id="${postId}">×</button>` : '';
-
-    postCard.innerHTML = `
-        ${deleteBtnHTML}
-        <div class="post-header">
-            <div class="user-avatar">${post.authorAvatar || '👤'}</div>
-            <div class="post-meta">
-                <div class="post-author">${authorDisplayName}</div>
-                <div class="post-time">${postDate}</div>
-            </div>
-        </div>
-        <p class="post-content">${post.questionText || ''}</p>
-        ${mediaHTML}
-        ${pollHTML}
-        <div class="post-footer">
-            <div class="action-btn upvote-btn" data-id="${postId}">
-                <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                <span>${post.upvotes || 0}</span>
-            </div>
-            <div class="action-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                <span>${post.answerCount || 0} Comments</span>
-            </div>
-        </div>
-    `;
+    const post = doc.data(); const postId = doc.id; const postDate = post.createdAt ? timeAgo(post.createdAt.toDate()) : 'Just now'; const postCard = document.createElement('div'); const isUserPost = post.authorId === currentUserId; postCard.className = `post-card clickable ${isUserPost ? 'user-post' : ''}`; postCard.dataset.postId = postId; let mediaHTML = ''; if (post.mediaUrl) { if (post.mediaType === 'image') { mediaHTML = `<div class="post-media"><img src="${post.mediaUrl}" alt="Post image"></div>`; } else if (post.mediaType === 'video') { mediaHTML = `<div class="post-media"><video controls src="${post.mediaUrl}"></video></div>`; } } let pollHTML = ''; if (post.poll) { const userVote = post.poll.voters ? post.poll.voters[currentUserId] : null; const optionsHTML = post.poll.options.map(option => { const percentage = post.poll.totalVotes > 0 ? (option.votes / post.poll.totalVotes) * 100 : 0; const isVoted = userVote === option.text; return `<div class="poll-option ${isVoted ? 'voted' : ''}" data-post-id="${postId}" data-option-text="${option.text}"><div class="poll-option-fill" style="width: ${percentage}%;"></div><div class="poll-option-info"><span class="poll-option-text">${option.text}</span><span class="poll-option-percent">${Math.round(percentage)}%</span></div></div>`; }).join(''); pollHTML = `<div class="poll-container">${optionsHTML}</div>`; } const authorDisplayName = isUserPost ? 'You (Anonymous)' : post.authorAnonymousName; const deleteBtnHTML = isUserPost ? `<button class="delete-post-btn" title="Delete Post" data-post-id="${postId}">×</button>` : '';
+    postCard.innerHTML = ` ${deleteBtnHTML} <div class="post-header"> <div class="user-avatar">${post.authorAvatar || '👤'}</div> <div class="post-meta"> <div class="post-author">${authorDisplayName}</div> <div class="post-time">${postDate}</div> </div> </div> <p class="post-content">${post.questionText || ''}</p> ${mediaHTML} ${pollHTML} <div class="post-footer"> <div class="action-btn upvote-btn" data-id="${postId}"> <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg> <span>${post.upvotes || 0}</span> </div> <div class="action-btn"> <svg width="20" height="20" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="2"/></svg> <span>${post.answerCount || 0} Comments</span> </div> </div> `;
     postsContainer.appendChild(postCard);
 }
 
@@ -205,31 +153,7 @@ function renderPostCard(doc) {
 function renderSinglePost(doc) {
     const post = doc.data(); const postId = doc.id; const postDate = post.createdAt ? post.createdAt.toDate().toLocaleString() : 'Just now'; let mediaHTML = ''; if (post.mediaUrl) { if (post.mediaType === 'image') { mediaHTML = `<div class="post-media-container"><img src="${post.mediaUrl}" alt="Post image"></div>`; } else if (post.mediaType === 'video') { mediaHTML = `<div class="post-media-container"><video controls src="${post.mediaUrl}"></video></div>`; } } const isUserPost = post.authorId === currentUserId; const authorDisplayName = isUserPost ? 'You (Anonymous)' : post.authorAnonymousName;
     const deleteBtnHTML = isUserPost ? `<button class="delete-post-btn" title="Delete Post" data-post-id="${postId}">×</button>` : '';
-    singlePostContainer.innerHTML = `
-        <div class="post-card ${isUserPost ? 'user-post' : ''}">
-            ${deleteBtnHTML}
-            <div class="post-header">
-                <div class="user-avatar">${post.authorAvatar || '👤'}</div>
-                <div class="post-meta">
-                    <div class="post-author">${authorDisplayName}</div>
-                    <div class="post-time">${postDate}</div>
-                </div>
-            </div>
-            <p class="post-content">${post.questionText || ''}</p>
-            ${mediaHTML}
-            <div class="post-footer">
-                <div class="action-btn upvote-btn" data-id="${postId}">
-                    <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                    <span>${post.upvotes || 0}</span>
-                </div>
-            </div>
-        </div>
-        <div class="thread-form post-creator">
-            <h3>Add to the Thread</h3>
-            <textarea id="thread-textarea" class="post-textarea" placeholder="Contribute your thoughts..."></textarea>
-            <button id="thread-submit-btn" class="submit-btn" data-post-id="${postId}">Add Reply</button>
-        </div>
-    `;
+    singlePostContainer.innerHTML = ` <div class="post-card ${isUserPost ? 'user-post' : ''}"> ${deleteBtnHTML} <div class="post-header"> <div class="user-avatar">${post.authorAvatar || '👤'}</div> <div class="post-meta"> <div class="post-author">${authorDisplayName}</div> <div class="post-time">${postDate}</div> </div> </div> <p class="post-content">${post.questionText || ''}</p> ${mediaHTML} <div class="post-footer"> <div class="action-btn upvote-btn" data-id="${postId}"> <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2"/></svg> <span>${post.upvotes || 0}</span> </div> </div> </div> <div class="thread-form post-creator"> <h3>Add to the Thread</h3> <textarea id="thread-textarea" class="post-textarea" placeholder="Contribute your thoughts..."></textarea> <button id="thread-submit-btn" class="submit-btn" data-post-id="${postId}">Add Reply</button> </div> `;
 }
 function fetchAndRenderThreads(postId) { if (unsubscribeThreads) unsubscribeThreads(); unsubscribeThreads = db.collection('posts').doc(postId).collection('answers').orderBy('createdAt', 'asc').onSnapshot(snapshot => { threadsContainer.innerHTML = ''; snapshot.forEach(doc => { const thread = doc.data(); const threadCard = document.createElement('div'); threadCard.className = 'thread-card'; threadCard.innerHTML = `<p><strong>${thread.authorAnonymousName}</strong> replied:</p><p>${thread.answerText}</p>`; threadsContainer.appendChild(threadCard); }); }); }
 
@@ -241,14 +165,8 @@ document.body.addEventListener('click', e => {
     if (upvoteBtn) { const postId = upvoteBtn.dataset.id; db.collection('posts').doc(postId).update({ upvotes: firebase.firestore.FieldValue.increment(1) }); return; }
     const pollOption = e.target.closest('.poll-option');
     if (pollOption) { const postId = pollOption.dataset.postId; const optionText = pollOption.dataset.optionText; voteOnPoll(postId, optionText); return; }
-    
     const deleteBtn = e.target.closest('.delete-post-btn');
-    if (deleteBtn) {
-        const postId = deleteBtn.dataset.postId;
-        deletePost(postId);
-        return;
-    }
-    
+    if (deleteBtn) { const postId = deleteBtn.dataset.postId; deletePost(postId); return; }
     if (e.target.id === 'thread-submit-btn') { const postId = e.target.dataset.postId; const threadTextarea = document.getElementById('thread-textarea'); const threadText = threadTextarea.value.trim(); if (!threadText) return; const anonymousData = generateAnonymousData(); db.collection('posts').doc(postId).collection('answers').add({ authorId: auth.currentUser.uid, authorAnonymousName: anonymousData.name, authorAvatar: anonymousData.avatar, answerText: threadText, createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { threadTextarea.value = ''; db.collection('posts').doc(postId).update({ answerCount: firebase.firestore.FieldValue.increment(1) }); }); }
 });
 
@@ -275,16 +193,53 @@ async function deletePost(postId) {
     if (!confirm("Are you sure you want to delete this post? This cannot be undone.")) {
         return;
     }
-    console.log(`Attempting to delete post: ${postId}`);
     const postRef = db.collection('posts').doc(postId);
     try {
         await postRef.delete();
-        console.log("Post successfully deleted!");
-        if (postDetailView.style.display === 'block') {
-            showFeedView();
+        if (postDetailView.style.display === 'block') { showFeedView(); }
+    } catch (error) { console.error("Error deleting post: ", error); alert("There was an error deleting the post."); }
+}
+
+// --- NEW: AI HELPER FUNCTION (UPDATED) ---
+async function displayAiHelperMessage(topic, postText) {
+    if (GEMINI_API_KEY === 'YOUR_API_KEY_HERE') {
+        console.warn("Gemini API key is not set. Skipping AI helper message.");
+        return;
+    }
+
+    const aiCard = document.createElement('div');
+    aiCard.className = 'thread-card ai-helper-card';
+    aiCard.innerHTML = `<div class="post-header"><div class="user-avatar">🤖</div><div class="post-meta"><div class="post-author">Ananda AI Helper</div></div></div><p>Thinking...</p>`;
+    threadsContainer.prepend(aiCard);
+
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const systemPrompt = "You are Ananda, a friendly and supportive AI assistant for a student mental health forum. A student has just created a new post. Your role is to provide a brief (2-3 sentences), encouraging, and helpful initial response that is private to them. Acknowledge their post, offer gentle encouragement, and suggest a potential next step or resource. Do not be overly clinical. Be warm and supportive.";
+    
+    const userQuery = `The student posted in the "${topic}" category. Here is their post: "${postText}". Please generate a warm, private, and encouraging initial response for them.`;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ parts: [{ text: userQuery }] }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
         }
+
+        const result = await response.json();
+        const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Thanks for sharing! The community will see your post and reply soon.";
+        
+        aiCard.querySelector('p').textContent = aiText;
+
     } catch (error) {
-        console.error("Error deleting post: ", error);
-        alert("There was an error deleting the post. Please check the console.");
+        console.error("Error fetching AI response:", error);
+        aiCard.querySelector('p').textContent = "Thanks for sharing! We're glad to have you here. The community will see your post and reply soon.";
     }
 }
+

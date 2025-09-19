@@ -242,6 +242,16 @@
             font-weight: 500;
             color: hsl(var(--muted-foreground));
         }
+        /* Add this to your studentforum.html <style> section */
+.ai-helper-card {
+    background: hsl(var(--primary) / 0.05);
+    border-left: 4px solid hsl(var(--primary));
+    animation: fadeIn 0.5s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
     </style>
 </head>
 <body>
