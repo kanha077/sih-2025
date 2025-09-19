@@ -627,13 +627,13 @@
             transition: var(--transition-smooth); 
         }
         
-        .post-card:hover { 
+        .post-card.clickable:hover { 
             transform: translateY(-8px) scale(1.02); 
             box-shadow: var(--shadow-primary); 
             border-color: hsl(var(--primary) / 0.5); 
         }
         
-        .post-card:hover::before { 
+        .post-card.clickable:hover::before { 
             transform: scaleX(1); 
         }
         
@@ -1178,7 +1178,6 @@
     </style>
 </head>
 <body>
-    <!-- Enhanced Ananda Header -->
     <header class="ananda-header">
         <div class="header-container">
             <a href="#" class="ananda-logo">
@@ -1263,7 +1262,7 @@
                                 </svg>
                             </label>
                             <input type="file" id="media-upload" accept="image/*,video/*" style="display: none;">
-                            <button class="option-btn" title="Add Poll">
+                            <button id="poll-btn" class="option-btn" title="Add Poll">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M3 3v18h18"/>
                                     <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
@@ -1332,7 +1331,19 @@
                 Back to Forum
             </button>
             <div id="single-post-container"></div>
-            <div id="threads-container"></div>
+            <div id="threads-container">
+                <h3>Comments</h3>
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="user-avatar">C</div>
+                        <div class="post-meta">
+                            <div class="post-author">Caring Student</div>
+                            <div class="post-time">1 hour ago</div>
+                        </div>
+                    </div>
+                    <div class="post-content">Great question! The Pomodoro Technique (25 mins study, 5 mins break) really helps me stay focused. Also, make sure you're getting enough sleep!</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1348,19 +1359,6 @@
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
         const themeIcon = themeToggle.querySelector('svg');
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        
-        if (savedTheme === 'dark') {
-            html.classList.add('dark');
-        }
-        updateThemeIcon(savedTheme);
-        
-        themeToggle.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        });
         
         function updateThemeIcon(theme) {
             if (theme === 'dark') {
@@ -1369,8 +1367,19 @@
                 themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>`;
             }
         }
+        
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') html.classList.add('dark');
+        updateThemeIcon(savedTheme);
 
-        // --- CONSOLIDATED INTERACTIVITY SCRIPT ---
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        // --- FULLY FUNCTIONAL PROTOTYPE SCRIPT ---
         document.addEventListener('DOMContentLoaded', () => {
             // --- UI Elements ---
             const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
@@ -1382,6 +1391,16 @@
             const trendingTopics = document.querySelectorAll('.trending-topic');
             const mediaUploadInput = document.getElementById('media-upload');
             const mediaPreviewContainer = document.getElementById('media-preview-container');
+            const postSubmitBtn = document.getElementById('post-submit-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const pollBtn = document.getElementById('poll-btn');
+            const postsContainer = document.getElementById('posts-container');
+            
+            // View switching elements
+            const feedView = document.getElementById('feed-view');
+            const postDetailView = document.getElementById('post-detail-view');
+            const backToForumBtn = document.getElementById('back-to-forum-btn');
+            const singlePostContainer = document.getElementById('single-post-container');
 
             // --- Mobile Menu ---
             mobileMenuToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
@@ -1400,7 +1419,6 @@
             // --- General Filter Button Active State ---
             allFilterOptions.forEach(option => {
                 option.addEventListener('click', (e) => {
-                    if (e.currentTarget.tagName.toLowerCase() === 'a') return;
                     const parent = option.closest('.filter-group');
                     if (parent) {
                         parent.querySelectorAll('.filter-option').forEach(opt => opt.classList.remove('active'));
@@ -1454,9 +1472,7 @@
                 if (file) {
                     const previewElement = document.createElement(file.type.startsWith('video/') ? 'video' : 'img');
                     previewElement.src = URL.createObjectURL(file);
-                    if (file.type.startsWith('video/')) {
-                        previewElement.controls = true;
-                    }
+                    if (file.type.startsWith('video/')) previewElement.controls = true;
 
                     const removeBtn = document.createElement('button');
                     removeBtn.textContent = '×';
@@ -1467,7 +1483,7 @@
                         mediaUploadInput.value = '';
                         mediaPreviewContainer.innerHTML = '';
                         mediaPreviewContainer.style.display = 'none';
-                        mediaUploadInput.dispatchEvent(new Event('change')); 
+                        URL.revokeObjectURL(previewElement.src);
                     };
 
                     mediaPreviewContainer.appendChild(previewElement);
@@ -1475,55 +1491,163 @@
                     mediaPreviewContainer.style.display = 'block';
                 }
             });
-            
-            // --- Keyboard Shortcuts ---
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && document.activeElement === postTextarea) {
-                    document.getElementById('post-submit-btn').click();
-                }
-                if (e.key === 'Escape') {
-                    sidebar.classList.remove('mobile-open');
-                }
-            });
-            
+
             // --- Mock Progress Bar Animation ---
             const progressContainer = document.getElementById('progress-container');
             const progressBar = document.getElementById('upload-progress');
             
-            function simulateProgress() {
+            function simulateProgress(callback) {
                 progressContainer.style.display = 'block';
                 let progress = 0;
                 const interval = setInterval(() => {
-                    progress += Math.random() * 30;
+                    progress += Math.random() * 25;
                     if (progress >= 100) {
                         progress = 100;
                         clearInterval(interval);
                         setTimeout(() => {
                             progressContainer.style.display = 'none';
                             progressBar.style.width = '0%';
+                            if(callback) callback();
                         }, 500);
                     }
                     progressBar.style.width = progress + '%';
-                }, 200);
+                }, 150);
             }
 
-            // --- Enhanced Animations ---
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -10px 0px'
-            };
+            // --- Mock Post Creation ---
+            function createNewPost() {
+                const postContent = postTextarea.value.trim();
+                const mediaFile = mediaUploadInput.files[0];
+                const topicValue = document.getElementById('post-topic-select').value;
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
+                if (!postContent) {
+                    alert('Please write something to post.');
+                    return;
+                }
+                if (!topicValue) {
+                    alert('Please select a topic for your post.');
+                    return;
+                }
+
+                const postCard = document.createElement('div');
+                postCard.className = 'post-card user-post clickable'; // Add clickable class
+                
+                let mediaHTML = '';
+                if(mediaFile) {
+                    const url = URL.createObjectURL(mediaFile);
+                    if(mediaFile.type.startsWith('image/')) {
+                        mediaHTML = `<div class="post-media-container"><img src="${url}" alt="User uploaded media"></div>`;
+                    } else if(mediaFile.type.startsWith('video/')) {
+                        mediaHTML = `<div class="post-media-container"><video src="${url}" controls></video></div>`;
                     }
-                });
-            }, observerOptions);
+                }
 
-            // Observe all cards for animations
-            document.querySelectorAll('.post-card, .sidebar, .post-creator, .right-sidebar').forEach(el => {
-                observer.observe(el);
+                postCard.innerHTML = `
+                    <div class="post-header">
+                        <div class="user-avatar">Me</div>
+                        <div class="post-meta">
+                            <div class="post-author">You</div>
+                            <div class="post-time">Just now</div>
+                        </div>
+                    </div>
+                    ${mediaHTML}
+                    <div class="post-content">${postContent.replace(/\n/g, '<br>')}</div>
+                    <div class="post-footer">
+                        <button class="action-btn" data-action="like">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            <span>0 Likes</span>
+                        </button>
+                        <button class="action-btn" data-action="comment">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            0 Comments
+                        </button>
+                    </div>
+                `;
+                postsContainer.prepend(postCard);
+
+                // Clear input fields
+                postTextarea.value = '';
+                postTextarea.style.height = 'auto';
+                mediaUploadInput.value = '';
+                mediaPreviewContainer.innerHTML = '';
+                mediaPreviewContainer.style.display = 'none';
+                document.getElementById('post-topic-select').selectedIndex = 0;
+            }
+
+            postSubmitBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (mediaUploadInput.files.length > 0) {
+                    simulateProgress(createNewPost);
+                } else {
+                    createNewPost();
+                }
+            });
+
+            // --- View Switching Logic ---
+            postsContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.post-card.clickable');
+                if (!card) return;
+                
+                // Don't switch view if clicking an action button inside the card
+                if (e.target.closest('.action-btn')) return;
+
+                const postClone = card.cloneNode(true);
+                postClone.classList.remove('clickable'); // Remove clickable class from cloned post
+                singlePostContainer.innerHTML = '';
+                singlePostContainer.appendChild(postClone);
+                
+                feedView.style.display = 'none';
+                postDetailView.style.display = 'block';
+                window.scrollTo(0, 0);
+            });
+
+            backToForumBtn.addEventListener('click', () => {
+                postDetailView.style.display = 'none';
+                feedView.style.display = 'block';
+            });
+            
+            // --- Non-functional Button Alerts ---
+            logoutBtn.addEventListener('click', () => alert('Logout functionality is not implemented in this demo.'));
+            pollBtn.addEventListener('click', () => alert('Poll functionality is not implemented in this demo.'));
+
+            // --- Post Action Button Interactivity (Like, Comment) ---
+            document.body.addEventListener('click', e => {
+                const likeBtn = e.target.closest('.action-btn[data-action="like"]');
+                if (likeBtn) {
+                    likeBtn.classList.toggle('liked');
+                    const isLiked = likeBtn.classList.contains('liked');
+                    const svg = likeBtn.querySelector('svg');
+                    const countSpan = likeBtn.querySelector('span');
+                    let currentLikes = parseInt(countSpan.textContent) || 0;
+
+                    if (isLiked) {
+                        svg.style.fill = 'currentColor';
+                        currentLikes++;
+                    } else {
+                        svg.style.fill = 'none';
+                        currentLikes--;
+                    }
+                    countSpan.textContent = `${currentLikes} Likes`;
+                }
+
+                const commentBtn = e.target.closest('.action-btn[data-action="comment"]');
+                if (commentBtn) {
+                    alert('Comment functionality is not implemented in this demo.');
+                }
+            });
+
+            // --- Keyboard Shortcuts ---
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && document.activeElement === postTextarea) {
+                    postSubmitBtn.click();
+                }
+                if (e.key === 'Escape') {
+                    sidebar.classList.remove('mobile-open');
+                }
             });
         });
 
@@ -1531,7 +1655,7 @@
         setTimeout(() => {
             const postsContainer = document.getElementById('posts-container');
             postsContainer.innerHTML = `
-                <div class="post-card">
+                <div class="post-card clickable">
                     <div class="post-header">
                         <div class="user-avatar">A</div>
                         <div class="post-meta">
@@ -1541,29 +1665,22 @@
                     </div>
                     <div class="post-content">Hello everyone! I'm struggling with my final exams and feeling quite overwhelmed. Does anyone have tips for managing stress during exam season? #StudyTips #MentalHealth</div>
                     <div class="post-footer">
-                        <button class="action-btn">
+                        <button class="action-btn" data-action="like">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
-                            24 Likes
+                            <span>24 Likes</span>
                         </button>
-                        <button class="action-btn">
+                        <button class="action-btn" data-action="comment">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
                             12 Comments
                         </button>
-                        <button class="action-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                            </svg>
-                            Share
-                        </button>
                     </div>
                 </div>
                 
-                <div class="post-card">
+                <div class="post-card clickable">
                     <div class="post-header">
                         <div class="user-avatar">M</div>
                         <div class="post-meta">
@@ -1573,24 +1690,17 @@
                     </div>
                     <div class="post-content">Just wanted to share some positivity today! Remember that it's okay to take breaks and prioritize your mental health. You're doing better than you think! 🌟 #Wellness #StudentLife</div>
                     <div class="post-footer">
-                        <button class="action-btn liked">
+                        <button class="action-btn liked" data-action="like">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
-                            48 Likes
+                           <span>48 Likes</span>
                         </button>
-                        <button class="action-btn">
+                        <button class="action-btn" data-action="comment">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
                             18 Comments
-                        </button>
-                        <button class="action-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                            </svg>
-                            Share
                         </button>
                     </div>
                 </div>
