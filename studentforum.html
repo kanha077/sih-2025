@@ -151,7 +151,7 @@
         .user-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.25rem; box-shadow: var(--shadow-primary); border: 3px solid hsl(var(--card)); }
         .post-meta { flex: 1; }
         .post-author { font-weight: 600; color: hsl(var(--card-foreground)); font-size: 1.1rem; margin-bottom: 0.25rem; }
-        .post-time { font-size: 0.875rem; color: hsl(var(--muted-foreground)); opacity: 0.8; }
+        .post-time, .post-date { font-size: 0.875rem; color: hsl(var(--muted-foreground)); opacity: 0.8; }
         .post-content { font-size: 1.125rem; line-height: 1.75; white-space: pre-wrap; word-wrap: break-word; color: hsl(var(--card-foreground)); margin-bottom: 2rem; font-weight: 400; }
         .post-footer { display: flex; align-items: center; gap: 2rem; color: hsl(var(--muted-foreground)); padding-top: 1.5rem; border-top: 1px solid hsl(var(--border) / 0.5); }
         .action-btn { display: flex; align-items: center; gap: 0.75rem; background: hsl(var(--muted) / 0.5); backdrop-filter: blur(10px); border: 1px solid hsl(var(--border) / 0.5); color: hsl(var(--muted-foreground)); cursor: pointer; padding: 0.75rem 1.5rem; border-radius: var(--radius-full); transition: var(--transition-spring); font-size: 0.9rem; font-weight: 500; position: relative; overflow: hidden; }
@@ -192,7 +192,7 @@
         .thread-card { background: hsl(var(--muted) / 0.3); backdrop-filter: blur(10px); border: 1px solid hsl(var(--border) / 0.5); padding: 2rem; border-radius: var(--radius-lg); margin-top: 2rem; }
         .thread-form { margin-top: 2rem; }
 
-        /* --- NEW: POLL STYLES --- */
+        /* --- POLL STYLES --- */
         #poll-creator-container { margin-top: 1.5rem; border-top: 1px solid hsl(var(--border)); padding-top: 1.5rem; }
         .poll-option-input { width: 100%; background: hsl(var(--input)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 0.95rem; margin-bottom: 0.75rem; color: hsl(var(--foreground)); }
         #add-poll-option-btn { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); border: 1px dashed hsl(var(--border)); width: 100%; padding: 0.75rem; border-radius: var(--radius); cursor: pointer; transition: var(--transition-smooth); }
@@ -204,6 +204,45 @@
         .poll-option-fill { position: absolute; top: 0; left: 0; height: 100%; background: hsl(var(--primary) / 0.15); border-radius: var(--radius-full); z-index: 0; transition: width 0.5s ease; }
         .poll-option-text, .poll-option-percent { position: relative; z-index: 1; }
         .poll-option-info { display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- NEW: MEDIA PREVIEW STYLES --- */
+        #media-preview-container {
+            position: relative;
+            margin-top: 1rem;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: none; /* Hidden by default */
+        }
+        #media-preview-container img,
+        #media-preview-container video {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            display: block;
+        }
+        .media-preview-remove-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            opacity: 0.8;
+        }
+        .media-preview-remove-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -239,9 +278,11 @@
             
             <section class="main-content">
                 <div class="post-creator">
-                    <textarea id="post-textarea" class="post-textarea" placeholder="Share your thoughts anonymously... What's on your mind? 💭"></textarea>
+                    <textarea id="post-textarea" class="post-textarea" placeholder="Share your thoughts, ask a question, or create a poll... 💭"></textarea>
                     
-                    <!-- NEW: POLL CREATOR UI -->
+                    <!-- NEW: Media Preview Container -->
+                    <div id="media-preview-container"></div>
+                    
                     <div id="poll-creator-container" style="display: none;">
                         <div id="poll-options-inputs">
                             <input type="text" class="poll-option-input" placeholder="Poll Option 1" maxlength="80">
@@ -348,13 +389,8 @@
             const allFilterOptions = document.querySelectorAll('.filter-option'); 
             const quickActionButtons = document.querySelectorAll('.right-sidebar .filter-option');
             const trendingTopics = document.querySelectorAll('.trending-topic');
-            
-            // --- NEW: Poll UI Elements ---
-            const createPollBtn = document.getElementById('create-poll-btn');
-            const pollCreatorContainer = document.getElementById('poll-creator-container');
-            const pollOptionsInputs = document.getElementById('poll-options-inputs');
-            const addPollOptionBtn = document.getElementById('add-poll-option-btn');
-            let isPollActive = false;
+            const mediaUploadInput = document.getElementById('media-upload');
+            const mediaPreviewContainer = document.getElementById('media-preview-container');
 
             // --- Mobile Menu ---
             mobileMenuToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
@@ -411,32 +447,43 @@
                     postTextarea.focus();
                 });
             });
-            
-            // --- NEW: Poll Creator UI Logic ---
-            createPollBtn.addEventListener('click', () => {
-                isPollActive = !isPollActive;
-                pollCreatorContainer.style.display = isPollActive ? 'block' : 'none';
-                createPollBtn.classList.toggle('active', isPollActive);
-            });
-
-            addPollOptionBtn.addEventListener('click', () => {
-                const optionInputs = pollOptionsInputs.querySelectorAll('.poll-option-input');
-                if (optionInputs.length < 5) { // Limit to 5 options
-                    const newOption = document.createElement('input');
-                    newOption.type = 'text';
-                    newOption.className = 'poll-option-input';
-                    newOption.placeholder = `Poll Option ${optionInputs.length + 1}`;
-                    newOption.maxLength = 80;
-                    pollOptionsInputs.appendChild(newOption);
-                } else {
-                    alert("You can add a maximum of 5 poll options.");
-                }
-            });
 
             // --- Auto-resize Textarea ---
             postTextarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 400) + 'px';
+            });
+
+            // --- NEW: Media Preview Logic ---
+            mediaUploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                mediaPreviewContainer.innerHTML = ''; 
+                mediaPreviewContainer.style.display = 'none';
+
+                if (file) {
+                    const previewElement = document.createElement(file.type.startsWith('video/') ? 'video' : 'img');
+                    previewElement.src = URL.createObjectURL(file);
+                    if (file.type.startsWith('video/')) {
+                        previewElement.controls = true;
+                    }
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '×';
+                    removeBtn.className = 'media-preview-remove-btn';
+                    removeBtn.title = 'Remove media';
+                    
+                    removeBtn.onclick = () => {
+                        mediaUploadInput.value = ''; // This clears the file selection
+                        mediaPreviewContainer.innerHTML = '';
+                        mediaPreviewContainer.style.display = 'none';
+                        // Trigger a 'change' event so forum.js knows the file was removed
+                        mediaUploadInput.dispatchEvent(new Event('change')); 
+                    };
+
+                    mediaPreviewContainer.appendChild(previewElement);
+                    mediaPreviewContainer.appendChild(removeBtn);
+                    mediaPreviewContainer.style.display = 'block';
+                }
             });
             
             // --- Keyboard Shortcuts ---
