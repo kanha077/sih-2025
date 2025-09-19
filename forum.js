@@ -24,11 +24,16 @@ const createPollBtn = document.getElementById('create-poll-btn');
 const pollCreatorContainer = document.getElementById('poll-creator-container');
 const pollOptionsInputs = document.getElementById('poll-options-inputs');
 const addPollOptionBtn = document.getElementById('add-poll-option-btn');
+// --- NEW: TOPIC FILTER REFERENCES ---
+const topicFilterDropdown = document.getElementById('topic-filter-dropdown');
+const postTopicSelect = document.getElementById('post-topic-select');
+
 
 // --- STATE MANAGEMENT ---
 let currentUserId = null;
 let currentSortOrder = { field: 'createdAt', direction: 'desc' };
 let currentAuthorFilter = null; 
+let currentTopicFilter = 'all'; // New state for topic filter
 let unsubscribePosts = null;
 let unsubscribeThreads = null;
 let fileToUpload = null;
@@ -64,6 +69,14 @@ addPollOptionBtn.addEventListener('click', () => { const optionInputs = pollOpti
 
 postSubmitBtn.addEventListener('click', () => {
     const questionText = postTextarea.value.trim();
+    const topic = postTopicSelect.value;
+
+    // --- NEW: Validate that a topic is selected ---
+    if (!topic) {
+        alert("You must select a topic for your post.");
+        return;
+    }
+
     let pollData = null;
     if (isPollActive) {
         const pollOptions = Array.from(pollOptionsInputs.querySelectorAll('.poll-option-input')).map(input => input.value.trim()).filter(text => text !== '');
@@ -72,17 +85,15 @@ postSubmitBtn.addEventListener('click', () => {
     }
     if (!questionText && !fileToUpload) { alert("Please write something or select a file to post."); return; }
     if (fileToUpload) {
-        uploadFileAndCreatePost(questionText, fileToUpload, pollData);
+        uploadFileAndCreatePost(questionText, fileToUpload, pollData, topic);
     } else {
-        createPost(questionText, null, null, pollData);
+        createPost(questionText, null, null, pollData, topic);
     }
 });
 
-function uploadFileAndCreatePost(text, file, pollData) {
-    // !!! IMPORTANT: Replace these with your actual Cloudinary details !!!
-    const CLOUDINARY_CLOUD_NAME = "dcukf2sdm"; // Find in your Cloudinary dashboard
+function uploadFileAndCreatePost(text, file, pollData, topic) {
+const CLOUDINARY_CLOUD_NAME = "dcukf2sdm"; // Find in your Cloudinary dashboard
     const CLOUDINARY_UPLOAD_PRESET = "ANANDA"; // The unsigned preset you created
-
     postSubmitBtn.disabled = true;
     progressContainer.style.display = 'block';
     const formData = new FormData();
@@ -92,31 +103,54 @@ function uploadFileAndCreatePost(text, file, pollData) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', cloudinaryUrl, true);
     xhr.upload.onprogress = function(e) { if (e.lengthComputable) { const progress = (e.loaded / e.total) * 100; uploadProgress.style.width = progress + '%'; } };
-    xhr.onload = function() { if (xhr.status === 200) { const response = JSON.parse(xhr.responseText); createPost(text, response.secure_url, response.resource_type, pollData); } else { console.error("Cloudinary upload failed:", xhr.responseText); alert("File upload failed."); resetPostCreator(); } };
+    xhr.onload = function() { if (xhr.status === 200) { const response = JSON.parse(xhr.responseText); createPost(text, response.secure_url, response.resource_type, pollData, topic); } else { console.error("Cloudinary upload failed:", xhr.responseText); alert("File upload failed."); resetPostCreator(); } };
     xhr.onerror = function() { console.error("Network error during upload."); alert("File upload failed."); resetPostCreator(); };
     xhr.send(formData);
 }
 
-function createPost(text, mediaUrl, mediaType, pollData) {
+function createPost(text, mediaUrl, mediaType, pollData, topic) {
     const anonymousData = generateAnonymousData();
-    const postObject = { authorId: auth.currentUser.uid, authorAnonymousName: anonymousData.name, authorAvatar: anonymousData.avatar, questionText: text, mediaUrl: mediaUrl, mediaType: mediaType, createdAt: firebase.firestore.FieldValue.serverTimestamp(), upvotes: 0, answerCount: 0 };
+    const postObject = { 
+        authorId: auth.currentUser.uid, 
+        authorAnonymousName: anonymousData.name, 
+        authorAvatar: anonymousData.avatar, 
+        questionText: text, 
+        mediaUrl: mediaUrl, 
+        mediaType: mediaType, 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+        upvotes: 0, 
+        answerCount: 0,
+        topic: topic // --- NEW: Save the topic to the post
+    };
     if (pollData) { postObject.poll = pollData; }
     db.collection('posts').add(postObject).then(() => { resetPostCreator(); }).catch(error => { console.error("Error creating post: ", error); resetPostCreator(); });
 }
 
-function resetPostCreator() { postTextarea.value = ''; mediaUploadInput.value = ''; fileToUpload = null; progressContainer.style.display = 'none'; uploadProgress.style.width = '0%'; postSubmitBtn.disabled = false; isPollActive = false; pollCreatorContainer.style.display = 'none'; createPollBtn.classList.remove('active'); pollOptionsInputs.innerHTML = '<input type="text" class="poll-option-input" placeholder="Poll Option 1" maxlength="80"><input type="text" class="poll-option-input" placeholder="Poll Option 2" maxlength="80">'; }
+function resetPostCreator() { postTextarea.value = ''; mediaUploadInput.value = ''; fileToUpload = null; progressContainer.style.display = 'none'; uploadProgress.style.width = '0%'; postSubmitBtn.disabled = false; isPollActive = false; pollCreatorContainer.style.display = 'none'; createPollBtn.classList.remove('active'); pollOptionsInputs.innerHTML = '<input type="text" class="poll-option-input" placeholder="Poll Option 1" maxlength="80"><input type="text" class="poll-option-input" placeholder="Poll Option 2" maxlength="80">'; postTopicSelect.value = ""; }
 
 // --- SORTING & FILTERING ---
 sortNewestBtn.addEventListener('click', () => { currentSortOrder = { field: 'createdAt', direction: 'desc' }; fetchPosts(); });
 sortPopularBtn.addEventListener('click', () => { currentSortOrder = { field: 'upvotes', direction: 'desc' }; fetchPosts(); });
 allPostsBtn.addEventListener('click', () => { currentAuthorFilter = null; fetchPosts(); });
 myPostsBtn.addEventListener('click', () => { if (currentUserId) { currentAuthorFilter = currentUserId; fetchPosts(); } });
+// --- NEW: TOPIC FILTER EVENT LISTENER ---
+topicFilterDropdown.addEventListener('change', (e) => {
+    currentTopicFilter = e.target.value;
+    fetchPosts();
+});
+
 
 // --- FETCHING & RENDERING (FEED VIEW) ---
 function fetchPosts() {
     if (unsubscribePosts) unsubscribePosts();
     postsContainer.innerHTML = `<div class="loader"></div>`;
     let query = db.collection('posts');
+
+    // --- NEW: Apply topic filter ---
+    if (currentTopicFilter && currentTopicFilter !== 'all') {
+        query = query.where('topic', '==', currentTopicFilter);
+    }
+
     if (currentAuthorFilter) { query = query.where('authorId', '==', currentAuthorFilter); }
     query = query.orderBy(currentSortOrder.field, currentSortOrder.direction);
     unsubscribePosts = query.onSnapshot(snapshot => {
@@ -208,7 +242,6 @@ document.body.addEventListener('click', e => {
     const pollOption = e.target.closest('.poll-option');
     if (pollOption) { const postId = pollOption.dataset.postId; const optionText = pollOption.dataset.optionText; voteOnPoll(postId, optionText); return; }
     
-    // --- NEW: Handle Post Deletion ---
     const deleteBtn = e.target.closest('.delete-post-btn');
     if (deleteBtn) {
         const postId = deleteBtn.dataset.postId;
@@ -237,21 +270,14 @@ function voteOnPoll(postId, optionText) {
     }).catch(error => { console.error("Poll transaction failed: ", error); });
 }
 
-// --- NEW: DELETE POST FUNCTION ---
+// --- DELETE POST FUNCTION ---
 async function deletePost(postId) {
-    // A confirmation dialog is highly recommended in a real application.
-    // Using a simple browser confirm() for now.
     if (!confirm("Are you sure you want to delete this post? This cannot be undone.")) {
         return;
     }
-
     console.log(`Attempting to delete post: ${postId}`);
     const postRef = db.collection('posts').doc(postId);
-
     try {
-        // In a full application, a Cloud Function would be needed to delete 
-        // associated media from Cloudinary and all sub-collections ('answers').
-        // For this project, we will just delete the main post document.
         await postRef.delete();
         console.log("Post successfully deleted!");
         if (postDetailView.style.display === 'block') {
@@ -262,4 +288,3 @@ async function deletePost(postId) {
         alert("There was an error deleting the post. Please check the console.");
     }
 }
-

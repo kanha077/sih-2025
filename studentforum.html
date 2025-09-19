@@ -191,8 +191,6 @@
         .post-media img, .post-media video, .post-media-container img, .post-media-container video { width: 100%; height: auto; max-height: 500px; object-fit: cover; }
         .thread-card { background: hsl(var(--muted) / 0.3); backdrop-filter: blur(10px); border: 1px solid hsl(var(--border) / 0.5); padding: 2rem; border-radius: var(--radius-lg); margin-top: 2rem; }
         .thread-form { margin-top: 2rem; }
-
-        /* --- POLL STYLES --- */
         #poll-creator-container { margin-top: 1.5rem; border-top: 1px solid hsl(var(--border)); padding-top: 1.5rem; }
         .poll-option-input { width: 100%; background: hsl(var(--input)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 0.95rem; margin-bottom: 0.75rem; color: hsl(var(--foreground)); }
         #add-poll-option-btn { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); border: 1px dashed hsl(var(--border)); width: 100%; padding: 0.75rem; border-radius: var(--radius); cursor: pointer; transition: var(--transition-smooth); }
@@ -204,84 +202,46 @@
         .poll-option-fill { position: absolute; top: 0; left: 0; height: 100%; background: hsl(var(--primary) / 0.15); border-radius: var(--radius-full); z-index: 0; transition: width 0.5s ease; }
         .poll-option-text, .poll-option-percent { position: relative; z-index: 1; }
         .poll-option-info { display: flex; justify-content: space-between; align-items: center; }
-
-        /* --- NEW: MEDIA PREVIEW STYLES --- */
-        #media-preview-container {
-            position: relative;
-            margin-top: 1rem;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            display: none; /* Hidden by default */
-        }
-        #media-preview-container img,
-        #media-preview-container video {
+        #media-preview-container { position: relative; margin-top: 1rem; border-radius: var(--radius-lg); overflow: hidden; display: none; }
+        #media-preview-container img, #media-preview-container video { width: 100%; max-height: 400px; object-fit: cover; display: block; }
+        .media-preview-remove-btn { position: absolute; top: 0.75rem; right: 0.75rem; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(0, 0, 0, 0.6); color: white; font-size: 1.5rem; font-weight: bold; line-height: 32px; text-align: center; cursor: pointer; transition: var(--transition-smooth); opacity: 0.8; }
+        .media-preview-remove-btn:hover { background: rgba(0, 0, 0, 0.8); transform: scale(1.1); opacity: 1; }
+        .post-card .delete-post-btn { position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px; border-radius: 50%; border: none; background: hsl(var(--destructive) / 0.7); color: white; font-size: 1.5rem; font-weight: bold; line-height: 32px; text-align: center; cursor: pointer; transition: var(--transition-smooth); opacity: 0; transform: scale(0.8); z-index: 5; }
+        .post-card.user-post:hover .delete-post-btn { opacity: 1; transform: scale(1); }
+        .delete-post-btn:hover { background: hsl(var(--destructive)); transform: scale(1.1) rotate(90deg); }
+        .post-card.user-post::after { right: 3.5rem; }
+        
+        /* --- NEW: DROPDOWN STYLES --- */
+        .filter-dropdown {
             width: 100%;
-            max-height: 400px;
-            object-fit: cover;
+            background: hsl(var(--card) / 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid hsl(var(--border) / 0.5);
+            color: hsl(var(--foreground));
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            transition: var(--transition-spring);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+        .dark .filter-dropdown { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
             display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
         }
-        .media-preview-remove-btn {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            line-height: 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            opacity: 0.8;
-        }
-        .media-preview-remove-btn:hover {
-            background: rgba(0, 0, 0, 0.8);
-            transform: scale(1.1);
-            opacity: 1;
-        }
-
-        /* --- NEW: DELETE POST BUTTON STYLES --- */
-        .post-card .delete-post-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: hsl(var(--destructive) / 0.7);
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            line-height: 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            opacity: 0; /* Hidden by default */
-            transform: scale(0.8);
-            z-index: 5; /* Ensure it's above other elements */
-        }
-
-        /* Show delete button on hover ONLY for the user's own posts */
-        .post-card.user-post:hover .delete-post-btn {
-            opacity: 1; 
-            transform: scale(1);
-        }
-
-        .delete-post-btn:hover {
-            background: hsl(var(--destructive));
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        /* Adjust "Your Post" badge to not overlap with the delete button */
-        .post-card.user-post::after {
-            right: 3.5rem; 
-        }
-
     </style>
 </head>
 <body>
@@ -298,20 +258,25 @@
     <div id="feed-view">
         <main class="main-container">
             <aside class="sidebar">
-                <h3>📂 Categories</h3>
+                <h3>📂 Filter by Topic</h3>
+                <div class="filter-group">
+                    <select id="topic-filter-dropdown" class="filter-dropdown">
+                        <option value="all">🌟 All Topics</option>
+                        <option value="academic">📚 Academic Help</option>
+                        <option value="social">👥 Social</option>
+                        <option value="mental-health">🧘 Mental Health</option>
+                        <option value="career">💼 Career Advice</option>
+                    </select>
+                </div>
+                 <h3>👤 My Posts</h3>
                 <div class="filter-group">
                     <button class="filter-option active" data-filter="all">🌟 All Posts</button>
                     <button class="filter-option" data-filter="my-posts">👤 My Posts</button>
-                    <a href="academic.chat.html" class="filter-option" style="text-decoration: none;">📚 Academic Help</a>                    
-                    <a href="social.html" class="filter-option" style="text-decoration: none;">👥 Social</a>
-                    <a href="mental.health.html" class="filter-option" style="text-decoration: none;">🧘 Mental Health </a>
-                    <a href= "career1.html" class="filter-option" style="text-decoration: none;">💼 Career Advice</a>
                 </div>
                 <h3>📊 Sort By</h3>
                 <div class="filter-group">
                     <button id="sort-newest" class="filter-option active">⏰ Newest</button>
                     <button id="sort-popular" class="filter-option">🔥 Most Popular</button>
-                    <button class="filter-option">💬 Most Discussed</button>
                 </div>
             </aside>
             
@@ -319,9 +284,19 @@
                 <div class="post-creator">
                     <textarea id="post-textarea" class="post-textarea" placeholder="Share your thoughts, ask a question, or create a poll... 💭"></textarea>
                     
-                    <!-- NEW: Media Preview Container -->
                     <div id="media-preview-container"></div>
                     
+                    <div class="form-group">
+                        <label for="post-topic-select">Select a Topic for your Post:</label>
+                        <select id="post-topic-select" class="filter-dropdown">
+                            <option value="" disabled selected>-- Must choose a topic --</option>
+                            <option value="academic">📚 Academic Help</option>
+                            <option value="social">👥 Social</option>
+                            <option value="mental-health">🧘 Mental Health</option>
+                            <option value="career">💼 Career Advice</option>
+                        </select>
+                    </div>
+
                     <div id="poll-creator-container" style="display: none;">
                         <div id="poll-options-inputs">
                             <input type="text" class="poll-option-input" placeholder="Poll Option 1" maxlength="80">
@@ -486,14 +461,14 @@
                     postTextarea.focus();
                 });
             });
-
+            
             // --- Auto-resize Textarea ---
             postTextarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 400) + 'px';
             });
 
-            // --- NEW: Media Preview Logic ---
+            // --- Media Preview Logic ---
             mediaUploadInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 mediaPreviewContainer.innerHTML = ''; 
@@ -515,7 +490,6 @@
                         mediaUploadInput.value = ''; // This clears the file selection
                         mediaPreviewContainer.innerHTML = '';
                         mediaPreviewContainer.style.display = 'none';
-                        // Trigger a 'change' event so forum.js knows the file was removed
                         mediaUploadInput.dispatchEvent(new Event('change')); 
                     };
 
@@ -538,5 +512,4 @@
     </script>
 </body>
 </html>
-
 
