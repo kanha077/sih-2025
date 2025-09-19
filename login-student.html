@@ -180,7 +180,66 @@
             color: #555;
             margin-top: 5px;
         }
+        
+        /* --- NEW: GUIDELINES MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
+        .modal-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--form-background);
+            padding: 2rem 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: left;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .modal-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .modal-content ul {
+            list-style-position: inside;
+            margin-bottom: 1.5rem;
+            padding-left: 10px;
+        }
+        
+        .modal-content li {
+            margin-bottom: 0.75rem;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -223,8 +282,8 @@
                     </div>
                     <div class="input-group">
                         <label for="signup-password">Choose a Password</label>
-                        <input type="password" id="login-password" name="password" required autocomplete="current-password">                
-                            <span class="password-toggle-icon" id="toggle-signup-password">
+                        <input type="password" id="signup-password" name="password" required autocomplete="new-password">                             
+                        <span class="password-toggle-icon" id="toggle-signup-password">
                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.816 1.57-2.43 2.825-4.223 3.499C9.366 11.83 8.71 12 8 12c-.71 0-1.365-.17-1.996-.499a11.177 11.177 0 0 1-2.203-1.42A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
                         </span>
                     </div>
@@ -236,23 +295,39 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="guidelines-modal-overlay">
+        <div class="modal-content">
+            <h2>Welcome to the Student Forum!</h2>
+            <p>Before you enter, please take a moment to read our community guidelines:</p>
+            <ul>
+                <li><strong>about:</strong> Hello!! Sudent's this is an platform for all of you to put your thoughts anoymously with evryone</li>
+                <li><strong>Be Respectful:</strong> Treat everyone with kindness. No harassment, bullying, or hate speech will be tolerated.</li>
+                <li><strong>Stay On Topic:</strong> Keep discussions relevant to the academic and student life channels.</li>
+                <li><strong>No Spam:</strong> Do not post advertisements or irrelevant content.</li>
+                <li><strong>Share Knowledge:</strong> Help others when you can. This is a collaborative learning environment.</li>
+                <li><strong>Share Knowledge:</strong> Help others when you can. This is a collaborative learning environment.</li>
+            </ul>
+            <button id="proceed-to-forum-btn">I Understand, Enter Forum</button>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-      
-          const firebaseConfig = {
-  apiKey: "AIzaSyBr347m53UAvyMcTOjQwrIN_kOFYcenIMM",
-  authDomain: "ananda-74477.firebaseapp.com",
-  databaseURL: "https://ananda-74477-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "ananda-74477",
-  storageBucket: "ananda-74477.firebasestorage.app",
-  messagingSenderId: "525918416681",
-  appId: "1:525918416681:web:fb89b43c7a395816021138",
-  measurementId: "G-CL5KLMJD6N"
-};
+    
+            const firebaseConfig = {
+                apiKey: "AIzaSyBr347m53UAvyMcTOjQwrIN_kOFYcenIMM",
+                authDomain: "ananda-74477.firebaseapp.com",
+                databaseURL: "https://ananda-74477-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "ananda-74477",
+                storageBucket: "ananda-74477.appspot.com",
+                messagingSenderId: "525918416681",
+                appId: "1:525918416681:web:fb89b43c7a395816021138",
+                measurementId: "G-CL5KLMJD6N"
+            };
 
             // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
@@ -267,6 +342,10 @@
             const signupMessage = document.getElementById('signup-message');
             const showSignupLink = document.getElementById('show-signup');
             const showLoginLink = document.getElementById('show-login');
+
+            // --- NEW: MODAL DOM ELEMENTS ---
+            const guidelinesModalOverlay = document.getElementById('guidelines-modal-overlay');
+            const proceedToForumBtn = document.getElementById('proceed-to-forum-btn');
 
             // --- VIEW TOGGLING FOR SLIDING ANIMATION ---
             showSignupLink.addEventListener('click', (e) => {
@@ -286,6 +365,9 @@
             function setupPasswordToggle(inputId, toggleId) {
                 const passwordInput = document.getElementById(inputId);
                 const toggleIcon = document.getElementById(toggleId);
+                
+                // Fix for potential null passwordInput
+                if (!passwordInput || !toggleIcon) return;
                 
                 toggleIcon.addEventListener('click', () => {
                     if (passwordInput.type === 'password') {
@@ -349,21 +431,27 @@
                 loginMessage.className = 'message-area';
 
                 try {
-                   // ... inside the loginForm event listener's try block
-await auth.signInWithEmailAndPassword(email, password);
+                   await auth.signInWithEmailAndPassword(email, password);
 
-// 1. Show a success message to the user
-loginMessage.textContent = `Welcome back, ${username}! Redirecting...`;
-loginMessage.className = 'message-area success';
+                    // 1. Show a temporary success message on the form
+                    loginMessage.textContent = `Welcome back, ${username}!`;
+                    loginMessage.className = 'message-area success';
 
-// 2. Wait 1.5 seconds, then redirect to the new page
-setTimeout(() => {
-    window.location.href = 'studentforum.html';
-}, 1500); // 1500 milliseconds = 1.5 seconds
+                    // 2. Display the guidelines modal instead of using setTimeout
+                    setTimeout(() => { // small delay to let user see the welcome message
+                        guidelinesModalOverlay.classList.add('visible');
+                    }, 500);
+
                 } catch (error) {
                     loginMessage.textContent = 'Invalid username or password.';
                     loginMessage.className = 'message-area error';
                 }
+            });
+
+            // --- NEW: MODAL BUTTON EVENT LISTENER ---
+            proceedToForumBtn.addEventListener('click', () => {
+                // Redirect the user when they click the button in the modal
+                window.location.href = 'studentforum.html';
             });
         });
     </script>
