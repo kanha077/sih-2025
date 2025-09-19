@@ -17,10 +17,16 @@ const uploadProgress = document.getElementById('upload-progress');
 const postsContainer = document.getElementById('posts-container');
 const sortNewestBtn = document.getElementById('sort-newest');
 const sortPopularBtn = document.getElementById('sort-popular');
+// **UPDATE**: Add references for the new filter buttons
+const myPostsBtn = document.querySelector('[data-filter="my-posts"]');
+const allPostsBtn = document.querySelector('[data-filter="all"]');
+
 
 // --- STATE MANAGEMENT ---
 let currentUserId = null;
 let currentSortOrder = { field: 'createdAt', direction: 'desc' };
+// **UPDATE**: Add a state for the author filter
+let currentAuthorFilter = null; 
 let unsubscribePosts = null;
 let unsubscribeThreads = null;
 let fileToUpload = null;
@@ -162,19 +168,28 @@ function resetPostCreator() {
     postSubmitBtn.disabled = false;
 }
 
-// --- SORTING LOGIC ---
+// --- SORTING & FILTERING LOGIC ---
 sortNewestBtn.addEventListener('click', () => {
     currentSortOrder = { field: 'createdAt', direction: 'desc' };
-    sortNewestBtn.classList.add('active');
-    sortPopularBtn.classList.remove('active');
     fetchPosts();
 });
 
 sortPopularBtn.addEventListener('click', () => {
     currentSortOrder = { field: 'upvotes', direction: 'desc' };
-    sortPopularBtn.classList.add('active');
-    sortNewestBtn.classList.remove('active');
     fetchPosts();
+});
+
+// **UPDATE**: Add event listeners for author filtering
+allPostsBtn.addEventListener('click', () => {
+    currentAuthorFilter = null; // Set filter to null to show all posts
+    fetchPosts();
+});
+
+myPostsBtn.addEventListener('click', () => {
+    if (currentUserId) {
+        currentAuthorFilter = currentUserId; // Set filter to the current user's ID
+        fetchPosts();
+    }
 });
 
 // --- FETCHING & RENDERING (FEED VIEW) ---
@@ -182,60 +197,77 @@ function fetchPosts() {
     if (unsubscribePosts) unsubscribePosts();
     postsContainer.innerHTML = `<div class="loader"></div>`;
 
-    unsubscribePosts = db.collection('posts')
-        .orderBy(currentSortOrder.field, currentSortOrder.direction)
-        .onSnapshot(snapshot => {
-            if (snapshot.empty) {
-                postsContainer.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">No questions yet. Be the first!</p>`;
-                return;
-            }
-            postsContainer.innerHTML = '';
-            snapshot.forEach(doc => renderPostCard(doc));
-        }, error => {
-            console.error("Error fetching posts:", error);
-            postsContainer.innerHTML = `<p style="text-align:center; color: red;">Error loading posts. Check console and security rules.</p>`;
-        });
+    // **UPDATE**: Build the query dynamically based on filters and sorting
+    let query = db.collection('posts');
+
+    // Apply author filter if it's set
+    if (currentAuthorFilter) {
+        query = query.where('authorId', '==', currentAuthorFilter);
+    }
+    
+    // Apply sorting
+    query = query.orderBy(currentSortOrder.field, currentSortOrder.direction);
+
+    unsubscribePosts = query.onSnapshot(snapshot => {
+        if (snapshot.empty) {
+            postsContainer.innerHTML = `<p style="text-align:center; color: var(--muted-foreground);">No posts found.</p>`;
+            return;
+        }
+        postsContainer.innerHTML = '';
+        snapshot.forEach(doc => renderPostCard(doc));
+    }, error => {
+        console.error("Error fetching posts:", error);
+        postsContainer.innerHTML = `<p style="text-align:center; color: red;">Error loading posts. Check console and security rules.</p>`;
+    });
 }
+
 
 function renderPostCard(doc) {
     const post = doc.data();
     const postId = doc.id;
     const postDate = post.createdAt ? timeAgo(post.createdAt.toDate()) : 'Just now';
     const postCard = document.createElement('div');
-    postCard.className = 'post-card clickable';
+    // **UPDATE**: Add the 'user-post' class if the authorId matches the logged-in user
+    const isUserPost = post.authorId === currentUserId;
+    postCard.className = `post-card clickable ${isUserPost ? 'user-post' : ''}`;
     postCard.dataset.postId = postId;
 
     let mediaHTML = '';
     if (post.mediaUrl) {
         if (post.mediaType.startsWith('image/')) {
-            mediaHTML = `<div class="post-media-container"><img src="${post.mediaUrl}" alt="Post image"></div>`;
+            mediaHTML = `<div class="post-media"><img src="${post.mediaUrl}" alt="Post image"></div>`;
         } else if (post.mediaType.startsWith('video/')) {
-            mediaHTML = `<div class="post-media-container"><video controls src="${post.mediaUrl}"></video></div>`;
+            mediaHTML = `<div class="post-media"><video controls src="${post.mediaUrl}"></video></div>`;
         }
     }
+
+    // **UPDATE**: Display "You (Anonymous)" for user's own posts for clarity
+    const authorDisplayName = isUserPost ? 'You (Anonymous)' : post.authorAnonymousName;
+
     postCard.innerHTML = `
         <div class="post-header">
             <div class="user-avatar">${post.authorAvatar || '👤'}</div>
             <div class="post-meta">
-                <strong class="post-author">${post.authorAnonymousName}</strong>
-                <span class="post-date">${postDate}</span>
+                <div class="post-author">${authorDisplayName}</div>
+                <div class="post-time">${postDate}</div>
             </div>
         </div>
-        <p class="post-content">${post.questionText || ''}</p>
+        <div class="post-content">${post.questionText || ''}</div>
         ${mediaHTML}
         <div class="post-footer">
-            <div class="post-footer-item upvote-btn" data-id="${postId}">
+            <button class="action-btn upvote-btn" data-id="${postId}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
                 <span>${post.upvotes || 0}</span>
-            </div>
-            <div class="post-footer-item">
+            </button>
+            <button class="action-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                <span>${post.answerCount || 0} Threads</span>
-            </div>
+                <span>${post.answerCount || 0} Comments</span>
+            </button>
         </div>
     `;
     postsContainer.appendChild(postCard);
 }
+
 
 // --- FETCHING & RENDERING (POST-DETAIL VIEW) ---
 function renderSinglePost(doc) {
@@ -245,33 +277,37 @@ function renderSinglePost(doc) {
     let mediaHTML = '';
     if (post.mediaUrl) {
         if (post.mediaType.startsWith('image/')) {
-            mediaHTML = `<div class="post-media-container"><img src="${post.mediaUrl}" alt="Post image"></div>`;
+            mediaHTML = `<div class="post-media"><img src="${post.mediaUrl}" alt="Post image"></div>`;
         } else if (post.mediaType.startsWith('video/')) {
-            mediaHTML = `<div class="post-media-container"><video controls src="${post.mediaUrl}"></video></div>`;
+            mediaHTML = `<div class="post-media"><video controls src="${post.mediaUrl}"></video></div>`;
         }
     }
+
+    const isUserPost = post.authorId === currentUserId;
+    const authorDisplayName = isUserPost ? 'You (Anonymous)' : post.authorAnonymousName;
+
     singlePostContainer.innerHTML = `
-        <div class="post-card">
+        <div class="post-card ${isUserPost ? 'user-post' : ''}">
              <div class="post-header">
                 <div class="user-avatar">${post.authorAvatar || '👤'}</div>
-                 <div class="post-meta">
-                    <strong class="post-author">${post.authorAnonymousName}</strong>
-                    <span class="post-date">${postDate}</span>
+                <div class="post-meta">
+                    <div class="post-author">${authorDisplayName}</div>
+                    <div class="post-time">${postDate}</div>
                 </div>
             </div>
-            <p class="post-content">${post.questionText || ''}</p>
+            <div class="post-content">${post.questionText || ''}</div>
             ${mediaHTML}
             <div class="post-footer">
-                <div class="post-footer-item upvote-btn" data-id="${postId}">
-                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                     <span>${post.upvotes || 0}</span>
-                </div>
+                <button class="action-btn upvote-btn" data-id="${postId}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    <span>${post.upvotes || 0}</span>
+                </button>
             </div>
         </div>
         <div class="thread-form post-creator">
             <h3>Add to the Thread</h3>
-            <textarea id="thread-textarea" placeholder="Contribute your thoughts..."></textarea>
-            <button id="thread-submit-btn" data-post-id="${postId}">Add Reply</button>
+            <textarea id="thread-textarea" class="post-textarea" placeholder="Contribute your thoughts..."></textarea>
+            <button id="thread-submit-btn" class="submit-btn" data-post-id="${postId}">Add Reply</button>
         </div>
     `;
 }
@@ -284,11 +320,18 @@ function fetchAndRenderThreads(postId) {
             threadsContainer.innerHTML = '';
             snapshot.forEach(doc => {
                 const thread = doc.data();
+                const isUserReply = thread.authorId === currentUserId;
+                const replierName = isUserReply ? 'You (Anonymous)' : thread.authorAnonymousName;
                 const threadCard = document.createElement('div');
-                threadCard.className = 'thread-card';
+                threadCard.className = `thread-card ${isUserReply ? 'user-post' : ''}`;
                 threadCard.innerHTML = `
-                    <p><strong>${thread.authorAnonymousName}</strong> replied:</p>
-                    <p>${thread.answerText}</p>`;
+                    <div class="post-header">
+                        <div class="user-avatar">${thread.authorAvatar || '👤'}</div>
+                        <div class="post-meta">
+                           <div class="post-author">${replierName}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${thread.answerText}</div>`;
                 threadsContainer.appendChild(threadCard);
             });
         });
@@ -299,7 +342,8 @@ document.body.addEventListener('click', e => {
     // Navigate to detail view
     const postCard = e.target.closest('.post-card.clickable');
     if (postCard) {
-        if (e.target.closest('.upvote-btn')) return;
+        // Prevent navigation if a button inside the card was clicked
+        if (e.target.closest('.upvote-btn') || e.target.closest('.action-btn')) return;
         showPostDetailView(postCard.dataset.postId);
         return;
     }
