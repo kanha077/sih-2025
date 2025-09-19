@@ -1273,24 +1273,21 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script> 
     
     <script>
-        // Enhanced dark mode toggle functionality
+        // --- THEME TOGGLE LOGIC ---
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
         const themeIcon = themeToggle.querySelector('svg');
-
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             html.classList.add('dark');
         }
         updateThemeIcon(savedTheme);
-
         themeToggle.addEventListener('click', () => {
             html.classList.toggle('dark');
             const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
         });
-
         function updateThemeIcon(theme) {
             if (theme === 'dark') {
                 themeIcon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
@@ -1299,37 +1296,40 @@
             }
         }
 
-        // --- ALL OTHER ORIGINAL AND NEW SCRIPTS ---
+        // --- CONSOLIDATED INTERACTIVITY SCRIPT ---
         document.addEventListener('DOMContentLoaded', () => {
+            // --- UI Elements ---
             const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
             const sidebar = document.querySelector('.sidebar');
+            const floatingAction = document.querySelector('.floating-action');
+            const postTextarea = document.getElementById('post-textarea');
+            const postsContainer = document.getElementById('posts-container');
+            const categoryAndSortFilters = document.querySelectorAll('.sidebar .filter-option');
+            const tagFilters = document.querySelectorAll('.right-sidebar .trending-topic');
+            const quickActionFilters = document.querySelectorAll('.right-sidebar .filter-option');
             
+            // --- Mobile Menu ---
             mobileMenuToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('mobile-open');
             });
-
             document.addEventListener('click', (e) => {
                 if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
                     sidebar.classList.remove('mobile-open');
                 }
             });
 
-            const floatingAction = document.querySelector('.floating-action');
-            const postTextarea = document.getElementById('post-textarea');
-            
+            // --- Floating Action Button ---
             floatingAction.addEventListener('click', () => {
                 postTextarea.focus();
                 postTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
-            
-            // --- NEW FEATURE LOGIC: POST FILTERING ---
 
-            // This is a placeholder for the logged-in user's ID. 
-            // In a real application, this would be set dynamically after login.
+            // --- NEW FEATURE LOGIC: POST FILTERING (with bug fixes) ---
+
+            // Placeholder for the logged-in user's ID.
             const currentUserId = 'user123'; 
 
-            // --- SIMULATE DYNAMIC POST LOADING FOR DEMONSTRATION ---
-            const postsContainer = document.getElementById('posts-container');
+            // --- Simulate Dynamic Post Loading for Demonstration ---
             const dummyPosts = [
                 { id: 1, userId: 'user123', author: 'You (Anonymous)', time: '2 minutes ago', content: 'Just submitted my final project! So relieved. #StudentLife #Happy', likes: 5, comments: 2 },
                 { id: 2, userId: 'user456', author: 'Anonymous Panda', time: '15 minutes ago', content: 'Feeling really overwhelmed and #unhappy with my current workload. Any advice for coping? #MentalHealth', likes: 12, comments: 8 },
@@ -1359,12 +1359,10 @@
                         </div>
                     </div>`;
             }).join('');
-            // --- END OF SIMULATION ---
+            const allPosts = document.querySelectorAll('.post-card'); // Select posts after they are created
+            // --- End of Simulation ---
 
-            const categoryFilters = document.querySelectorAll('.sidebar .filter-option');
-            const tagFilters = document.querySelectorAll('.right-sidebar .trending-topic');
-            const allPosts = document.querySelectorAll('.post-card');
-
+            // --- Core Filtering Logic ---
             function applyFilter(filterType, filterValue = '') {
                 allPosts.forEach(post => {
                     let showPost = false;
@@ -1384,32 +1382,65 @@
                     post.style.display = showPost ? 'block' : 'none';
                 });
             }
+
+            // --- Event Listeners with Consolidated Logic ---
             
-            // Set up listeners for left sidebar (Categories & My Posts)
-            categoryFilters.forEach(button => {
+            // Listener for Left Sidebar (Categories, "My Posts", and Sort)
+            categoryAndSortFilters.forEach(button => {
                 button.addEventListener('click', (e) => {
-                    if (e.currentTarget.tagName.toLowerCase() !== 'a') {
-                        categoryFilters.forEach(btn => btn.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
+                    // For <a> tags, let the browser handle navigation
+                    if (e.currentTarget.tagName.toLowerCase() === 'a') return;
+                    
+                    // Handle active state within its own group
+                    const parentGroup = button.closest('.filter-group');
+                    parentGroup.querySelectorAll('.filter-option').forEach(opt => opt.classList.remove('active'));
+                    button.classList.add('active');
+
+                    // If it's a category/my-posts filter, deactivate tags
+                    if (button.dataset.filter) {
                         tagFilters.forEach(tf => tf.classList.remove('active'));
-                        applyFilter(e.currentTarget.dataset.filter);
+                        applyFilter(button.dataset.filter);
+                    }
+                    // (You can add logic for sort buttons here if needed)
+                });
+            });
+
+            // Listener for Right Sidebar (Tags)
+            tagFilters.forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const wasActive = tag.classList.contains('active');
+                    
+                    // Deactivate all other filters
+                    tagFilters.forEach(tf => tf.classList.remove('active'));
+                    categoryAndSortFilters.forEach(cf => cf.classList.remove('active'));
+
+                    if (wasActive) {
+                        // If it was active, deactivate it and go back to "All Posts"
+                        document.querySelector('.sidebar .filter-option[data-filter="all"]').classList.add('active');
+                        applyFilter('all');
+                    } else {
+                        // Otherwise, activate the clicked tag and filter
+                        tag.classList.add('active');
+                        applyFilter('tag', tag.dataset.tag);
                     }
                 });
             });
 
-            // Set up listeners for right sidebar (Tags)
-            tagFilters.forEach(tag => {
-                tag.addEventListener('click', () => {
-                    const wasActive = tag.classList.contains('active');
-                    tagFilters.forEach(tf => tf.classList.remove('active'));
-                    categoryFilters.forEach(cf => cf.classList.remove('active'));
-
-                    if (wasActive) {
-                        document.querySelector('.sidebar .filter-option[data-filter="all"]').classList.add('active');
-                        applyFilter('all');
-                    } else {
-                        tag.classList.add('active');
-                        applyFilter('tag', tag.dataset.tag);
+            // Listener for Right Sidebar Quick Actions (updates textarea placeholder)
+            quickActionFilters.forEach(action => {
+                action.addEventListener('click', () => {
+                    const actionText = action.textContent.trim();
+                    let placeholder = '';
+                    switch(actionText) {
+                        case '💡 Ask Question': placeholder = 'I have a question about...'; break;
+                        case '📝 Share Experience': placeholder = 'I want to share my experience with...'; break;
+                        case '🤝 Find Study Buddy': placeholder = 'Looking for a study buddy for...'; break;
+                        case '📅 Study Schedule': placeholder = 'Here\'s my study schedule...'; break;
+                    }
+                    if (placeholder) {
+                        postTextarea.value = placeholder;
+                        postTextarea.focus();
+                        postTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 });
             });
