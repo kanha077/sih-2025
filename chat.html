@@ -83,15 +83,15 @@
         </main>
     </div>
 
-    <script type="module">
+   <script type="module">
         // Import the initialized Supabase client
-        import { supabase } from './supBaseClient.js';
+        import { supabase } from './supabaseconfig.js';
 
         let currentUser = null;
         let userRole = null;
-        let activeChatId = null;
+        let activeChatId = null; // This will now be the UUID of the conversation
         let activeChatPartnerName = null;
-        let messagePollingInterval = null; // Variable to hold our timer
+        let messagePollingInterval = null;
 
         const userListEl = document.getElementById('user-list');
         const initialViewEl = document.getElementById('initial-view');
@@ -99,7 +99,6 @@
         const sendButton = document.getElementById('send-button');
         const messageListEl = document.getElementById('message-list');
 
-        // Use onAuthStateChange to detect the logged-in user
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 currentUser = session.user;
@@ -112,8 +111,7 @@
         async function initialize() {
             const { data, error } = await supabase.from('users').select('role').eq('id', currentUser.id).single();
             if (error || !data) {
-                console.error('Error fetching user role:', error);
-                return;
+                console.error('Error fetching user role:', error); return;
             }
             userRole = data.role;
 
@@ -137,32 +135,28 @@
 
         async function loadCounselorList() {
             const { data: counselors, error } = await supabase.from('users').select('*').eq('role', 'counselor');
-            if (error) {
-                console.error("Error loading counselors:", error);
-                return;
-            }
+            if (error) { console.error("Error loading counselors:", error); return; }
             displayUserList(counselors);
         }
 
+        // UPDATED to work with your schema
         async function loadStudentListForCounselor() {
-            const { data: convos, error: convosError } = await supabase.from('conversations').select('participants').contains('participants', [currentUser.id]);
-            if (convosError) {
-                console.error("Error loading conversations:", convosError);
-                return;
-            }
+            // 1. Get all conversations where the current user is the counselor
+            const { data: convos, error: convosError } = await supabase
+                .from('conversations')
+                .select('student_id')
+                .eq('counselor_id', currentUser.id);
 
-            if (!convos || convos.length === 0) {
-                return displayUserList([]);
-            }
+            if (convosError) { console.error("Error loading conversations:", convosError); return; }
+            if (!convos || convos.length === 0) { return displayUserList([]); }
 
-            const studentIds = convos.map(convo => convo.participants.find(id => id !== currentUser.id));
+            // 2. Extract the student IDs from these conversations
+            const studentIds = convos.map(convo => convo.student_id);
 
+            // 3. Fetch the profiles of those students
             if (studentIds.length > 0) {
                 const { data: students, error: studentsError } = await supabase.from('users').select('*').in('id', studentIds);
-                if (studentsError) {
-                    console.error("Error fetching students:", studentsError);
-                    return;
-                }
+                if (studentsError) { console.error("Error fetching students:", studentsError); return; }
                 displayUserList(students);
             }
         }
@@ -178,7 +172,6 @@
                 item.className = 'user-item';
                 item.dataset.userId = user.id;
                 const avatarColorClass = user.role === 'student' ? 'student' : 'counselor';
-
                 item.innerHTML = `
                     <div class="user-avatar ${avatarColorClass}">${(user.full_name || '?').charAt(0)}</div>
                     <div class="user-info">
@@ -189,26 +182,44 @@
             }
         }
 
+        // UPDATED to work with your schema
         async function openChatWith(otherUserId, otherUserName) {
-            // Clear any previously running polling interval
-            if (messagePollingInterval) {
-                clearInterval(messagePollingInterval);
-            }
+            if (messagePollingInterval) { clearInterval(messagePollingInterval); }
 
             document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
-
             activeChatPartnerName = otherUserName;
-            const participants = [currentUser.id, otherUserId].sort();
-            activeChatId = participants.join('_');
 
-            await supabase.from('conversations').upsert({ id: activeChatId, participants: participants });
+            // 1. Determine who is the student and who is the counselor
+            const studentId = userRole === 'student' ? currentUser.id : otherUserId;
+            const counselorId = userRole === 'counselor' ? currentUser.id : otherUserId;
+
+            // 2. Look for an existing conversation
+            let { data: conversation, error } = await supabase
+                .from('conversations')
+                .select('id')
+                .eq('student_id', studentId)
+                .eq('counselor_id', counselorId)
+                .single();
+
+            // 3. If no conversation exists, create one
+            if (error && !conversation) {
+                const { data: newConversation, error: insertError } = await supabase
+                    .from('conversations')
+                    .insert({ student_id: studentId, counselor_id: counselorId })
+                    .select('id')
+                    .single();
+                
+                if (insertError) { console.error("Error creating conversation:", insertError); return; }
+                conversation = newConversation;
+            }
+
+            activeChatId = conversation.id; // This is now the UUID for the chat
 
             await loadMessages(activeChatId, otherUserName);
             initialViewEl.style.display = 'none';
             chatAreaEl.style.display = 'flex';
 
-            // Poll for new messages every 5 seconds (5000 milliseconds)
             messagePollingInterval = setInterval(() => {
                 loadMessages(activeChatId, activeChatPartnerName);
             }, 5000);
@@ -216,25 +227,19 @@
 
         async function loadMessages(chatId, otherUserName) {
             document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
-            
-            // To prevent the page from "jumping" during a refresh, we'll remember the scroll position.
             const isScrolledToBottom = messageListEl.scrollHeight - messageListEl.clientHeight <= messageListEl.scrollTop + 1;
 
             const { data: messages, error } = await supabase
                 .from('messages')
                 .select('*')
-                .eq('conversation_id', chatId)
+                .eq('conversation_id', chatId) // This now correctly queries using the UUID
                 .order('created_at', { ascending: true });
 
-            if (error) {
-                console.error("Error loading messages:", error);
-                return;
-            }
+            if (error) { console.error("Error loading messages:", error); return; }
             
-            messageListEl.innerHTML = ''; // Clear before re-rendering
+            messageListEl.innerHTML = '';
             messages.forEach(appendMessage);
 
-            // Restore scroll position only if user was already at the bottom
             if (isScrolledToBottom) {
                 messageListEl.scrollTop = messageListEl.scrollHeight;
             }
@@ -256,25 +261,20 @@
                 const { error } = await supabase.from('messages').insert({
                     content: content,
                     sender_id: currentUser.id,
-                    conversation_id: activeChatId
+                    conversation_id: activeChatId // This now correctly uses the UUID
                 });
                 
                 input.value = '';
 
                 if (!error) {
-                    // Immediately reload messages after sending for instant feedback
                     await loadMessages(activeChatId, activeChatPartnerName);
-                    // Ensure it scrolls to the very bottom after sending
                     messageListEl.scrollTop = messageListEl.scrollHeight;
                 }
             }
         });
         
         window.logout = async function() {
-            // Stop polling when the user logs out
-            if (messagePollingInterval) {
-                clearInterval(messagePollingInterval);
-            }
+            if (messagePollingInterval) { clearInterval(messagePollingInterval); }
             await supabase.auth.signOut();
         }
     </script>
