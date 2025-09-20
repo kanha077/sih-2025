@@ -49,8 +49,7 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- AI Agent Configuration ---
-    // ⚠️ IMPORTANT: Revoke your old key and paste your NEW key here.
-    const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ";
+    const GEMINI_API_KEY = "YOUR_NEW_GEMINI_API_KEY_HERE"; // ⚠️ PASTE YOUR NEW KEY HERE
     const GEMINI_MODEL = "gemini-1.5-flash-latest";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -114,6 +113,7 @@
     async function saveMessage(role, text) {
       if (!currentUser || text === 'ANANDA_START_SCREENING') return;
       try {
+        // This saves every message to your 'chats' table
         await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
       } catch (err) {
         console.error("❌ Failed to save message:", err);
@@ -133,22 +133,22 @@
     }
 
     async function sendToAI(userInput, isInterpreter = false) {
-      if (GEMINI_API_KEY === "YOUR_NEW_GEMINI_API_KEY_HERE") return "⚠️ Please add your Gemini API key.";
+      if (GEMINI_API_KEY === "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ") return "⚠️ Please add your Gemini API key.";
       
       let systemInstruction, modelPriming, userContent;
 
       if (isInterpreter) {
-        // This is a special, simple prompt for interpreting scores
         userContent = { role: 'user', parts: [{ text: userInput }] };
       } else {
-        // This is the main prompt for the chatbot
         systemInstruction = {
           role: 'user',
           parts: [{
-            text: `You are Ananda, a supportive AI assistant for mental health. **User Context:** ${userScreeningContext}. **Your Core Directives:** 1. Be empathetic. 2. If the user is distressed, offer a "brief check-in". 3. If they agree, your ENTIRE response must be: ANANDA_START_SCREENING. 4. You are not a therapist. 5. If crisis, advise emergency services.`
+            text: `You are Ananda, a compassionate and supportive AI assistant for mental health. **Your primary goal is to be a supportive listener and engage in open-ended conversation.** **User Context:** ${userScreeningContext}. 
+            
+            **Your Core Directives:** 1. Be empathetic. 2. The screening test is a secondary tool. Only if the user is distressed, offer a "brief check-in". 3. If they agree, your ENTIRE response must be: ANANDA_START_SCREENING. 4. You are not a therapist. 5. If crisis, advise emergency services.`
           }],
         };
-        modelPriming = { role: 'model', parts: [{ text: "I understand. I will offer a check-in when appropriate and use the command." }] };
+        modelPriming = { role: 'model', parts: [{ text: "I understand. My main goal is to be a supportive listener." }] };
         userContent = { role: 'user', parts: [{ text: userInput }] };
       }
 
@@ -256,7 +256,7 @@
       if (!userInput) return;
 
       addMessage("user", userInput);
-      await saveMessage("user", userInput);
+      await saveMessage("user", userInput); // <-- SAVES USER MESSAGE
       messageInput.value = "";
       
       sendButton.disabled = true;
@@ -267,7 +267,7 @@
       } else {
           const botReply = await sendToAI(userInput);
           addMessage("assistant", botReply);
-          await saveMessage("assistant", botReply);
+          await saveMessage("assistant", botReply); // <-- SAVES AI MESSAGE
 
           if (botReply.includes('ANANDA_START_SCREENING')) {
               await startScreening('PHQ-9');
