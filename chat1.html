@@ -1428,7 +1428,9 @@
             document.getElementById('screeningIntro').style.display = 'none';
             const container = document.getElementById('screeningTestContainer');
             container.style.display = 'block';
-            container.innerHTML = '<p style="text-align:center;">Loading questions...</p>';
+           // This line is inside the startScreeningTest function
+container.innerHTML = `<form novalidate>${questionsHtml}</form>`;
+container.addEventListener('submit', submitScreeningTest);
 
             const { data: questions, error } = await _supabase.from('screening_questions').select('*').order('sort_order');
             if (error) {
