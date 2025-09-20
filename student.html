@@ -188,6 +188,11 @@
         .btn:active {
             transform: translateY(-1px) scale(0.98);
         }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
         
         /* Enhanced Cards */
         .card {
@@ -547,6 +552,74 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
         }
+
+        /* --- NEW: CHAT INTERFACE STYLES --- */
+        #chat-section .card-content {
+            display: flex;
+            flex-direction: column;
+            height: 70vh; /* Adjust height as needed */
+            max-height: 800px;
+            padding: 0;
+        }
+
+        #chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-bubble {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .chat-bubble.user {
+            background: var(--gradient-primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .chat-bubble.assistant {
+            background: hsl(var(--muted));
+            color: hsl(var(--foreground));
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem;
+        }
+        
+        #chat-form-container {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid hsl(var(--border));
+        }
+
+        #chat-form {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        #chat-form input {
+            flex: 1;
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            border: 2px solid hsl(var(--border));
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            background: hsl(var(--card));
+            color: hsl(var(--foreground));
+            transition: var(--transition-smooth);
+        }
+
+        #chat-form input:focus {
+            outline: none;
+            border-color: hsl(var(--primary));
+            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+        }
         
         /* Enhanced Utilities */
         .hidden { display: none; }
@@ -726,7 +799,6 @@
     </style>
 </head>
 <body>
-    <!-- Enhanced Header -->
     <div class="header">
         <div class="container">
             <div class="header-content">
@@ -763,16 +835,13 @@
     </div>
 
     <div class="container">
-        <!-- Enhanced Welcome Section -->
         <div class="welcome-section">
             <h1 class="welcome-title">Welcome back, <span id="welcomeName">User</span>! ✨</h1>
             <p class="welcome-subtitle">Continue your mental wellness journey with confidence</p>
         </div>
 
-        <!-- Enhanced Dashboard -->
         <div class="dashboard-grid content-section fade-in" id="dashboard-section">
             <div class="sidebar slide-in">
-                <!-- Enhanced Profile Card -->
                 <div class="card profile-card">
                     <div class="card-content">
                         <div class="avatar pulse" id="profileAvatar">?</div>
@@ -780,7 +849,6 @@
                         <p id="profileInstitute" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-bottom: 0.25rem;">University</p>
                         <p id="profileCourse" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-bottom: 1.5rem;">Major</p>
                         
-                        <!-- Enhanced Progress Section -->
                         <div style="margin: 2rem 0;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">
                                 <span>Profile Completion</span>
@@ -791,7 +859,6 @@
                             </div>
                         </div>
                         
-                        <!-- Enhanced Screening CTA -->
                         <div id="screeningCta" style="padding: 1.5rem; background: var(--gradient-secondary); border-radius: 1rem; margin: 1.5rem 0; color: white; position: relative; overflow: hidden;">
                             <div style="position: relative; z-index: 2;">
                                 <h4 style="margin-bottom: 0.75rem; font-weight: 700;">🎯 Complete Your Profile</h4>
@@ -810,7 +877,6 @@
                             Edit Profile
                         </button>
                         
-                        <!-- Enhanced Stats Grid -->
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <div class="stat-value">0</div>
@@ -824,7 +890,6 @@
                     </div>
                 </div>
 
-                <!-- Enhanced Progress Card -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title" style="display: flex; align-items: center;">
@@ -874,7 +939,6 @@
             </div>
 
             <div class="main-content">
-                <!-- Enhanced Quick Actions -->
                 <div class="quick-actions">
                     <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
                         <div class="card-content">
@@ -889,7 +953,7 @@
                         </div>
                     </div>
                     
-                    <div class="card card-secondary action-card" onclick="window.location.href='chat1.html'">
+                    <div class="card card-secondary action-card" onclick="showSection('chat-section'); loadUserContext();">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-secondary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -917,7 +981,6 @@
                     </div>
                 </div>
 
-                <!-- Enhanced Recent Activity Card -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">📈 Recent Activity</h3>
@@ -932,7 +995,7 @@
                             </div>
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">No conversations yet</h3>
                             <p style="color: hsl(var(--muted-foreground)); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">Start your first conversation to begin your wellness journey. Our AI and human counselors are here to support you.</p>
-                            <button class="btn btn-primary" onclick="window.location.href='chat1.html'">
+                            <button class="btn btn-primary" onclick="showSection('chat-section'); loadUserContext();">
                                 <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
@@ -944,7 +1007,6 @@
             </div>
         </div>
         
-        <!-- Enhanced Profile Editor Section -->
         <div id="profile-editor-section" class="content-section card hidden fade-in">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
@@ -1001,14 +1063,40 @@
                 </form>
             </div>
         </div>
+
+        <div id="chat-section" class="content-section card hidden fade-in">
+             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h3 class="card-title" style="background: var(--gradient-secondary);-webkit-background-clip: text; background-clip: text;-webkit-text-fill-color: transparent;">🤖 Ananda AI Support</h3>
+                    <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-top: 0.5rem;">Your 24/7 mental wellness companion</p>
+                </div>
+                <button class="btn btn-outline" onclick="showSection('dashboard-section')">
+                    <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                    Back to Dashboard
+                </button>
+            </div>
+            <div class="card-content">
+                <div id="chat-messages">
+                    </div>
+                <div id="chat-form-container">
+                    <form id="chat-form">
+                        <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required>
+                        <button type="submit" id="send-button" class="btn btn-secondary">
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Enhanced Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // --- SUPABASE SETUP ---
-     const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1032,6 +1120,9 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
+
+            // --- MERGED: CHAT FORM EVENT LISTENER ---
+            chatForm.addEventListener("submit", handleChatSubmit);
         });
 
         // --- AUTH & DATA FUNCTIONS ---
@@ -1326,6 +1417,230 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             }
         `;
         document.head.appendChild(style);
+
+        // =======================================================
+        // --- MERGED AI CHAT LOGIC ---
+        // =======================================================
+
+        // --- AI Agent Configuration ---
+        // ⚠️ IMPORTANT: Paste your new Gemini API key here.
+        const GEMINI_API_KEY = "";
+        const GEMINI_MODEL = "gemini-1.5-flash-latest";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+        // DOM Elements for Chat
+        const chatForm = document.getElementById("chat-form");
+        const messageInput = document.getElementById("message-input");
+        const chatMessages = document.getElementById("chat-messages");
+        const sendButton = document.getElementById("send-button");
+
+        let userScreeningContext = "The user has not completed a screening test.";
+        let inScreeningMode = false;
+        let screeningQuestions = [];
+        let currentQuestionIndex = 0;
+        let screeningResponses = [];
+        let screeningType = '';
+
+        // --- Helper Functions ---
+        function getInterpretation(type, score) {
+            const levels = {
+                'PHQ-9': [ { max: 4, severity: 'Minimal' }, { max: 9, severity: 'Mild' }, { max: 14, severity: 'Moderate' }, { max: 19, severity: 'Moderately Severe' }, { max: 27, severity: 'Severe' } ],
+            };
+            return levels[type].find(level => score <= level.max);
+        }
+
+        // --- Chat Initialization (called when chat is opened) ---
+        async function loadUserContext() {
+            chatMessages.innerHTML = ''; // Clear previous messages
+            if (!currentUser) return; // Should not happen if logged in
+
+            const { data: scores, error } = await _supabase
+                .from('screening_scores')
+                .select('questionnaire_type, score, severity')
+                .eq('user_id', currentUser.id)
+                .order('completed_at', { ascending: false })
+                .limit(2);
+
+            if (error || !scores || scores.length === 0) {
+                addChatMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
+                return;
+            }
+            
+            const phq9 = scores.find(s => s.questionnaire_type === 'PHQ-9');
+            const gad7 = scores.find(s => s.questionnaire_type === 'GAD-7');
+            let context = "The user recently completed a mental health screening. Use this information to inform your responses compassionately.\n";
+            if (phq9) context += `Depression (PHQ-9) Result: Score ${phq9.score}, indicating ${phq9.severity} symptoms.\n`;
+            if (gad7) context += `Anxiety (GAD-7) Result: Score ${gad7.score}, indicating ${gad7.severity} symptoms.`;
+            userScreeningContext = context;
+
+            addChatMessage("assistant", "Hello! I'm Ananda. I've reviewed your recent screening results. Thank you for sharing. How are you feeling today?");
+        }
+
+        async function saveChatMessage(role, text) {
+            if (!currentUser || text === 'ANANDA_START_SCREENING') return;
+            try {
+                await _supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
+            } catch (err) {
+                console.error("❌ Failed to save message:", err);
+            }
+        }
+
+        function addChatMessage(sender, text) {
+            if (text === 'ANANDA_START_SCREENING') return;
+            const bubble = document.createElement("div");
+            bubble.classList.add("chat-bubble", sender); // 'user' or 'assistant'
+            bubble.textContent = text;
+            chatMessages.appendChild(bubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        async function sendToAI(userInput) {
+            if (!GEMINI_API_KEY) return "⚠️ Gemini API key is missing.";
+            
+            const systemInstruction = {
+                role: 'user',
+                parts: [{
+                text: `You are Ananda, a supportive AI assistant for mental health. **User Context:** ${userScreeningContext}. **Your Core Directives:** 1. Be empathetic. 2. If the user is distressed, offer a "brief check-in". 3. If they agree, your ENTIRE response must be: ANANDA_START_SCREENING. 4. You are not a therapist. 5. If crisis, advise emergency services.`
+                }],
+            };
+            const modelPriming = { role: 'model', parts: [{ text: "I understand. I will offer a check-in when appropriate and use the command." }] };
+            const userContent = { role: 'user', parts: [{ text: userInput }] };
+
+            try {
+                const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [systemInstruction, modelPriming, userContent],
+                    safetySettings: [ { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' } ],
+                }),
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                if (!data.candidates || data.candidates.length === 0) return "I am unable to respond to that topic.";
+                return data.candidates[0].content.parts[0].text;
+            } catch (err) {
+                console.error("❌ Error calling Gemini API:", err);
+                return "⚠️ Error contacting the AI service.";
+            }
+        }
+        
+        // --- In-Chat Screening Functions ---
+        async function startScreening(type = 'PHQ-9') {
+            inScreeningMode = true;
+            screeningType = type;
+            currentQuestionIndex = 0;
+            screeningResponses = [];
+            addChatMessage('assistant', `Of course. I'll ask you 9 questions about how you've felt over the last 2 weeks. Just answer naturally. Let's begin.`);
+            const { data, error } = await _supabase.from('screening_questions').select('*').eq('questionnaire_type', screeningType).order('sort_order');
+            if (error || !data) {
+                addChatMessage('assistant', 'I had trouble loading the questions. We can try again later.');
+                inScreeningMode = false;
+                return;
+            }
+            screeningQuestions = data;
+            askNextQuestion();
+        }
+        
+        function askNextQuestion() {
+            if (currentQuestionIndex < screeningQuestions.length) {
+                const question = screeningQuestions[currentQuestionIndex];
+                addChatMessage('assistant', question.question_text);
+            } else {
+                finishScreening();
+            }
+        }
+        
+        async function interpretUserAnswer(questionText, userAnswer) {
+            const prompt = `Your task is to classify a user's response to a mental health question and return ONLY a valid JSON object.
+            The question was: "${questionText}"
+            The user's response was: "${userAnswer}"
+            The categories and their values are: 0 (Not at all), 1 (Several days), 2 (More than half the days), 3 (Nearly every day).
+            Your entire output must be a single JSON object like this: {"score": 1}`;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const responseText = data.candidates[0].content.parts[0].text;
+                
+                const cleanedText = responseText.replace(/```json\n?|\n?```/g, '').trim();
+                const result = JSON.parse(cleanedText);
+
+                if (typeof result.score === 'number' && result.score >= 0 && result.score <= 3) {
+                    return result.score;
+                }
+                throw new Error("Invalid score value in JSON.");
+            } catch (e) {
+                console.error("Failed to parse score from AI response:", e);
+                return null;
+            }
+        }
+
+        async function handleScreeningAnswer(userInput) {
+            const currentQuestion = screeningQuestions[currentQuestionIndex];
+            const score = await interpretUserAnswer(currentQuestion.question_text, userInput);
+
+            if (score === null) {
+                addChatMessage('assistant', "I had a little trouble understanding that. Could you try phrasing it as 'Not at all', 'Several days', 'More than half the days', or 'Nearly every day'?");
+                return;
+            }
+
+            screeningResponses.push({ user_id: currentUser.id, question_id: currentQuestion.id, response_value: score });
+            currentQuestionIndex++;
+            askNextQuestion();
+        }
+
+        async function finishScreening() {
+            addChatMessage('assistant', "Thank you. Let me calculate and save your results...");
+            const totalScore = screeningResponses.reduce((sum, res) => sum + res.response_value, 0);
+            const result = getInterpretation(screeningType, totalScore);
+            const scoreToSave = { user_id: currentUser.id, questionnaire_type: screeningType, score: totalScore, severity: result.severity };
+
+            await _supabase.from('screening_responses').insert(screeningResponses);
+            await _supabase.from('screening_scores').insert([scoreToSave]);
+            await _supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
+
+            addChatMessage('assistant', `Your score is ${totalScore}, which indicates ${result.severity} symptoms of depression. Thank you for sharing this with me. This information will help me support you better.`);
+            
+            inScreeningMode = false;
+            await loadUserContext();
+        }
+
+        // --- Main Chat Form Submit Handler ---
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const userInput = messageInput.value.trim();
+            if (!userInput) return;
+
+            addChatMessage("user", userInput);
+            await saveChatMessage("user", userInput);
+            messageInput.value = "";
+            
+            sendButton.disabled = true;
+            sendButton.textContent = "Thinking...";
+
+            if (inScreeningMode) {
+                await handleScreeningAnswer(userInput);
+            } else {
+                const botReply = await sendToAI(userInput);
+                addChatMessage("assistant", botReply);
+                await saveChatMessage("assistant", botReply);
+
+                if (botReply.includes('ANANDA_START_SCREENING')) {
+                    await startScreening('PHQ-9');
+                }
+            }
+            
+            sendButton.disabled = false;
+            sendButton.textContent = "Send";
+        }
+
     </script>
 </body>
 </html>
