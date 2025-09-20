@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Ananda Mental Health</title>
@@ -1144,7 +1143,7 @@
             </div>
             <div class="card-content">
                 <div id="chat-messages">
-                    </div>
+                </div>
                 <div id="chat-form-container">
                     <form id="chat-form">
                         <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required>
@@ -1673,10 +1672,9 @@
         // =======================================================
 
         // --- AI Agent Configuration ---
-        // ⚠️ IMPORTANT: Paste your new Gemini API key here.
-        const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ"; // REPLACE WITH YOUR ACTUAL KEY
-        const GEMINI_MODEL = "gemini-1.5-flash-latest";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        // ⚠️ API Key is REMOVED from the frontend. It should be on your backend server.
+        // ✅ DEFINE YOUR NEW WEBHOOK URL
+        const WEBHOOK_URL = "https://your-backend-server.com/api/chat"; // 👈 REPLACE WITH YOUR ACTUAL WEBHOOK URL
 
         // DOM Elements for Chat
         const messageInput = document.getElementById("message-input");
@@ -1714,7 +1712,7 @@
 
             if (error || !scores || scores.length === 0) {
                  addChatMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
-                return;
+                 return;
             }
             
             const phq9 = scores.find(s => s.questionnaire_type === 'PHQ-9');
@@ -1748,36 +1746,27 @@
         }
         
         async function sendToAI(userInput) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-                return "⚠️ AI features are disabled. Please add a valid Gemini API key in the script to enable the AI chat.";
-            }
-            
-            const systemInstruction = {
-                role: 'user',
-                parts: [{
-                text: `You are Ananda, a supportive AI assistant for mental health. **User Context:** ${userScreeningContext}. **Your Core Directives:** 1. Be empathetic. 2. If the user is distressed, offer a "brief check-in". 3. If they agree, your ENTIRE response must be: ANANDA_START_SCREENING. 4. You are not a therapist. 5. If crisis, advise emergency services.`
-                }],
-            };
-            const modelPriming = { role: 'model', parts: [{ text: "I understand. I will offer a check-in when appropriate and use the command." }] };
-            const userContent = { role: 'user', parts: [{ text: userInput }] };
-
             try {
-                const response = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [systemInstruction, modelPriming, userContent],
-                    safetySettings: [ { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' } ],
-                }),
+                const response = await fetch(WEBHOOK_URL, { // Use the new WEBHOOK_URL
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    // Send a simpler payload. Your backend will construct the full Gemini request.
+                    body: JSON.stringify({
+                        action: 'get_reply', // An identifier for your backend
+                        userInput: userInput,
+                        context: userScreeningContext
+                    }),
                 });
 
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
+                
+                // Assume your webhook returns a simple JSON like { "reply": "..." }
                 const data = await response.json();
-                if (!data.candidates || data.candidates.length === 0) return "I am unable to respond to that topic.";
-                return data.candidates[0].content.parts[0].text;
+                return data.reply; 
+
             } catch (err) {
-                console.error("❌ Error calling Gemini API:", err);
-                return "⚠️ Error contacting the AI service.";
+                console.error("❌ Error calling webhook:", err);
+                return "⚠️ I'm having trouble connecting right now. Please try again later.";
             }
         }
         
@@ -1815,24 +1804,27 @@
             Your entire output must be a single JSON object like this: {"score": 1}`;
             
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(WEBHOOK_URL, { // Use the new WEBHOOK_URL
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+                    // Send the specific prompt for this action
+                    body: JSON.stringify({
+                        action: 'interpret_answer', // An identifier for your backend
+                        prompt: prompt 
+                    }),
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                const responseText = data.candidates[0].content.parts[0].text;
+
+                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
                 
-                const cleanedText = responseText.replace(/```json\n?|\n?```/g, '').trim();
-                const result = JSON.parse(cleanedText);
+                // Assume your backend forwards the clean JSON response from Gemini
+                const result = await response.json();
 
                 if (typeof result.score === 'number' && result.score >= 0 && result.score <= 3) {
                     return result.score;
                 }
-                throw new Error("Invalid score value in JSON.");
+                throw new Error("Invalid score value in JSON from webhook.");
             } catch (e) {
-                console.error("Failed to parse score from AI response:", e);
+                console.error("Failed to parse score from webhook response:", e);
                 return null;
             }
         }
@@ -1927,46 +1919,26 @@
         }
 
         /**
-         * Sends chat history to Gemini to get a structured report.
+         * Sends chat history to your backend to get a structured report.
          * @param {Array} history The chat history array.
          * @returns {Object|null} The parsed report object or null on failure.
          */
         async function generateReportFromChat(history) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-                console.error("Gemini API key is missing. Cannot generate report.");
-                return null;
-            }
-
-            const conversation = history.map(m => `${m.role === 'user' ? 'User' : 'Ananda'}: ${m.content}`).join('\n');
-
-            const prompt = `
-                As a clinical analyst, generate a session report from the following conversation.
-                CONVERSATION:
-                ---
-                ${conversation}
-                ---
-                Provide a JSON object with this exact structure: { "summary": "...", "key_concerns": ["...", "..."], "sentiment": "...", "recommendations": "..." }.
-                - summary: A brief, neutral 2-sentence summary.
-                - key_concerns: An array of up to 3 key themes expressed by the user. Use an empty array [] if none.
-                - sentiment: Choose one: 'Positive', 'Mostly Positive', 'Neutral', 'Mixed', 'Mostly Negative', 'Negative'.
-                - recommendations: 1-2 simple, actionable recommendations for the user.
-            `;
-
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(WEBHOOK_URL, { // Use the new WEBHOOK_URL
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json" } // Enforce JSON output
+                        action: 'generate_report', // An identifier for your backend
+                        history: history // Send the history for the backend to process
                     }),
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                const responseText = data.candidates[0].content.parts[0].text;
-                return JSON.parse(responseText);
+                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
+                
+                // Assume your backend forwards the clean JSON response from Gemini
+                return await response.json(); 
             } catch (err) {
-                console.error("❌ Error generating report from Gemini:", err);
+                console.error("❌ Error generating report from webhook:", err);
                 return null;
             }
         }
