@@ -49,7 +49,8 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- AI Agent Configuration ---
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; // PASTE YOUR KEY HERE
+    // ⚠️ IMPORTANT: Revoke your old key and paste your NEW key here.
+    const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ";
     const GEMINI_MODEL = "gemini-1.5-flash-latest";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -62,12 +63,20 @@
     let currentUser = null;
     let userScreeningContext = "The user has not completed a screening test.";
 
-    // --- NEW: State Management for In-Chat Screening ---
+    // --- State Management for In-Chat Screening ---
     let inScreeningMode = false;
     let screeningQuestions = [];
     let currentQuestionIndex = 0;
     let screeningResponses = [];
-    let screeningType = ''; // Will be 'PHQ-9' or 'GAD-7'
+    let screeningType = ''; 
+
+    // --- Helper Functions ---
+    function getInterpretation(type, score) {
+       const levels = {
+         'PHQ-9': [ { max: 4, severity: 'Minimal' }, { max: 9, severity: 'Mild' }, { max: 14, severity: 'Moderate' }, { max: 19, severity: 'Moderately Severe' }, { max: 27, severity: 'Severe' } ],
+       };
+       return levels[type].find(level => score <= level.max);
+    }
 
     // --- Page Initialization ---
     async function loadUserContext() {
@@ -103,7 +112,7 @@
 
 
     async function saveMessage(role, text) {
-      if (!currentUser || text === 'ANANDA_START_SCREENING') return; // Don't save the command
+      if (!currentUser || text === 'ANANDA_START_SCREENING') return;
       try {
         await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
       } catch (err) {
@@ -112,7 +121,7 @@
     }
 
     function addMessage(sender, text) {
-      if (text === 'ANANDA_START_SCREENING') return; // Don't show the command to the user
+      if (text === 'ANANDA_START_SCREENING') return;
       const bubble = document.createElement("div");
       const baseClasses = ["max-w-[75%]", "p-3", "rounded-lg", "break-words", "w-fit"];
       const userClasses = ["bg-blue-500", "text-white", "self-end", "ml-auto"];
@@ -123,58 +132,53 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    async function sendToAI(userInput) {
-      if (GEMINI_API_KEY === "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ") return "⚠️ Please add your Gemini API key.";
+    async function sendToAI(userInput, isInterpreter = false) {
+      if (GEMINI_API_KEY === "YOUR_NEW_GEMINI_API_KEY_HERE") return "⚠️ Please add your Gemini API key.";
       
-      const systemInstruction = {
-        role: 'user',
-        parts: [{
-          text: `You are Ananda, a supportive AI assistant for mental health.
-          
-          **User Context:**
-          ${userScreeningContext}
+      let systemInstruction, modelPriming, userContent;
 
-          **Your Core Directives:**
-          1. Be empathetic, listen, and offer encouragement.
-          2. **Crucially, if the user expresses significant distress or seems to be struggling, offer to do a "brief check-in" (the PHQ-9 screening).**
-          3. **If they agree to the check-in, your ENTIRE response and nothing else must be the special command: ANANDA_START_SCREENING**
-          4. You are not a therapist. Do not give diagnoses.
-          5. If the user mentions self-harm or crisis, advise them to contact emergency services.`
-        }],
-      };
-      
-      const modelPriming = { role: 'model', parts: [{ text: "I understand my role and directives. I will offer a check-in when appropriate and use the special command if they agree." }] };
+      if (isInterpreter) {
+        // This is a special, simple prompt for interpreting scores
+        userContent = { role: 'user', parts: [{ text: userInput }] };
+      } else {
+        // This is the main prompt for the chatbot
+        systemInstruction = {
+          role: 'user',
+          parts: [{
+            text: `You are Ananda, a supportive AI assistant for mental health. **User Context:** ${userScreeningContext}. **Your Core Directives:** 1. Be empathetic. 2. If the user is distressed, offer a "brief check-in". 3. If they agree, your ENTIRE response must be: ANANDA_START_SCREENING. 4. You are not a therapist. 5. If crisis, advise emergency services.`
+          }],
+        };
+        modelPriming = { role: 'model', parts: [{ text: "I understand. I will offer a check-in when appropriate and use the command." }] };
+        userContent = { role: 'user', parts: [{ text: userInput }] };
+      }
 
       try {
         const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [systemInstruction, modelPriming, { role: 'user', parts: [{ text: userInput }] }],
+            contents: isInterpreter ? [userContent] : [systemInstruction, modelPriming, userContent],
             safetySettings: [ { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' } ],
           }),
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        if (!data.candidates || data.candidates.length === 0) return "I am unable to respond to that topic. Let's talk about something else.";
+        if (!data.candidates || data.candidates.length === 0) return isInterpreter ? '{"error": "Blocked"}' : "I am unable to respond to that topic.";
         return data.candidates[0].content.parts[0].text;
       } catch (err) {
         console.error("❌ Error calling Gemini API:", err);
-        return "⚠️ Error contacting the AI service.";
+        return isInterpreter ? '{"error": "API Error"}' : "⚠️ Error contacting the AI service.";
       }
     }
     
-    // --- NEW: Functions to handle the in-chat screening ---
-
+    // --- In-Chat Screening Functions ---
     async function startScreening(type = 'PHQ-9') {
         inScreeningMode = true;
         screeningType = type;
         currentQuestionIndex = 0;
         screeningResponses = [];
-        
         addMessage('assistant', `Of course. I'll ask you 9 questions about how you've felt over the last 2 weeks. Just answer naturally. Let's begin.`);
-        
         const { data, error } = await supabase.from('screening_questions').select('*').eq('questionnaire_type', screeningType).order('sort_order');
         if (error || !data) {
             addMessage('assistant', 'I had trouble loading the questions. We can try again later.');
@@ -193,36 +197,35 @@
             finishScreening();
         }
     }
+    
+    async function interpretUserAnswer(questionText, userAnswer) {
+        const prompt = `Your task is to classify a user's response to a mental health question and return ONLY a valid JSON object.
+        The question was: "${questionText}"
+        The user's response was: "${userAnswer}"
+        The categories and their values are: 0 (Not at all), 1 (Several days), 2 (More than half the days), 3 (Nearly every day).
+        Your entire output must be a single JSON object like this: {"score": 1}`;
+        
+        const responseText = await sendToAI(prompt, true);
+        try {
+            const cleanedText = responseText.replace(/```json\n?|\n?```/g, '').trim();
+            const result = JSON.parse(cleanedText);
+            if (typeof result.score === 'number' && result.score >= 0 && result.score <= 3) {
+                return result.score;
+            }
+            throw new Error("Invalid score value in JSON.");
+        } catch (e) {
+            console.error("Failed to parse score from AI response:", e);
+            return null;
+        }
+    }
 
     async function handleScreeningAnswer(userInput) {
         const currentQuestion = screeningQuestions[currentQuestionIndex];
+        const score = await interpretUserAnswer(currentQuestion.question_text, userInput);
 
-        // Use AI to interpret the natural language answer into a score
-        const prompt = `Your task is to classify a user's response to a mental health question into one of four categories and return ONLY a JSON object.
-        The question was: "${currentQuestion.question_text}"
-        The user's response was: "${userInput}"
-        The categories and their values are:
-        - Not at all (value: 0)
-        - Several days (value: 1)
-        - More than half the days (value: 2)
-        - Nearly every day (value: 3)
-        Your entire output must be a single JSON object like: {"score": 1}`;
-
-        const scoreResponse = await sendToAI(prompt); // We reuse sendToAI but with a different prompt
-        
-        let score = 0;
-        try {
-            // A simple regex to find the number in case the AI returns extra text
-            const scoreMatch = scoreResponse.match(/"score":\s*(\d)/);
-            if (scoreMatch) {
-                score = parseInt(scoreMatch[1]);
-            } else {
-                throw new Error("Could not parse score from AI response.");
-            }
-        } catch (e) {
-            console.error(e);
+        if (score === null) {
             addMessage('assistant', "I had a little trouble understanding that. Could you try phrasing it as 'Not at all', 'Several days', 'More than half the days', or 'Nearly every day'?");
-            return; // Ask the same question again
+            return;
         }
 
         screeningResponses.push({ user_id: currentUser.id, question_id: currentQuestion.id, response_value: score });
@@ -233,28 +236,17 @@
     async function finishScreening() {
         addMessage('assistant', "Thank you. Let me calculate and save your results...");
         const totalScore = screeningResponses.reduce((sum, res) => sum + res.response_value, 0);
-
-        // This function would be in your code from the previous screening page
-        function getInterpretation(type, score) {
-           const levels = {
-             'PHQ-9': [ { max: 4, severity: 'Minimal' }, { max: 9, severity: 'Mild' }, { max: 14, severity: 'Moderate' }, { max: 19, severity: 'Moderately Severe' }, { max: 27, severity: 'Severe' } ],
-           };
-           return levels[type].find(level => score <= level.max);
-        }
-
         const result = getInterpretation(screeningType, totalScore);
         const scoreToSave = { user_id: currentUser.id, questionnaire_type: screeningType, score: totalScore, severity: result.severity };
 
-        // Save everything to the database
         await supabase.from('screening_responses').insert(screeningResponses);
         await supabase.from('screening_scores').insert([scoreToSave]);
         await supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
 
         addMessage('assistant', `Your score is ${totalScore}, which indicates ${result.severity} symptoms of depression. Thank you for sharing this with me. This information will help me support you better.`);
         
-        // Reset state and update context for future chats
         inScreeningMode = false;
-        await loadUserContext(); // Reload context with the new score
+        await loadUserContext();
     }
 
     // --- Main Chat Form Event Listener ---
@@ -277,7 +269,6 @@
           addMessage("assistant", botReply);
           await saveMessage("assistant", botReply);
 
-          // Check if the AI has triggered the screening
           if (botReply.includes('ANANDA_START_SCREENING')) {
               await startScreening('PHQ-9');
           }
@@ -286,8 +277,7 @@
       sendButton.disabled = false;
       sendButton.textContent = "Send";
     });
-  </script>
-</body>
-</html>
+</script>
+
 </body>
 </html>
