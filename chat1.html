@@ -51,7 +51,7 @@
     // --- AI Agent Configuration ---
     const API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ"; // IMPORTANT: Using the correct Free Tier key.
     const GEMINI_MODEL = "gemini-1.5-flash-latest";
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
     // DOM Elements
     const chatForm = document.getElementById("chat-form");
