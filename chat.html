@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat | Ananda</title>
-        <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
         :root { --primary-color: #4CAF50; --secondary-color: #3498db; --light-gray: #f0f4f8; --medium-gray: #e5e7eb; --dark-gray: #4b5563; }
@@ -28,12 +28,8 @@
         .user-avatar.student { background-color: var(--primary-color); }
         .user-avatar.counselor { background-color: var(--secondary-color); }
         .user-info .name { font-weight: 600; }
-        .user-info .status { font-size: 0.8rem; color: #888; display: flex; align-items: center; }
-        .status-indicator { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-        .status-indicator.online { background-color: #2ecc71; }
-        .status-indicator.offline { background-color: #95a5a6; }
         .chat-window { flex-grow: 1; display: flex; flex-direction: column; background-color: #f9f9f9; }
-        .chat-header { background-color: #fff; padding: 20px; border-bottom: 1px solid var(--medium-gray); display: flex; justify-content: space-between; align-items: center; }
+        .chat-header { background-color: #fff; padding: 20px; border-bottom: 1px solid var(--medium-gray); }
         #message-list { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         .message-bubble { max-width: 70%; padding: 12px 18px; border-radius: 20px; margin-bottom: 10px; line-height: 1.5; }
         .message-bubble.sent.student { background-color: var(--primary-color); }
@@ -77,10 +73,6 @@
             <div id="chat-area" style="display: none; flex-grow: 1; flex-direction: column;">
                 <div class="chat-header">
                     <h3 id="chat-with-name"></h3>
-                    <div class="status">
-                        <span class="status-indicator offline" id="chat-with-status-indicator"></span>
-                        <span id="chat-with-status-text">Offline</span>
-                    </div>
                 </div>
                 <div id="message-list"></div>
                 <form class="chat-input" id="message-form">
@@ -91,19 +83,15 @@
         </main>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-
     <script type="module">
-        // Import the initialized services from your config file
-        import { auth, db, rtdb } from './firebaseconfig.js';
+        // Import the initialized Supabase client
+        import { supabase } from './supabaseconfig.js';
 
         let currentUser = null;
         let userRole = null;
         let activeChatId = null;
-        let unsubscribeMessages = null; // To stop listening to old chats
+        let activeChatPartnerName = null;
+        let messagePollingInterval = null; // Variable to hold our timer
 
         const userListEl = document.getElementById('user-list');
         const initialViewEl = document.getElementById('initial-view');
@@ -111,21 +99,23 @@
         const sendButton = document.getElementById('send-button');
         const messageListEl = document.getElementById('message-list');
 
-        // Use onAuthStateChanged to detect the logged-in user
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
+        // Use onAuthStateChange to detect the logged-in user
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                currentUser = session.user;
                 await initialize();
             } else {
-                // No user is signed in, redirect to login.
                 window.location.href = '/login.html';
             }
         });
 
         async function initialize() {
-            // Get user role from custom claims
-            const tokenResult = await currentUser.getIdTokenResult();
-            userRole = tokenResult.claims.role; // Assumes you have set custom claims
+            const { data, error } = await supabase.from('users').select('role').eq('id', currentUser.id).single();
+            if (error || !data) {
+                console.error('Error fetching user role:', error);
+                return;
+            }
+            userRole = data.role;
 
             const dashboardLink = document.getElementById('dashboard-link');
             if (dashboardLink) {
@@ -143,31 +133,36 @@
                 document.getElementById('sidebar-subtitle').textContent = 'Select a counselor to talk to';
                 await loadCounselorList();
             }
-            setupPresence(); // Setup online/offline status
         }
 
-        // Query the 'users' collection for counselors
         async function loadCounselorList() {
-            const counselorsSnapshot = await db.collection('users').where('role', '==', 'counselor').get();
-            const counselors = counselorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const { data: counselors, error } = await supabase.from('users').select('*').eq('role', 'counselor');
+            if (error) {
+                console.error("Error loading counselors:", error);
+                return;
+            }
             displayUserList(counselors);
         }
 
-        // Find conversations involving the counselor, then get student profiles
         async function loadStudentListForCounselor() {
-            const convosSnapshot = await db.collection('conversations').where('participants', 'array-contains', currentUser.uid).get();
-            if (convosSnapshot.empty) {
+            const { data: convos, error: convosError } = await supabase.from('conversations').select('participants').contains('participants', [currentUser.id]);
+            if (convosError) {
+                console.error("Error loading conversations:", convosError);
+                return;
+            }
+
+            if (!convos || convos.length === 0) {
                 return displayUserList([]);
             }
-            
-            const studentIds = convosSnapshot.docs.map(doc => {
-                const participants = doc.data().participants;
-                return participants.find(id => id !== currentUser.uid); // Get the other user's ID
-            });
+
+            const studentIds = convos.map(convo => convo.participants.find(id => id !== currentUser.id));
 
             if (studentIds.length > 0) {
-                const studentsSnapshot = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', studentIds).get();
-                const students = studentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const { data: students, error: studentsError } = await supabase.from('users').select('*').in('id', studentIds);
+                if (studentsError) {
+                    console.error("Error fetching students:", studentsError);
+                    return;
+                }
                 displayUserList(students);
             }
         }
@@ -185,96 +180,72 @@
                 const avatarColorClass = user.role === 'student' ? 'student' : 'counselor';
 
                 item.innerHTML = `
-                    <div class="user-avatar ${avatarColorClass}">${(user.fullName || '?').charAt(0)}</div>
+                    <div class="user-avatar ${avatarColorClass}">${(user.full_name || '?').charAt(0)}</div>
                     <div class="user-info">
-                        <div class="name">${user.fullName || 'Unnamed User'}</div>
-                        <div class="status">
-                            <span class="status-indicator offline"></span>
-                            <span>Offline</span>
-                        </div>
+                        <div class="name">${user.full_name || 'Unnamed User'}</div>
                     </div>`;
-                item.addEventListener('click', () => openChatWith(user.id, user.fullName));
+                item.addEventListener('click', () => openChatWith(user.id, user.full_name));
                 userListEl.appendChild(item);
             }
         }
-        
-        // Use Realtime Database for presence
-        function setupPresence() {
-            const myConnectionsRef = rtdb.ref(`status/${currentUser.uid}`);
-            const connectedRef = rtdb.ref('.info/connected');
-
-            connectedRef.on('value', (snap) => {
-                if (snap.val() === true) {
-                    myConnectionsRef.set({ isOnline: true });
-                    // Set status to offline when the client disconnects
-                    myConnectionsRef.onDisconnect().set({ isOnline: false, lastOnline: firebase.database.ServerValue.TIMESTAMP });
-                }
-            });
-
-            // Listen for changes in status of all users
-            rtdb.ref('status').on('value', (snap) => {
-                const statuses = snap.val() || {};
-                document.querySelectorAll('.user-item').forEach(item => {
-                    const userId = item.dataset.userId;
-                    const isOnline = statuses[userId] && statuses[userId].isOnline;
-                    
-                    const indicator = item.querySelector('.status-indicator');
-                    const text = item.querySelector('.status span:last-child');
-                    indicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
-                    text.textContent = isOnline ? 'Online' : 'Offline';
-                });
-            });
-        }
 
         async function openChatWith(otherUserId, otherUserName) {
-            // Unsubscribe from the previous chat's real-time updates
-            if (unsubscribeMessages) {
-                unsubscribeMessages();
+            // Clear any previously running polling interval
+            if (messagePollingInterval) {
+                clearInterval(messagePollingInterval);
             }
-            
+
             document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
 
-            // Create a consistent conversation ID by sorting UIDs
-            const participants = [currentUser.uid, otherUserId].sort();
+            activeChatPartnerName = otherUserName;
+            const participants = [currentUser.id, otherUserId].sort();
             activeChatId = participants.join('_');
 
-            // Find or create the conversation document
-            const convoRef = db.collection('conversations').doc(activeChatId);
-            const convoDoc = await convoRef.get();
+            await supabase.from('conversations').upsert({ id: activeChatId, participants: participants });
 
-            if (!convoDoc.exists) {
-                await convoRef.set({ participants });
-            }
-            
             await loadMessages(activeChatId, otherUserName);
             initialViewEl.style.display = 'none';
             chatAreaEl.style.display = 'flex';
+
+            // Poll for new messages every 5 seconds (5000 milliseconds)
+            messagePollingInterval = setInterval(() => {
+                loadMessages(activeChatId, activeChatPartnerName);
+            }, 5000);
         }
 
         async function loadMessages(chatId, otherUserName) {
             document.getElementById('chat-with-name').textContent = `Chat with ${otherUserName}`;
-            messageListEl.innerHTML = '';
             
-            // Use onSnapshot for real-time message updates
-            const messagesQuery = db.collection('conversations').doc(chatId).collection('messages').orderBy('createdAt');
+            // To prevent the page from "jumping" during a refresh, we'll remember the scroll position.
+            const isScrolledToBottom = messageListEl.scrollHeight - messageListEl.clientHeight <= messageListEl.scrollTop + 1;
+
+            const { data: messages, error } = await supabase
+                .from('messages')
+                .select('*')
+                .eq('conversation_id', chatId)
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error("Error loading messages:", error);
+                return;
+            }
             
-            unsubscribeMessages = messagesQuery.onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        appendMessage(change.doc.data());
-                    }
-                });
-            });
+            messageListEl.innerHTML = ''; // Clear before re-rendering
+            messages.forEach(appendMessage);
+
+            // Restore scroll position only if user was already at the bottom
+            if (isScrolledToBottom) {
+                messageListEl.scrollTop = messageListEl.scrollHeight;
+            }
         }
 
         function appendMessage(message) {
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble ' +
-                (message.senderId === currentUser.uid ? `sent ${userRole}` : 'received');
+                (message.sender_id === currentUser.id ? `sent ${userRole}` : 'received');
             bubble.textContent = message.content;
             messageListEl.appendChild(bubble);
-            messageListEl.scrollTop = messageListEl.scrollHeight;
         }
 
         document.getElementById('message-form').addEventListener('submit', async (e) => {
@@ -282,26 +253,30 @@
             const input = document.getElementById('message-input');
             const content = input.value.trim();
             if (content && activeChatId) {
-                // Add a new document to the 'messages' subcollection
-                await db.collection('conversations').doc(activeChatId).collection('messages').add({
+                const { error } = await supabase.from('messages').insert({
                     content: content,
-                    senderId: currentUser.uid,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    sender_id: currentUser.id,
+                    conversation_id: activeChatId
                 });
+                
                 input.value = '';
+
+                if (!error) {
+                    // Immediately reload messages after sending for instant feedback
+                    await loadMessages(activeChatId, activeChatPartnerName);
+                    // Ensure it scrolls to the very bottom after sending
+                    messageListEl.scrollTop = messageListEl.scrollHeight;
+                }
             }
         });
         
-        // Use auth.signOut()
         window.logout = async function() {
-            // Before signing out, update presence status in RTDB
-            if (currentUser) {
-              await rtdb.ref(`status/${currentUser.uid}`).set({ isOnline: false, lastOnline: firebase.database.ServerValue.TIMESTAMP });
+            // Stop polling when the user logs out
+            if (messagePollingInterval) {
+                clearInterval(messagePollingInterval);
             }
-            await auth.signOut();
-            // The onAuthStateChanged listener will handle the redirect
+            await supabase.auth.signOut();
         }
-
     </script>
 </body>
 </html>
