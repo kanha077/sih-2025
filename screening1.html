@@ -74,7 +74,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
@@ -173,6 +173,41 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 return;
             }
 
+            // --- START OF NEW CODE ---
+            // Prepare data payload for Google Sheets
+            const sheetData = {
+                userId: currentUser.id,
+                userEmail: currentUser.email,
+                phq9Score: phq9Score,
+                phq9Severity: phq9Result.severity,
+                gad7Score: gad7Score,
+                gad7Severity: gad7Result.severity
+            };
+
+            // Send data to Google Sheet (this happens in the background)
+           // New function to send data to your Google Sheet Web App
+async function sendDataToGoogleSheet(data) {
+    // !!! IMPORTANT !!! Paste your Web App URL from Step 1 here
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlufWsTzdDwpGp8UUJDYkt1sZ26-Lh80qnTd-N0nHnuNzJQt6V7gVYHjEdbECzBJvZpg/exec';
+
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Important for sending data from a browser to a Google Script
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+    } catch (error) {
+        console.error('Error sending data to Google Sheet:', error);
+        // You can optionally add logic here to handle the error,
+        // but the main functionality of saving to Supabase is already complete.
+    }
+}
+            // --- END OF NEW CODE ---
+
             alert('Your assessment has been submitted successfully.');
             await showScreeningResults();
         }
@@ -228,6 +263,28 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 'GAD-7': [ { max: 4, severity: 'Minimal', color: '#2ecc71', rec: 'Your anxiety symptoms are minimal.' }, { max: 9, severity: 'Mild', color: '#f1c40f', rec: 'You may be experiencing mild anxiety. Consider self-help and relaxation techniques.' }, { max: 14, severity: 'Moderate', color: '#e67e22', rec: 'Your symptoms suggest moderate anxiety. Speaking with a professional could be helpful.' }, { max: 21, severity: 'Severe', color: '#c0392b', rec: 'You may have severe anxiety. It is highly recommended to consult with a mental health professional.' } ]
             };
             return levels[type].find(level => score <= level.max);
+        }
+
+        // --- NEW FUNCTION TO SEND DATA TO GOOGLE SHEETS ---
+        async function sendDataToGoogleSheet(data) {
+            // !!! IMPORTANT !!! Paste your Web App URL from Step 1 here
+            const GOOGLE_SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE';
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Important for sending data from a browser to a Google Script
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error sending data to Google Sheet:', error);
+                // You can optionally add logic here to handle the error,
+                // but the main functionality of saving to Supabase is already complete.
+            }
         }
     </script>
 </body>
