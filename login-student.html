@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Student Forum</title>
+    <title>ANANDA Student Forum</title>
     <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
         :root {
-            --primary-color: #8a2be2; /* BlueViolet */
-            --primary-glow: rgba(138, 43, 226, 0.5);
-            --secondary-color: #4169e1; /* RoyalBlue */
+            /* Colors extracted/inspired from ANANDA logo */
+            --ananda-green-dark: #2F6C6D; /* Darker green from logo text */
+            --ananda-green-light: #5ECB9E; /* Lighter green/teal from logo swirl */
+            --ananda-purple: #81409F; /* Purple from logo swirl */
+            --ananda-gold: #D4A300; /* Gold/yellow from lotus */
+            --ananda-light-bg: #E0EFFF; /* A very light blue tint for overall lightness */
+
+            --primary-color: var(--ananda-purple);
+            --primary-glow: rgba(129, 64, 159, 0.5); /* Semi-transparent purple for glow */
+            --secondary-color: var(--ananda-green-light);
             --glass-bg: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.2);
-            --text-light: #f0f0f0;
-            --text-dark: #333;
+            --text-light: #f0f0f0; /* White-ish for contrast on dark background */
+            --text-dark: #333; /* For elements that need high contrast on light bg */
             --success-color: #28a745;
             --error-color: #dc3545;
         }
@@ -36,8 +43,8 @@
             min-height: 100vh;
             color: var(--text-light);
             padding: 1rem;
-            overflow: hidden; /* Prevents scrollbars from gradient animation */
-            background: linear-gradient(45deg, #1d2b64, #f8cdda, #1d2b64, #f8cdda);
+            overflow: hidden; 
+            background: linear-gradient(45deg, var(--ananda-green-dark), var(--ananda-purple), var(--ananda-green-dark), var(--ananda-purple));
             background-size: 400% 400%;
             animation: gradientBG 20s ease infinite;
         }
@@ -51,6 +58,7 @@
         /* --- HEADER STYLES --- */
         .page-header {
             display: flex;
+            flex-direction: column; /* Stack logo and text */
             align-items: center;
             margin-bottom: 2rem;
             text-align: center;
@@ -58,15 +66,17 @@
         }
 
         .page-header .logo {
-            width: 40px;
-            height: 40px;
-            margin-right: 0.75rem;
+            width: 80px; /* Increased logo size for prominence */
+            height: auto;
+            margin-bottom: 0.5rem; /* Space between logo and text */
         }
 
         .page-header h1 {
-            font-size: 1.75rem;
+            font-size: 1.8rem; 
             font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            color: var(--text-light); /* Ensure text is visible */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
         }
 
         /* --- FORM CONTAINER & GLASSMORPHISM --- */
@@ -103,6 +113,7 @@
             margin-bottom: 2rem;
             font-weight: 600;
             font-size: 1.75rem;
+            color: var(--text-light);
         }
         
         /* --- INTERACTIVE INPUTS WITH FLOATING LABELS --- */
@@ -123,7 +134,6 @@
             outline: none;
         }
         
-        /* The floating label */
         .input-group label {
             color: rgba(255, 255, 255, 0.7);
             font-size: 1rem;
@@ -135,15 +145,13 @@
             transition: 0.2s ease all;
         }
 
-        /* When user clicks or types, label floats up */
         .input-group input:focus ~ label,
         .input-group input:not(:placeholder-shown) ~ label {
             top: -20px;
             font-size: 0.8rem;
-            color: var(--primary-color);
+            color: var(--ananda-gold); /* Gold accent for focus */
         }
 
-        /* Bottom bar focus effect */
         .input-group .bar {
             position: relative;
             display: block;
@@ -155,7 +163,7 @@
             width: 0;
             bottom: 0;
             position: absolute;
-            background: var(--primary-color);
+            background: var(--ananda-gold); /* Gold accent for bar */
             transition: 0.3s ease all;
         }
         .input-group .bar:before { left: 50%; }
@@ -182,7 +190,7 @@
             width: 100%;
             padding: 12px;
             border: none;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(45deg, var(--ananda-purple), var(--ananda-green-light)); /* Brand gradient */
             color: white;
             font-size: 1.1rem;
             font-weight: 500;
@@ -220,7 +228,7 @@
 
         .toggle-link a:hover {
             text-decoration: underline;
-            color: var(--primary-color);
+            color: var(--ananda-gold); /* Gold accent on hover */
         }
 
         .message-area {
@@ -298,16 +306,15 @@
             .page-header h1 { font-size: 1.5rem; }
             .form-view { padding: 2rem 1.5rem; }
             .modal-content { padding: 1.5rem; }
+            .page-header .logo { width: 60px; }
         }
     </style>
 </head>
 <body>
 
     <header class="page-header">
-        <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <h1>Student Forum</h1>
+        <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="logo">
+        <h1>ANANDA Student Forum</h1>
     </header>
 
     <div class="container" id="main-container">
