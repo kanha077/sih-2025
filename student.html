@@ -97,7 +97,6 @@
         #chat-form { display: flex; gap: 1rem; }
         #chat-form input { flex: 1; width: 100%; padding: 0.875rem 1.25rem; border: 2px solid hsl(var(--border)); border-radius: 0.75rem; font-size: 0.875rem; background: hsl(var(--card)); color: hsl(var(--foreground)); transition: var(--transition-smooth); }
         #chat-form input:focus { outline: none; border-color: hsl(var(--primary)); box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1); }
-        /* --- REPORT MODAL STYLES --- */
         #report-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 200; }
         #report-modal-content { background: hsl(var(--card)); color: hsl(var(--card-foreground)); border-radius: 1.25rem; padding: 2.5rem; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-elegant); position: relative; animation: fadeInUp 0.5s ease-out; }
         #close-report-btn { position: absolute; top: 1rem; right: 1rem; background: hsl(var(--muted)); border: none; border-radius: 50%; width: 2.5rem; height: 2.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: var(--transition-smooth); }
@@ -139,7 +138,14 @@
             <div class="sidebar slide-in">
                 <div class="card profile-card">
                     <div class="card-content">
-                        <div class="avatar pulse" id="profileAvatar">?</div>
+                        
+                        <div id="avatarContainer" style="position: relative; width: 6rem; height: 6rem; margin: 0 auto 1.5rem; cursor: pointer;" title="Click to change profile picture">
+                            <div class="avatar pulse" id="profileAvatar" style="width: 100%; height: 100%; background-size: cover; background-position: center; border: 3px solid hsl(var(--card));">?</div>
+                            <div style="position: absolute; bottom: 0; right: 0; background: hsl(var(--primary)); color: white; width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid hsl(var(--card));">
+                                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"> <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path> <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path> </svg>
+                            </div>
+                        </div>
+                        <input type="file" id="avatarInput" class="hidden" accept="image/png, image/jpeg">
                         <h3 class="card-title" id="profileName" style="font-size: 1.25rem;">Loading...</h3>
                         <p id="profileInstitute" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-bottom: 0.25rem;">University</p>
                         <p id="profileCourse" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-bottom: 1.5rem;">Major</p>
@@ -289,25 +295,24 @@
             <div class="card-content">
                 <form id="profile-form">
                     <div class="form-grid">
-                    <div class="form-group"> <label for="full_name">📝 Full Name</label> <input type="text" id="full_name" placeholder="Enter your full name"/> </div>
-             <div class="form-group"> <label for="phone">📱 Phone Number</label> <input type="tel" id="phone" placeholder="Enter your phone number"/> </div>
-             <div class="form-group" style="grid-column: 1 / -1;"> <label for="address">🏠 Address</label> <input type="text" id="address" placeholder="Enter your address"/> </div>
-            <div class="form-group"> <label for="date_of_birth">🎂 Date of Birth</label> <input type="date" id="date_of_birth"/> </div>
-    
-             <div class="form-group">
-            <label for="gender">♀️♂️ Gender</label>
-            <select id="gender" style="width: 100%; padding: 1rem 1.25rem; border: 2px solid hsl(var(--border)); border-radius: 0.75rem; font-size: 0.875rem; background: hsl(var(--card)); color: hsl(var(--foreground)); transition: var(--transition-smooth); appearance: none; -webkit-appearance: none;">
-            <option value="" disabled selected>Select your gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-            <option value="Prefer not to say">Prefer not to say</option>
-        </select>
-    </div>
-    <div class="form-group"> <label for="guardian_name">👨‍👩‍👧‍👦 Guardian's Name</label> <input type="text" id="guardian_name" placeholder="Enter guardian's name"/> </div>
-    <div class="form-group"> <label for="institute">🏫 Institute</label> <input type="text" id="institute" placeholder="e.g., Stanford University"/> </div>
-    <div class="form-group"> <label for="course">📚 Course</label> <input type="text" id="course" placeholder="e.g., Computer Science"/> </div>
-</div>
+                        <div class="form-group"> <label for="full_name">📝 Full Name</label> <input type="text" id="full_name" placeholder="Enter your full name"/> </div>
+                        <div class="form-group"> <label for="phone">📱 Phone Number</label> <input type="tel" id="phone" placeholder="Enter your phone number"/> </div>
+                        <div class="form-group" style="grid-column: 1 / -1;"> <label for="address">🏠 Address</label> <input type="text" id="address" placeholder="Enter your address"/> </div>
+                        <div class="form-group"> <label for="date_of_birth">🎂 Date of Birth</label> <input type="date" id="date_of_birth"/> </div>
+                        <div class="form-group">
+                            <label for="gender">♀️♂️ Gender</label>
+                            <select id="gender" style="width: 100%; padding: 1rem 1.25rem; border: 2px solid hsl(var(--border)); border-radius: 0.75rem; font-size: 0.875rem; background: hsl(var(--card)); color: hsl(var(--foreground)); transition: var(--transition-smooth); appearance: none; -webkit-appearance: none;">
+                                <option value="" disabled selected>Select your gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="form-group"> <label for="guardian_name">👨‍👩‍👧‍👦 Guardian's Name</label> <input type="text" id="guardian_name" placeholder="Enter guardian's name"/> </div>
+                        <div class="form-group"> <label for="institute">🏫 Institute</label> <input type="text" id="institute" placeholder="e.g., Stanford University"/> </div>
+                        <div class="form-group"> <label for="course">📚 Course</label> <input type="text" id="course" placeholder="e.g., Computer Science"/> </div>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="margin-top: 2rem; padding: 1rem 2rem;">
                         <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"> <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path> <polyline points="17,21 17,13 7,13 7,21"></polyline> <polyline points="7,3 7,8 15,8"></polyline> </svg>
                         Save Changes
@@ -396,6 +401,13 @@
                     reportModal.style.display = 'none';
                 }
             });
+
+            // START: AVATAR EVENT LISTENERS
+            document.getElementById('avatarContainer').addEventListener('click', () => {
+                document.getElementById('avatarInput').click();
+            });
+            document.getElementById('avatarInput').addEventListener('change', handleAvatarUpdate);
+            // END: AVATAR EVENT LISTENERS
         });
 
         // --- AUTH & DATA FUNCTIONS ---
@@ -406,7 +418,6 @@
                 if (profile) {
                     updateUI(profile);
                 } else {
-                    // Create a default profile if one doesn't exist
                     const defaultProfile = { id: user.id, full_name: user.email?.split('@')[0] || 'Student', email: user.email };
                     await _supabase.from('profiles').insert([defaultProfile]);
                     updateUI(defaultProfile);
@@ -416,84 +427,142 @@
             }
         }
 
+        // START: FULLY UPDATED updateUI FUNCTION
         function updateUI(profile) {
-    const fullName = profile.full_name || 'Student';
-    const firstName = fullName.split(' ')[0];
-    document.getElementById('userNameHeader').textContent = fullName;
-    document.getElementById('welcomeName').textContent = firstName;
-    document.getElementById('profileName').textContent = fullName;
-    document.getElementById('profileAvatar').textContent = fullName.charAt(0).toUpperCase() || '?';
-    document.getElementById('profileInstitute').textContent = profile.institute || 'Set your institute';
-    document.getElementById('profileCourse').textContent = profile.course || 'Set your course';
-    
-    // UPDATED: Profile completion logic now includes gender
-    let completion = 0;
-    if (profile.full_name) completion += 15;
-    if (profile.phone) completion += 15;
-    if (profile.institute && profile.course) completion += 20;
-    if (profile.address) completion += 10;
-    if (profile.date_of_birth) completion += 10;
-    if (profile.gender) completion += 10; // Added gender to completion
-    if (profile.screening_completed) completion += 20;
-    
-    document.getElementById('completionPercentage').textContent = `${completion}%`;
-    document.getElementById('completionFill').style.width = `${completion}%`;
+            const fullName = profile.full_name || 'Student';
+            const firstName = fullName.split(' ')[0];
+            document.getElementById('userNameHeader').textContent = fullName;
+            document.getElementById('welcomeName').textContent = firstName;
+            document.getElementById('profileName').textContent = fullName;
+            
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (profile.avatar_url) {
+                profileAvatar.style.backgroundImage = `url(${profile.avatar_url})`;
+                profileAvatar.textContent = '';
+            } else {
+                profileAvatar.style.backgroundImage = 'none';
+                profileAvatar.textContent = fullName.charAt(0).toUpperCase() || '?';
+            }
 
-    if (profile.screening_completed) {
-        document.getElementById('screeningCta').style.display = 'none';
-    }
+            document.getElementById('profileInstitute').textContent = profile.institute || 'Set your institute';
+            document.getElementById('profileCourse').textContent = profile.course || 'Set your course';
+            
+            let completion = 0;
+            if (profile.full_name) completion += 15;
+            if (profile.phone) completion += 15;
+            if (profile.institute && profile.course) completion += 20;
+            if (profile.address) completion += 10;
+            if (profile.date_of_birth) completion += 10;
+            if (profile.gender) completion += 10;
+            if (profile.screening_completed) completion += 20;
+            
+            document.getElementById('completionPercentage').textContent = `${completion}%`;
+            document.getElementById('completionFill').style.width = `${completion}%`;
 
-    // Populate form fields for the editor
-    document.getElementById('full_name').value = profile.full_name || '';
-    document.getElementById('phone').value = profile.phone || '';
-    document.getElementById('address').value = profile.address || '';
-    document.getElementById('date_of_birth').value = profile.date_of_birth || '';
-    document.getElementById('guardian_name').value = profile.guardian_name || '';
-    document.getElementById('institute').value = profile.institute || '';
-    document.getElementById('course').value = profile.course || '';
-    document.getElementById('gender').value = profile.gender || ''; // Added this line to show saved gender
-}
-       async function handleProfileUpdate(e) {
-    e.preventDefault();
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
-    
-    try {
-        // UPDATED: 'updates' object now includes gender
-        const updates = {
-            id: currentUser.id,
-            full_name: document.getElementById('full_name').value,
-            phone: document.getElementById('phone').value,
-            address: document.getElementById('address').value,
-            date_of_birth: document.getElementById('date_of_birth').value,
-            guardian_name: document.getElementById('guardian_name').value,
-            institute: document.getElementById('institute').value,
-            course: document.getElementById('course').value,
-            gender: document.getElementById('gender').value, // Added this line
-            updated_at: new Date()
-        };
-        const { error } = await _supabase.from('profiles').upsert(updates, { onConflict: 'id' });
-        if (error) throw error;
-        
-        showNotification('Profile updated successfully! ✅', 'success');
-        await loadUserData(currentUser);
-        showSection('dashboard-section');
-    } catch (error) {
-        console.error('Update error:', error);
-        showNotification('Failed to update profile. Please try again. ❌', 'error');
-    } finally {
-        submitBtn.disabled = false;
-        // Restored the button's icon and text
-        submitBtn.innerHTML = `
-            <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"> 
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path> 
-                <polyline points="17,21 17,13 7,13 7,21"></polyline> 
-                <polyline points="7,3 7,8 15,8"></polyline> 
-            </svg>
-            Save Changes`;
-    }
-}
+            if (profile.screening_completed) {
+                document.getElementById('screeningCta').style.display = 'none';
+            }
+
+            // Populate form fields for the editor
+            document.getElementById('full_name').value = profile.full_name || '';
+            document.getElementById('phone').value = profile.phone || '';
+            document.getElementById('address').value = profile.address || '';
+            document.getElementById('date_of_birth').value = profile.date_of_birth || '';
+            document.getElementById('gender').value = profile.gender || '';
+            document.getElementById('guardian_name').value = profile.guardian_name || '';
+            document.getElementById('institute').value = profile.institute || '';
+            document.getElementById('course').value = profile.course || '';
+        }
+        // END: FULLY UPDATED updateUI FUNCTION
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+            
+            try {
+                const updates = {
+                    id: currentUser.id,
+                    full_name: document.getElementById('full_name').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value,
+                    date_of_birth: document.getElementById('date_of_birth').value,
+                    guardian_name: document.getElementById('guardian_name').value,
+                    institute: document.getElementById('institute').value,
+                    course: document.getElementById('course').value,
+                    gender: document.getElementById('gender').value,
+                    updated_at: new Date()
+                };
+                const { error } = await _supabase.from('profiles').upsert(updates, { onConflict: 'id' });
+                if (error) throw error;
+                
+                showNotification('Profile updated successfully! ✅', 'success');
+                await loadUserData(currentUser);
+                showSection('dashboard-section');
+            } catch (error) {
+                console.error('Update error:', error);
+                showNotification('Failed to update profile. Please try again. ❌', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"> 
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path> 
+                        <polyline points="17,21 17,13 7,13 7,21"></polyline> 
+                        <polyline points="7,3 7,8 15,8"></polyline> 
+                    </svg>
+                    Save Changes`;
+            }
+        }
+
+        // START: NEW AVATAR UPLOAD FUNCTION
+        async function handleAvatarUpdate(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const profileAvatar = document.getElementById('profileAvatar');
+            const oldContent = profileAvatar.innerHTML;
+            profileAvatar.innerHTML = '...'; // Simple loading indicator
+
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${currentUser.id}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                // Upload the image to Supabase Storage
+                const { error: uploadError } = await _supabase.storage
+                    .from('avatars')
+                    .upload(filePath, file, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                // Get the public URL of the uploaded image
+                const { data } = _supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath);
+                
+                const publicURL = data.publicUrl;
+
+                // Update the user's profile with the new avatar URL
+                const { error: updateError } = await _supabase.from('profiles')
+                    .update({ avatar_url: publicURL, updated_at: new Date() })
+                    .eq('id', currentUser.id);
+
+                if (updateError) throw updateError;
+                
+                // Update the UI immediately
+                profileAvatar.style.backgroundImage = `url(${publicURL})`;
+                profileAvatar.textContent = '';
+                showNotification('Profile picture updated! ✨', 'success');
+
+            } catch (error) {
+                console.error('Error updating avatar:', error);
+                profileAvatar.innerHTML = oldContent; // Restore old content on error
+                showNotification('Failed to update picture. Please try again.', 'error');
+            }
+        }
+        // END: NEW AVATAR UPLOAD FUNCTION
+
         async function logout() {
             await _supabase.auth.signOut();
             window.location.href = 'login.html';
@@ -514,7 +583,7 @@
             });
         }
 
-        function initAnimations() { /* Not essential for this bug, can be kept as is */ }
+        function initAnimations() { /* Not essential, kept as is */ }
 
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
@@ -529,7 +598,6 @@
         // =======================================================
         // --- AI CHAT & REPORTING LOGIC ---
         // =======================================================
-
         const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ"; // ⚠️ PASTE YOUR KEY HERE
         const GEMINI_MODEL = "gemini-1.5-flash-latest";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
