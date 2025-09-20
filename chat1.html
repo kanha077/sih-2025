@@ -1428,9 +1428,7 @@
             document.getElementById('screeningIntro').style.display = 'none';
             const container = document.getElementById('screeningTestContainer');
             container.style.display = 'block';
-           // This line is inside the startScreeningTest function
-container.innerHTML = `<form novalidate>${questionsHtml}</form>`;
-container.addEventListener('submit', submitScreeningTest);
+            container.innerHTML = '<p style="text-align:center;">Loading questions...</p>';
 
             const { data: questions, error } = await _supabase.from('screening_questions').select('*').order('sort_order');
             if (error) {
@@ -1590,7 +1588,7 @@ container.addEventListener('submit', submitScreeningTest);
         // --- GOOGLE SHEETS INTEGRATION ---
         async function sendDataToGoogleSheet(data) {
             // !!! IMPORTANT !!! Paste your Web App URL from your Google Apps Script here
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxRCtRRWCSM5U3KrpSaZEC2nkcQbci5YCgK5qPK1EV8dBFbITNUr3fwkgQMJ78gkOacDg/exec';
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlufWsTzdDwpGp8UUJDYkt1sZ26-Lh80qnTd-N0nHnuNzJQt6V7gVYHjEdbECzBJvZpg/exec';
 
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
