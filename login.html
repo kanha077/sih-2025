@@ -502,73 +502,45 @@
         });
 
         // Form Submission
-       // REPLACE your existing 'loginForm.addEventListener' with this one
-loginForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    hideErrors();
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideErrors();
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-    const role = roleSelect.value; // Get the selected role
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
-    // --- Start Validation ---
-    let hasErrors = false;
-    if (!email) {
-        showError(emailError, 'Email is required');
-        hasErrors = true;
-    } else if (!validateEmail(email)) {
-        showError(emailError, 'Please enter a valid email address');
-        hasErrors = true;
-    }
+            let hasErrors = false;
+            if (!email) {
+                showError(emailError, 'Email is required');
+                hasErrors = true;
+            } else if (!validateEmail(email)) {
+                showError(emailError, 'Please enter a valid email address');
+                hasErrors = true;
+            }
 
-    if (!password) {
-        showError(passwordError, 'Password is required');
-        hasErrors = true;
-    }
+            if (!password) {
+                showError(passwordError, 'Password is required');
+                hasErrors = true;
+            }
 
-    if (hasErrors) return;
-    // --- End Validation ---
+            if (hasErrors) return;
 
-    showLoading();
+            showLoading();
 
-    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-        hideLoading();
-        let errorMessage = 'An error occurred during login. Please try again.';
-        if (error.message.includes('Invalid login credentials')) {
-            errorMessage = 'Invalid email or password.';
-        } else if (error.message.includes('Email not confirmed')) {
-            errorMessage = 'Please verify your email before signing in.';
-        }
-        showError(generalError, errorMessage);
-    } else if (data.user) {
-        // --- THIS IS THE FIX ---
-        // On successful login, check the user's role in the database
-        const { data: profile, error: profileError } = await _supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', data.user.id)
-            .single();
-
-        if (profileError || !profile) {
-            // If profile doesn't exist, we can't verify role.
-            // For security, you might want to sign them out and show an error.
-            // But for a better user experience, we can default to the role they selected.
-            // This also helps if the profile creation on signup failed.
-            console.warn('Could not fetch user profile, redirecting with selected role.');
-            handleRedirect(role);
-        } else if (profile.role !== role) {
-            // If the role in the database does not match the one they selected
-            hideLoading();
-            showError(generalError, `Login failed. Your account is not registered as a '${role}'.`);
-            _supabase.auth.signOut(); // Log them out
-        } else {
-            // Role matches, proceed with redirection
-            handleRedirect(profile.role);
-        }
-    }
-});
+            if (error) {
+                hideLoading();
+                let errorMessage = 'An error occurred during login. Please try again.';
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Please verify your email before signing in.';
+                }
+                showError(generalError, errorMessage);
+            }
+            // Successful login is handled by onAuthStateChange
+        });
         
         // Google Login
         async function loginWithGoogle() {
