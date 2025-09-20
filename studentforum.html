@@ -243,15 +243,44 @@
     
     @keyframes slideInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
     
-    .sidebar, .right-sidebar { 
-        background: rgba(255, 255, 255, 0.1); 
-        backdrop-filter: blur(20px) saturate(180%); 
-        padding: 2rem; border-radius: var(--radius-xl); 
-        height: fit-content; border: 1px solid hsl(var(--border) / 0.5); 
-        box-shadow: var(--shadow-glass); position: sticky; 
-        top: calc(var(--header-height) + 2rem); /* UPDATED: Dynamic top position */
-        transition: var(--transition-smooth); 
-    }
+   /* REPLACEMENT FOR SIDEBARS */
+.sidebar, .right-sidebar {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: var(--shadow-glass);
+    position: sticky;
+    top: calc(var(--header-height) + 2rem);
+    transition: var(--transition-smooth);
+    
+    /* ADDED FOR SCROLLING */
+    max-height: calc(100vh - var(--header-height) - 4rem);
+    overflow-y: auto;
+}
+/* NEW RULE FOR MAIN CONTENT SCROLLING */
+.main-content {
+    max-height: calc(100vh - var(--header-height) - 4rem);
+    overflow-y: auto;
+    padding-right: 1rem; /* Adds a bit of space for the scrollbar */
+}
+
+/* OPTIONAL: STYLED SCROLLBARS */
+.sidebar::-webkit-scrollbar, .right-sidebar::-webkit-scrollbar, .main-content::-webkit-scrollbar {
+    width: 8px;
+}
+.sidebar::-webkit-scrollbar-track, .right-sidebar::-webkit-scrollbar-track, .main-content::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.3);
+    border-radius: 4px;
+}
+.sidebar::-webkit-scrollbar-thumb, .right-sidebar::-webkit-scrollbar-thumb, .main-content::-webkit-scrollbar-thumb {
+    background: var(--gradient-primary);
+    border-radius: 4px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover, .right-sidebar::-webkit-scrollbar-thumb:hover, .main-content::-webkit-scrollbar-thumb:hover {
+    background: var(--gradient-secondary);
+}
     .dark .sidebar, .dark .right-sidebar { background: rgba(0, 0, 0, 0.2); border: 1px solid hsl(var(--border) / 0.3); }
     .sidebar:hover, .right-sidebar:hover { transform: translateY(-5px); box-shadow: var(--shadow-elegant); }
     
