@@ -1070,7 +1070,7 @@
                     <h3 class="card-title" style="background: var(--gradient-secondary);-webkit-background-clip: text; background-clip: text;-webkit-text-fill-color: transparent;">🤖 Ananda AI Support</h3>
                     <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-top: 0.5rem;">Your 24/7 mental wellness companion</p>
                 </div>
-                <button class="btn btn-outline" onclick="showSection('dashboard-section')">
+                <button class="btn btn-outline" onclick="handleCloseChatAndGenerateReport()">
                     <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="15,18 9,12 15,6"></polyline>
                     </svg>
@@ -1424,7 +1424,7 @@
 
         // --- AI Agent Configuration ---
         // ⚠️ IMPORTANT: Paste your new Gemini API key here.
-        const GEMINI_API_KEY = "";
+        const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ";
         const GEMINI_MODEL = "gemini-1.5-flash-latest";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -1440,6 +1440,7 @@
         let currentQuestionIndex = 0;
         let screeningResponses = [];
         let screeningType = '';
+        let chatHistory = []; // <-- NEW: To store the conversation history
 
         // --- Helper Functions ---
         function getInterpretation(type, score) {
@@ -1452,6 +1453,7 @@
         // --- Chat Initialization (called when chat is opened) ---
         async function loadUserContext() {
             chatMessages.innerHTML = ''; // Clear previous messages
+            chatHistory = []; // <-- NEW: Reset chat history array
             if (!currentUser) return; // Should not happen if logged in
 
             const { data: scores, error } = await _supabase
@@ -1462,7 +1464,7 @@
                 .limit(2);
 
             if (error || !scores || scores.length === 0) {
-                addChatMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
+                 addChatMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
                 return;
             }
             
@@ -1492,6 +1494,9 @@
             bubble.textContent = text;
             chatMessages.appendChild(bubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // <-- MODIFIED: Add message to history array
+            chatHistory.push({ role: sender, content: text });
         }
         
         async function sendToAI(userInput) {
@@ -1639,6 +1644,113 @@
             
             sendButton.disabled = false;
             sendButton.textContent = "Send";
+        }
+
+        // =======================================================
+        // --- NEW: REPORT GENERATION AND SAVING LOGIC ---
+        // =======================================================
+        
+        /**
+         * Main function to handle closing the chat and generating a session report.
+         */
+        async function handleCloseChatAndGenerateReport() {
+            // Only generate a report if the user has sent at least 2 messages
+            const userMessagesCount = chatHistory.filter(m => m.role === 'user').length;
+            if (userMessagesCount < 2) {
+                showSection('dashboard-section'); // Just switch back if chat is too short
+                return;
+            }
+
+            showNotification('Generating your session summary... 📝', 'info');
+
+            try {
+                const reportData = await generateReportFromChat(chatHistory);
+                if (reportData) {
+                    await saveReportToSupabase(reportData);
+                } else {
+                    showNotification('Could not generate a summary for this session.', 'error');
+                }
+            } catch (error) {
+                console.error("Error during report generation/saving:", error);
+                showNotification('An error occurred while finalizing your session.', 'error');
+            } finally {
+                showSection('dashboard-section');
+            }
+        }
+
+        /**
+         * Sends chat history to Gemini to get a structured report.
+         * @param {Array} history The chat history array.
+         * @returns {Object|null} The parsed report object or null on failure.
+         */
+        async function generateReportFromChat(history) {
+            if (!GEMINI_API_KEY) {
+                console.error("Gemini API key is missing. Cannot generate report.");
+                return null;
+            }
+
+            const conversation = history.map(m => `${m.role === 'user' ? 'User' : 'Ananda'}: ${m.content}`).join('\n');
+
+            const prompt = `
+                As a clinical analyst, generate a session report from the following conversation.
+                CONVERSATION:
+                ---
+                ${conversation}
+                ---
+                Provide a JSON object with this exact structure: { "summary": "...", "key_concerns": ["...", "..."], "sentiment": "...", "recommendations": "..." }.
+                - summary: A brief, neutral 2-sentence summary.
+                - key_concerns: An array of up to 3 key themes expressed by the user. Use an empty array [] if none.
+                - sentiment: Choose one: 'Positive', 'Mostly Positive', 'Neutral', 'Mixed', 'Mostly Negative', 'Negative'.
+                - recommendations: 1-2 simple, actionable recommendations for the user.
+            `;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" } // Enforce JSON output
+                    }),
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const responseText = data.candidates[0].content.parts[0].text;
+                return JSON.parse(responseText);
+            } catch (err) {
+                console.error("❌ Error generating report from Gemini:", err);
+                return null;
+            }
+        }
+
+        /**
+         * Saves the generated report data to the Supabase 'session_reports' table.
+         * @param {Object} reportData The report data from the AI.
+         */
+        async function saveReportToSupabase(reportData) {
+            if (!currentUser) {
+                console.error("No current user found. Cannot save report.");
+                return;
+            }
+
+            const payload = {
+                user_id: currentUser.id,
+                summary: reportData.summary,
+                key_concerns: reportData.key_concerns,
+                sentiment: reportData.sentiment,
+                recommendations: reportData.recommendations,
+            };
+
+            try {
+                const { error } = await _supabase.from('session_reports').insert([payload]);
+                if (error) {
+                    throw error;
+                }
+                showNotification('Session summary saved! ✅', 'success');
+            } catch (error) {
+                console.error("Error saving session report to Supabase:", error);
+                showNotification('Failed to save your session summary. ❌', 'error');
+            }
         }
 
     </script>
