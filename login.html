@@ -99,7 +99,7 @@
     </div>
 
     <script>
-        // Failsafe in case the Supabase script doesn't load
+        // Failsafe in case the Supabase script doesn't
         if (typeof supabase === 'undefined' || typeof supabase.createClient !== 'function') {
             document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif; color: #333;"><h1>Error</h1><p>Could not connect to the authentication service. Please check your internet connection and try again.</p></div>';
             throw new Error("Supabase client not loaded.");
