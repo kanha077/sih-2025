@@ -551,74 +551,6 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
         }
-
-        /* --- CHAT INTERFACE STYLES --- */
-        #chat-section .card-content {
-            display: flex;
-            flex-direction: column;
-            height: 70vh; /* Adjust height as needed */
-            max-height: 800px;
-            padding: 0;
-        }
-
-        #chat-messages {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .chat-bubble {
-            max-width: 75%;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            word-wrap: break-word;
-            line-height: 1.5;
-        }
-
-        .chat-bubble.user {
-            background: var(--gradient-primary);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 0.25rem;
-        }
-
-        .chat-bubble.assistant {
-            background: hsl(var(--muted));
-            color: hsl(var(--foreground));
-            align-self: flex-start;
-            border-bottom-left-radius: 0.25rem;
-        }
-        
-        #chat-form-container {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid hsl(var(--border));
-        }
-
-        #chat-form {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        #chat-form input {
-            flex: 1;
-            width: 100%;
-            padding: 0.875rem 1.25rem;
-            border: 2px solid hsl(var(--border));
-            border-radius: 0.75rem;
-            font-size: 0.875rem;
-            background: hsl(var(--card));
-            color: hsl(var(--foreground));
-            transition: var(--transition-smooth);
-        }
-
-        #chat-form input:focus {
-            outline: none;
-            border-color: hsl(var(--primary));
-            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
-        }
         
         /* --- NEW: SCREENING TEST STYLES --- */
         .question-group { 
@@ -1004,7 +936,7 @@
 
             <div class="main-content">
                 <div class="quick-actions">
-                    <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
+                    <div class="card card-primary action-card" onclick="window.location.href='chat1.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-primary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -1017,7 +949,7 @@
                         </div>
                     </div>
                     
-                    <div class="card card-secondary action-card" onclick="showSection('chat-section'); loadUserContext();">
+                    <div class="card card-secondary action-card" onclick="window.location.href='chat1.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-secondary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -1059,7 +991,7 @@
                             </div>
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">No conversations yet</h3>
                             <p style="color: hsl(var(--muted-foreground)); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">Start your first conversation to begin your wellness journey. Our AI and human counselors are here to support you.</p>
-                            <button class="btn btn-primary" onclick="showSection('chat-section'); loadUserContext();">
+                            <button class="btn btn-primary" onclick="window.location.href='chat1.html'">
                                 <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
@@ -1128,33 +1060,6 @@
             </div>
         </div>
 
-        <div id="chat-section" class="content-section card hidden fade-in">
-             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <h3 class="card-title" style="background: var(--gradient-secondary);-webkit-background-clip: text; background-clip: text;-webkit-text-fill-color: transparent;">🤖 Ananda AI Support</h3>
-                    <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-top: 0.5rem;">Your 24/7 mental wellness companion</p>
-                </div>
-                <button class="btn btn-outline" onclick="handleCloseChatAndGenerateReport()">
-                    <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15,18 9,12 15,6"></polyline>
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-            <div class="card-content">
-                <div id="chat-messages">
-                </div>
-                <div id="chat-form-container">
-                    <form id="chat-form">
-                        <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required>
-                        <button type="submit" id="send-button" class="btn btn-secondary">
-                            Send
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
         <div id="screening-section" class="content-section card hidden fade-in">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
@@ -1208,7 +1113,6 @@
             
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
-            document.getElementById("chat-form").addEventListener("submit", handleChatSubmit);
         });
 
         // --- AUTH & DATA FUNCTIONS ---
@@ -1545,10 +1449,10 @@
                         <div class="options-grid">`;
                 options.forEach(opt => {
                     questionsHtml += `
-                        <div>
-                            <input type="radio" id="q${q.id}_opt${opt.value}" name="q_${q.id}" value="${opt.value}" class="option-input" required>
-                            <label for="q${q.id}_opt${opt.value}" class="option-label">${opt.text}</label>
-                        </div>`;
+                            <div>
+                                <input type="radio" id="q${q.id}_opt${opt.value}" name="q_${q.id}" value="${opt.value}" class="option-input" required>
+                                <label for="q${q.id}_opt${opt.value}" class="option-label">${opt.text}</label>
+                            </div>`;
                 });
                 questionsHtml += `</div></div>`;
             });
@@ -1665,187 +1569,6 @@
                 ]
             };
             return levels[type].find(level => score <= level.max);
-        }
-
-        // =======================================================
-        // --- AI CHAT LOGIC (SIMPLIFIED) ---
-        // =======================================================
-
-        // --- AI Agent Configuration ---
-        const WEBHOOK_URL = "https://n8n-classroom1.onrender.com/webhook-test/317095d2-ec84-494b-b7c9-ecec9d82e370"; // 👈 REPLACE WITH YOUR ACTUAL WEBHOOK URL
-
-        // DOM Elements for Chat
-        const messageInput = document.getElementById("message-input");
-        const chatMessages = document.getElementById("chat-messages");
-        const sendButton = document.getElementById("send-button");
-
-        let userScreeningContext = "The user has not completed a screening test.";
-        let chatHistory = []; 
-
-        // --- Chat Initialization (called when chat is opened) ---
-        async function loadUserContext() {
-            chatMessages.innerHTML = ''; 
-            chatHistory = []; 
-            if (!currentUser) return; 
-
-            const { data: scores, error } = await _supabase
-                .from('screening_scores')
-                .select('questionnaire_type, score, severity')
-                .eq('user_id', currentUser.id)
-                .order('completed_at', { ascending: false })
-                .limit(2);
-
-            if (error || !scores || scores.length === 0) {
-                 addChatMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
-                 return;
-            }
-            
-            const phq9 = scores.find(s => s.questionnaire_type === 'PHQ-9');
-            const gad7 = scores.find(s => s.questionnaire_type === 'GAD-7');
-            let context = "The user recently completed a mental health screening. Use this information to inform your responses compassionately.\n";
-            if (phq9) context += `Depression (PHQ-9) Result: Score ${phq9.score}, indicating ${phq9.severity} symptoms.\n`;
-            if (gad7) context += `Anxiety (GAD-7) Result: Score ${gad7.score}, indicating ${gad7.severity} symptoms.`;
-            userScreeningContext = context;
-
-            addChatMessage("assistant", "Hello! I'm Ananda. I've reviewed your recent screening results. Thank you for sharing. How are you feeling today?");
-        }
-
-        async function saveChatMessage(role, text) {
-            if (!currentUser) return;
-            try {
-                await _supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
-            } catch (err) {
-                console.error("❌ Failed to save message:", err);
-            }
-        }
-
-        function addChatMessage(sender, text) {
-            const bubble = document.createElement("div");
-            bubble.classList.add("chat-bubble", sender);
-            bubble.textContent = text;
-            chatMessages.appendChild(bubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            chatHistory.push({ role: sender, part: { text: text } });
-        }
-        
-        async function sendToAI(userInput) {
-            // The history sent to the webhook will be a simple array of strings
-            const plainHistory = chatHistory.map(m => `${m.role}: ${m.part.text}`);
-
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: 'get_reply',
-                        userInput: userInput,
-                        context: userScreeningContext,
-                        history: plainHistory // Send the conversation history
-                    }),
-                });
-
-                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
-                
-                const data = await response.json();
-                return data.reply; 
-
-            } catch (err) {
-                console.error("❌ Error calling webhook:", err);
-                return "⚠️ I'm having trouble connecting right now. Please try again later.";
-            }
-        }
-        
-        // --- Main Chat Form Submit Handler ---
-        async function handleChatSubmit(e) {
-            e.preventDefault();
-            const userInput = messageInput.value.trim();
-            if (!userInput) return;
-
-            addChatMessage("user", userInput);
-            await saveChatMessage("user", userInput);
-            messageInput.value = "";
-            
-            sendButton.disabled = true;
-            sendButton.textContent = "Thinking...";
-
-            const botReply = await sendToAI(userInput);
-            addChatMessage("assistant", botReply);
-            await saveChatMessage("assistant", botReply);
-            
-            sendButton.disabled = false;
-            sendButton.textContent = "Send";
-        }
-
-        // --- REPORT GENERATION AND SAVING LOGIC ---
-        
-        async function handleCloseChatAndGenerateReport() {
-            const userMessagesCount = chatHistory.filter(m => m.role === 'user').length;
-            if (userMessagesCount < 2) {
-                showSection('dashboard-section');
-                return;
-            }
-
-            showNotification('Generating your session summary... 📝', 'info');
-
-            try {
-                const reportData = await generateReportFromChat(chatHistory);
-                if (reportData) {
-                    await saveReportToSupabase(reportData);
-                } else {
-                    showNotification('Could not generate a summary for this session.', 'error');
-                }
-            } catch (error) {
-                console.error("Error during report generation/saving:", error);
-                showNotification('An error occurred while finalizing your session.', 'error');
-            } finally {
-                showSection('dashboard-section');
-            }
-        }
-
-        async function generateReportFromChat(history) {
-            const plainHistory = history.map(m => `${m.role}: ${m.part.text}`);
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: 'generate_report',
-                        history: plainHistory
-                    }),
-                });
-                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
-                return await response.json(); 
-            } catch (err) {
-                console.error("❌ Error generating report from webhook:", err);
-                return null;
-            }
-        }
-
-        async function saveReportToSupabase(reportData) {
-            if (!currentUser) {
-                console.error("No current user found. Cannot save report.");
-                return;
-            }
-
-            const payload = {
-                user_id: currentUser.id,
-                summary: reportData.summary,
-                key_concerns: reportData.key_concerns,
-                sentiment: reportData.sentiment,
-                recommendations: reportData.recommendations,
-            };
-
-            try {
-                const { error } = await _supabase.from('session_reports').insert([payload]);
-                if (error) {
-                    throw error;
-                }
-                showNotification('Session summary saved! ✅', 'success');
-            } catch (error) {
-                console.error("Error saving session report to Supabase:", error);
-                showNotification('Failed to save your session summary. ❌', 'error');
-            }
         }
 
     </script>
