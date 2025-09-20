@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Ananda Mental Health</title>
@@ -186,11 +187,6 @@
         
         .btn:active {
             transform: translateY(-1px) scale(0.98);
-        }
-
-        .btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
         }
         
         /* Enhanced Cards */
@@ -551,140 +547,7 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
         }
-
-        /* --- CHAT INTERFACE STYLES --- */
-        #chat-section .card-content {
-            display: flex;
-            flex-direction: column;
-            height: 70vh; /* Adjust height as needed */
-            max-height: 800px;
-            padding: 0;
-        }
-
-        #chat-messages {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .chat-bubble {
-            max-width: 75%;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            word-wrap: break-word;
-            line-height: 1.5;
-        }
-
-        .chat-bubble.user {
-            background: var(--gradient-primary);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 0.25rem;
-        }
-
-        .chat-bubble.assistant {
-            background: hsl(var(--muted));
-            color: hsl(var(--foreground));
-            align-self: flex-start;
-            border-bottom-left-radius: 0.25rem;
-        }
         
-        #chat-form-container {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid hsl(var(--border));
-        }
-
-        #chat-form {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        #chat-form input {
-            flex: 1;
-            width: 100%;
-            padding: 0.875rem 1.25rem;
-            border: 2px solid hsl(var(--border));
-            border-radius: 0.75rem;
-            font-size: 0.875rem;
-            background: hsl(var(--card));
-            color: hsl(var(--foreground));
-            transition: var(--transition-smooth);
-        }
-
-        #chat-form input:focus {
-            outline: none;
-            border-color: hsl(var(--primary));
-            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
-        }
-        
-        /* --- NEW: SCREENING TEST STYLES --- */
-        .question-group { 
-            margin-bottom: 2rem; 
-            padding-bottom: 2rem; 
-            border-bottom: 1px solid hsl(var(--border));
-        }
-        .question-group:last-of-type { 
-            border-bottom: none; 
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .question-text { 
-            font-weight: 600; 
-            margin-bottom: 1.25rem; 
-            font-size: 1.1rem;
-            line-height: 1.5;
-        }
-        .options-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-            gap: 1rem; 
-        }
-        .option-label { 
-            display: block; 
-            padding: 1rem; 
-            border: 2px solid hsl(var(--border)); 
-            border-radius: 0.75rem; 
-            cursor: pointer; 
-            transition: var(--transition-smooth); 
-            text-align: center; 
-            font-weight: 500;
-        }
-        .option-label:hover { 
-            background-color: hsl(var(--muted));
-            border-color: hsl(var(--primary) / 0.5);
-        }
-        .option-input { 
-            display: none; 
-        }
-        .option-input:checked + .option-label { 
-            background: var(--gradient-primary); 
-            color: hsl(var(--primary-foreground)); 
-            border-color: transparent; 
-            font-weight: 600;
-            box-shadow: var(--shadow-glow);
-            transform: translateY(-2px);
-        }
-        .result-card { 
-            border-left-width: 5px; 
-            padding: 1.5rem; 
-            border-radius: 0.75rem; 
-            background: hsl(var(--muted)); 
-            margin-bottom: 1.5rem;
-        }
-        .result-card h3 { 
-            font-size: 1.25rem; 
-            font-weight: 700; 
-            color: hsl(var(--foreground));
-        }
-        .result-card p { 
-            margin-top: 0.5rem; 
-            line-height: 1.6;
-            color: hsl(var(--muted-foreground));
-        }
-
         /* Enhanced Utilities */
         .hidden { display: none; }
         .icon { width: 1.5rem; height: 1.5rem; fill: currentColor; }
@@ -863,6 +726,7 @@
     </style>
 </head>
 <body>
+    <!-- Enhanced Header -->
     <div class="header">
         <div class="container">
             <div class="header-content">
@@ -899,13 +763,16 @@
     </div>
 
     <div class="container">
+        <!-- Enhanced Welcome Section -->
         <div class="welcome-section">
             <h1 class="welcome-title">Welcome back, <span id="welcomeName">User</span>! ✨</h1>
             <p class="welcome-subtitle">Continue your mental wellness journey with confidence</p>
         </div>
 
+        <!-- Enhanced Dashboard -->
         <div class="dashboard-grid content-section fade-in" id="dashboard-section">
             <div class="sidebar slide-in">
+                <!-- Enhanced Profile Card -->
                 <div class="card profile-card">
                     <div class="card-content">
                         <div class="avatar pulse" id="profileAvatar">?</div>
@@ -913,6 +780,7 @@
                         <p id="profileInstitute" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-bottom: 0.25rem;">University</p>
                         <p id="profileCourse" style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-bottom: 1.5rem;">Major</p>
                         
+                        <!-- Enhanced Progress Section -->
                         <div style="margin: 2rem 0;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">
                                 <span>Profile Completion</span>
@@ -923,11 +791,12 @@
                             </div>
                         </div>
                         
+                        <!-- Enhanced Screening CTA -->
                         <div id="screeningCta" style="padding: 1.5rem; background: var(--gradient-secondary); border-radius: 1rem; margin: 1.5rem 0; color: white; position: relative; overflow: hidden;">
                             <div style="position: relative; z-index: 2;">
                                 <h4 style="margin-bottom: 0.75rem; font-weight: 700;">🎯 Complete Your Profile</h4>
                                 <p style="font-size: 0.875rem; margin-bottom: 1rem; opacity: 0.9;">Take a mental health screening to get personalized recommendations</p>
-                                <button class="btn" style="width: 100%; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; font-weight: 600;" onclick="showSection('screening-section'); initializeScreening();">
+                                <button class="btn" style="width: 100%; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; font-weight: 600;" onclick="window.location.href='screening1.html'">
                                     Take Screening Test
                                 </button>
                             </div>
@@ -941,6 +810,7 @@
                             Edit Profile
                         </button>
                         
+                        <!-- Enhanced Stats Grid -->
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <div class="stat-value">0</div>
@@ -954,6 +824,7 @@
                     </div>
                 </div>
 
+                <!-- Enhanced Progress Card -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title" style="display: flex; align-items: center;">
@@ -1003,6 +874,7 @@
             </div>
 
             <div class="main-content">
+                <!-- Enhanced Quick Actions -->
                 <div class="quick-actions">
                     <div class="card card-primary action-card" onclick="window.location.href='chat.html'">
                         <div class="card-content">
@@ -1017,7 +889,7 @@
                         </div>
                     </div>
                     
-                    <div class="card card-secondary action-card" onclick="showSection('chat-section'); loadUserContext();">
+                    <div class="card card-secondary action-card" onclick="window.location.href='chatbot.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-secondary);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -1030,7 +902,7 @@
                         </div>
                     </div>
                     
-                    <div class="card card-accent action-card" onclick="showSection('screening-section'); initializeScreening();">
+                    <div class="card card-accent action-card" onclick="window.location.href='screening1.html'">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-accent);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -1045,6 +917,7 @@
                     </div>
                 </div>
 
+                <!-- Enhanced Recent Activity Card -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">📈 Recent Activity</h3>
@@ -1059,7 +932,7 @@
                             </div>
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">No conversations yet</h3>
                             <p style="color: hsl(var(--muted-foreground)); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">Start your first conversation to begin your wellness journey. Our AI and human counselors are here to support you.</p>
-                            <button class="btn btn-primary" onclick="showSection('chat-section'); loadUserContext();">
+                            <button class="btn btn-primary" onclick="window.location.href='chat1.html'">
                                 <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
@@ -1071,6 +944,7 @@
             </div>
         </div>
         
+        <!-- Enhanced Profile Editor Section -->
         <div id="profile-editor-section" class="content-section card hidden fade-in">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
@@ -1127,64 +1001,14 @@
                 </form>
             </div>
         </div>
-
-        <div id="chat-section" class="content-section card hidden fade-in">
-             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <h3 class="card-title" style="background: var(--gradient-secondary);-webkit-background-clip: text; background-clip: text;-webkit-text-fill-color: transparent;">🤖 Ananda AI Support</h3>
-                    <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-top: 0.5rem;">Your 24/7 mental wellness companion</p>
-                </div>
-                <button class="btn btn-outline" onclick="handleCloseChatAndGenerateReport()">
-                    <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15,18 9,12 15,6"></polyline>
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-            <div class="card-content">
-                <div id="chat-messages">
-                </div>
-                <div id="chat-form-container">
-                    <form id="chat-form">
-                        <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required>
-                        <button type="submit" id="send-button" class="btn btn-secondary">
-                            Send
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div id="screening-section" class="content-section card hidden fade-in">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <h3 class="card-title" style="background: var(--gradient-accent);-webkit-background-clip: text; background-clip: text;-webkit-text-fill-color: transparent;">🎯 Mental Health Assessment</h3>
-                    <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-top: 0.5rem;">A confidential check on your well-being.</p>
-                </div>
-                <button class="btn btn-outline" onclick="showSection('dashboard-section')">
-                    <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15,18 9,12 15,6"></polyline>
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-            <div class="card-content">
-                <div id="screeningIntro" style="text-align: center;">
-                    <h2 class="card-title" style="font-size: 1.5rem; text-align: center; display: block; background: none; -webkit-text-fill-color: initial;">Confidential Well-being Check</h2>
-                    <p class="welcome-subtitle" style="max-width: 600px; margin: 1rem auto 2.5rem auto;">This assessment (PHQ-9 for depression & GAD-7 for anxiety) helps you understand your mental health. Please answer based on how you've felt over the **last 2 weeks**.</p>
-                    <button class="btn btn-primary" style="padding: 1rem 2rem;" onclick="startScreeningTest()">Begin Assessment</button>
-                </div>
-                <form id="screeningTestContainer" style="display: none;"></form>
-                <div id="screeningResultContainer" style="display: none;"></div>
-            </div>
-        </div>
     </div>
 
+    <!-- Enhanced Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // --- SUPABASE SETUP ---
-        const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+     const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1208,7 +1032,6 @@
             
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
-            document.getElementById("chat-form").addEventListener("submit", handleChatSubmit);
         });
 
         // --- AUTH & DATA FUNCTIONS ---
@@ -1462,7 +1285,7 @@
             }, 3000);
         }
 
-        // Add fun interactions
+        // Add some fun interactions
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('btn')) {
                 // Create ripple effect
@@ -1503,476 +1326,6 @@
             }
         `;
         document.head.appendChild(style);
-
-        // =======================================================
-        // --- SCREENING TEST LOGIC (INTEGRATED) ---
-        // =======================================================
-
-        async function initializeScreening() {
-            if (!currentUser) return;
-            const { data: profile } = await _supabase.from('profiles').select('screening_completed').eq('id', currentUser.id).single();
-            if (profile && profile.screening_completed) {
-                await showScreeningResults();
-            } else {
-                document.getElementById('screeningIntro').style.display = 'block';
-                document.getElementById('screeningTestContainer').style.display = 'none';
-                document.getElementById('screeningResultContainer').style.display = 'none';
-            }
-        }
-
-        async function startScreeningTest() {
-            document.getElementById('screeningIntro').style.display = 'none';
-            const container = document.getElementById('screeningTestContainer');
-            container.style.display = 'block';
-            container.innerHTML = '<p style="text-align:center;">Loading questions...</p>';
-
-            const { data: questions, error } = await _supabase.from('screening_questions').select('*').order('sort_order');
-            if (error) {
-                container.innerHTML = '<p style="text-align:center; color: red;">Could not load questions. Please try again later.</p>';
-                return;
-            }
-
-            const options = [
-                { text: "Not at all", value: 0 }, { text: "Several days", value: 1 },
-                { text: "More than half the days", value: 2 }, { text: "Nearly every day", value: 3 }
-            ];
-
-            let questionsHtml = `<h2 class="card-title" style="text-align: center; display: block; background: none; -webkit-text-fill-color: initial; margin-bottom: 2rem;">Over the last 2 weeks, how often have you been bothered by...</h2>`;
-            questions.forEach((q, index) => {
-                questionsHtml += `
-                    <div class="question-group" data-question-id="${q.id}" data-type="${q.questionnaire_type}">
-                        <p class="question-text">${index + 1}. ${q.question_text}</p>
-                        <div class="options-grid">`;
-                options.forEach(opt => {
-                    questionsHtml += `
-                        <div>
-                            <input type="radio" id="q${q.id}_opt${opt.value}" name="q_${q.id}" value="${opt.value}" class="option-input" required>
-                            <label for="q${q.id}_opt${opt.value}" class="option-label">${opt.text}</label>
-                        </div>`;
-                });
-                questionsHtml += `</div></div>`;
-            });
-            
-            questionsHtml += `<div style="text-align:center; margin-top: 2rem;"><button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Submit Answers</button></div>`;
-            container.innerHTML = questionsHtml;
-            container.addEventListener('submit', submitScreeningTest);
-        }
-
-        async function submitScreeningTest(event) {
-            event.preventDefault();
-            const questionGroups = document.querySelectorAll('.question-group');
-            if (Array.from(questionGroups).some(g => !g.querySelector('input[type="radio"]:checked'))) {
-                showNotification('Please answer all questions before submitting.', 'error');
-                return;
-            }
-
-            const button = event.target.querySelector('button[type="submit"]');
-            button.disabled = true;
-            button.textContent = 'Submitting...';
-
-            const responsesToSave = [];
-            let phq9Score = 0, gad7Score = 0;
-
-            questionGroups.forEach(group => {
-                const selectedOption = group.querySelector('input[type="radio"]:checked');
-                const responseValue = parseInt(selectedOption.value);
-                responsesToSave.push({ user_id: currentUser.id, question_id: group.dataset.questionId, response_value: responseValue });
-                if (group.dataset.type === 'PHQ-9') phq9Score += responseValue;
-                if (group.dataset.type === 'GAD-7') gad7Score += responseValue;
-            });
-            
-            const phq9Result = getScreeningInterpretation('PHQ-9', phq9Score);
-            const gad7Result = getScreeningInterpretation('GAD-7', gad7Score);
-
-            const scoresToSave = [
-                { user_id: currentUser.id, questionnaire_type: 'PHQ-9', score: phq9Score, severity: phq9Result.severity },
-                { user_id: currentUser.id, questionnaire_type: 'GAD-7', score: gad7Score, severity: gad7Result.severity }
-            ];
-
-            const { error: responsesError } = await _supabase.from('screening_responses').insert(responsesToSave);
-            const { error: scoresError } = await _supabase.from('screening_scores').insert(scoresToSave);
-            const { error: profileError } = await _supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
-
-            if (responsesError || scoresError || profileError) {
-                showNotification('An error occurred while saving your results. Please try again.', 'error');
-                button.disabled = false;
-                button.textContent = 'Submit Answers';
-                return;
-            }
-
-            showNotification('Assessment submitted successfully!', 'success');
-            await showScreeningResults();
-            await loadUserData(currentUser); // Refresh the main dashboard UI
-        }
-
-        async function showScreeningResults() {
-            document.getElementById('screeningIntro').style.display = 'none';
-            document.getElementById('screeningTestContainer').style.display = 'none';
-            const resultContainer = document.getElementById('screeningResultContainer');
-            resultContainer.style.display = 'block';
-            resultContainer.innerHTML = '<p style="text-align:center;">Loading your results...</p>';
-
-            const { data, error } = await _supabase.from('screening_scores').select('questionnaire_type, score, severity').eq('user_id', currentUser.id).order('completed_at', { ascending: false }).limit(2);
-            if (error || !data || data.length < 2) {
-                resultContainer.innerHTML = '<p style="text-align:center; color: red;">Could not load results. Please complete the assessment first.</p>';
-                return;
-            }
-            
-            const phq9Data = data.find(r => r.questionnaire_type === 'PHQ-9');
-            const gad7Data = data.find(r => r.questionnaire_type === 'GAD-7');
-            const phq9Result = getScreeningInterpretation('PHQ-9', phq9Data.score);
-            const gad7Result = getScreeningInterpretation('GAD-7', gad7Data.score);
-
-            resultContainer.innerHTML = `
-                <h2 class="card-title" style="text-align: center; display: block; background: none; -webkit-text-fill-color: initial; margin-bottom: 2rem;">Your Assessment Results</h2>
-                <div style="max-width: 700px; margin: 0 auto;">
-                    <div class="result-card" style="border-color: ${phq9Result.color};">
-                        <h3>PHQ-9 (Depression) Score: ${phq9Data.score}</h3>
-                        <p><strong>Severity:</strong> ${phq9Data.severity}</p>
-                        <p>${phq9Result.recommendation}</p>
-                    </div>
-                     <div class="result-card" style="border-color: ${gad7Result.color};">
-                        <h3>GAD-7 (Anxiety) Score: ${gad7Data.score}</h3>
-                        <p><strong>Severity:</strong> ${gad7Data.severity}</p>
-                        <p>${gad7Result.recommendation}</p>
-                    </div>
-                </div>
-                <p style="margin-top: 2rem; font-size: 0.8rem; color: hsl(var(--muted-foreground)); text-align: center;"><strong>Disclaimer:</strong> This is a screening tool, not a diagnosis. Please consult a healthcare professional for an accurate diagnosis and treatment plan.</p>
-                <div style="text-align: center; margin-top: 2rem;"><button class="btn btn-outline" onclick="retakeTest()">Retake Assessment</button></div>
-            `;
-        }
-        
-        function retakeTest() {
-            if(confirm("Are you sure you want to retake the assessment? This will overwrite your previous results.")) {
-                startScreeningTest();
-            }
-        }
-
-        function getScreeningInterpretation(type, score) {
-            const levels = {
-                'PHQ-9': [
-                    { max: 4, severity: 'Minimal', color: '#2ecc71', recommendation: 'Your symptoms are minimal. Continue monitoring your mood.' },
-                    { max: 9, severity: 'Mild', color: '#f1c40f', recommendation: 'You may be experiencing mild depression. Lifestyle changes and self-help strategies may be beneficial.' },
-                    { max: 14, severity: 'Moderate', color: '#e67e22', recommendation: 'You have symptoms of moderate depression. It is recommended to speak with a doctor or mental health professional.' },
-                    { max: 19, severity: 'Moderately Severe', color: '#d35400', recommendation: 'Your symptoms suggest moderately severe depression. Professional help is strongly recommended.' },
-                    { max: 27, severity: 'Severe', color: '#c0392b', recommendation: 'Your symptoms are severe. Please seek professional help immediately.' }
-                ],
-                'GAD-7': [
-                    { max: 4, severity: 'Minimal', color: '#2ecc71', recommendation: 'Your anxiety symptoms are minimal.' },
-                    { max: 9, severity: 'Mild', color: '#f1c40f', recommendation: 'You may be experiencing mild anxiety. Consider self-help and relaxation techniques.' },
-                    { max: 14, severity: 'Moderate', color: '#e67e22', recommendation: 'Your symptoms suggest moderate anxiety. Speaking with a professional could be helpful.' },
-                    { max: 21, severity: 'Severe', color: '#c0392b', recommendation: 'You may have severe anxiety. It is highly recommended to consult with a mental health professional.' }
-                ]
-            };
-            return levels[type].find(level => score <= level.max);
-        }
-
-        // =======================================================
-        // --- AI CHAT LOGIC ---
-        // =======================================================
-
-        // --- AI Agent Configuration ---
-        // ⚠️ API Key is REMOVED from the frontend. It should be on your backend server.
-        // ✅ DEFINE YOUR NEW WEBHOOK URL
-        const WEBHOOK_URL = "https://n8n-classroom1.onrender.com/webhook-test/317095d2-ec84-494b-b7c9-ecec9d82e370"; // 👈 REPLACE WITH YOUR ACTUAL WEBHOOK URL
-
-        // DOM Elements for Chat
-        const messageInput = document.getElementById("message-input");
-        const chatMessages = document.getElementById("chat-messages");
-        const sendButton = document.getElementById("send-button");
-
-        let userScreeningContext = "The user has not completed a screening test.";
-        let inScreeningMode = false;
-        let screeningQuestions = [];
-        let currentQuestionIndex = 0;
-        let screeningResponses = [];
-        let screeningType = '';
-        let chatHistory = []; 
-
-        // --- Helper Functions ---
-        function getInterpretation(type, score) {
-            const levels = {
-                'PHQ-9': [ { max: 4, severity: 'Minimal' }, { max: 9, severity: 'Mild' }, { max: 14, severity: 'Moderate' }, { max: 19, severity: 'Moderately Severe' }, { max: 27, severity: 'Severe' } ],
-            };
-            return levels[type].find(level => score <= level.max);
-        }
-
-        // --- Chat Initialization (called when chat is opened) ---
-        async function loadUserContext() {
-            chatMessages.innerHTML = ''; 
-            chatHistory = []; 
-            if (!currentUser) return; 
-
-            const { data: scores, error } = await _supabase
-                .from('screening_scores')
-                .select('questionnaire_type, score, severity')
-                .eq('user_id', currentUser.id)
-                .order('completed_at', { ascending: false })
-                .limit(2);
-
-            if (error || !scores || scores.length === 0) {
-                 addChatMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
-                 return;
-            }
-            
-            const phq9 = scores.find(s => s.questionnaire_type === 'PHQ-9');
-            const gad7 = scores.find(s => s.questionnaire_type === 'GAD-7');
-            let context = "The user recently completed a mental health screening. Use this information to inform your responses compassionately.\n";
-            if (phq9) context += `Depression (PHQ-9) Result: Score ${phq9.score}, indicating ${phq9.severity} symptoms.\n`;
-            if (gad7) context += `Anxiety (GAD-7) Result: Score ${gad7.score}, indicating ${gad7.severity} symptoms.`;
-            userScreeningContext = context;
-
-            addChatMessage("assistant", "Hello! I'm Ananda. I've reviewed your recent screening results. Thank you for sharing. How are you feeling today?");
-        }
-
-        async function saveChatMessage(role, text) {
-            if (!currentUser || text === 'ANANDA_START_SCREENING') return;
-            try {
-                await _supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
-            } catch (err) {
-                console.error("❌ Failed to save message:", err);
-            }
-        }
-
-        function addChatMessage(sender, text) {
-            if (text === 'ANANDA_START_SCREENING') return;
-            const bubble = document.createElement("div");
-            bubble.classList.add("chat-bubble", sender); // 'user' or 'assistant'
-            bubble.textContent = text;
-            chatMessages.appendChild(bubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            chatHistory.push({ role: sender, content: text });
-        }
-        
-        async function sendToAI(userInput) {
-            try {
-                const response = await fetch(WEBHOOK_URL, { // Use the new WEBHOOK_URL
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    // Send a simpler payload. Your backend will construct the full Gemini request.
-                    body: JSON.stringify({
-                        action: 'get_reply', // An identifier for your backend
-                        userInput: userInput,
-                        context: userScreeningContext
-                    }),
-                });
-
-                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
-                
-                // Assume your webhook returns a simple JSON like { "reply": "..." }
-                const data = await response.json();
-                return data.reply; 
-
-            } catch (err) {
-                console.error("❌ Error calling webhook:", err);
-                return "⚠️ I'm having trouble connecting right now. Please try again later.";
-            }
-        }
-        
-        // --- In-Chat Screening Functions ---
-        async function startScreening(type = 'PHQ-9') {
-            inScreeningMode = true;
-            screeningType = type;
-            currentQuestionIndex = 0;
-            screeningResponses = [];
-            addChatMessage('assistant', `Of course. I'll ask you 9 questions about how you've felt over the last 2 weeks. Just answer naturally. Let's begin.`);
-            const { data, error } = await _supabase.from('screening_questions').select('*').eq('questionnaire_type', screeningType).order('sort_order');
-            if (error || !data) {
-                addChatMessage('assistant', 'I had trouble loading the questions. We can try again later.');
-                inScreeningMode = false;
-                return;
-            }
-            screeningQuestions = data;
-            askNextQuestion();
-        }
-        
-        function askNextQuestion() {
-            if (currentQuestionIndex < screeningQuestions.length) {
-                const question = screeningQuestions[currentQuestionIndex];
-                addChatMessage('assistant', question.question_text);
-            } else {
-                finishScreening();
-            }
-        }
-        
-        async function interpretUserAnswer(questionText, userAnswer) {
-            const prompt = `Your task is to classify a user's response to a mental health question and return ONLY a valid JSON object.
-            The question was: "${questionText}"
-            The user's response was: "${userAnswer}"
-            The categories and their values are: 0 (Not at all), 1 (Several days), 2 (More than half the days), 3 (Nearly every day).
-            Your entire output must be a single JSON object like this: {"score": 1}`;
-            
-            try {
-                const response = await fetch(WEBHOOK_URL, { // Use the new WEBHOOK_URL
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    // Send the specific prompt for this action
-                    body: JSON.stringify({
-                        action: 'interpret_answer', // An identifier for your backend
-                        prompt: prompt 
-                    }),
-                });
-
-                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
-                
-                // Assume your backend forwards the clean JSON response from Gemini
-                const result = await response.json();
-
-                if (typeof result.score === 'number' && result.score >= 0 && result.score <= 3) {
-                    return result.score;
-                }
-                throw new Error("Invalid score value in JSON from webhook.");
-            } catch (e) {
-                console.error("Failed to parse score from webhook response:", e);
-                return null;
-            }
-        }
-
-        async function handleScreeningAnswer(userInput) {
-            const currentQuestion = screeningQuestions[currentQuestionIndex];
-            const score = await interpretUserAnswer(currentQuestion.question_text, userInput);
-
-            if (score === null) {
-                addChatMessage('assistant', "I had a little trouble understanding that. Could you try phrasing it as 'Not at all', 'Several days', 'More than half the days', or 'Nearly every day'?");
-                return;
-            }
-
-            screeningResponses.push({ user_id: currentUser.id, question_id: currentQuestion.id, response_value: score });
-            currentQuestionIndex++;
-            askNextQuestion();
-        }
-
-        async function finishScreening() {
-            addChatMessage('assistant', "Thank you. Let me calculate and save your results...");
-            const totalScore = screeningResponses.reduce((sum, res) => sum + res.response_value, 0);
-            const result = getInterpretation(screeningType, totalScore);
-            const scoreToSave = { user_id: currentUser.id, questionnaire_type: screeningType, score: totalScore, severity: result.severity };
-
-            await _supabase.from('screening_responses').insert(screeningResponses);
-            await _supabase.from('screening_scores').insert([scoreToSave]);
-            await _supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
-
-            addChatMessage('assistant', `Your score is ${totalScore}, which indicates ${result.severity} symptoms of depression. Thank you for sharing this with me. This information will help me support you better.`);
-            
-            inScreeningMode = false;
-            await loadUserContext();
-        }
-
-        // --- Main Chat Form Submit Handler ---
-        async function handleChatSubmit(e) {
-            e.preventDefault();
-            const userInput = messageInput.value.trim();
-            if (!userInput) return;
-
-            addChatMessage("user", userInput);
-            await saveChatMessage("user", userInput);
-            messageInput.value = "";
-            
-            sendButton.disabled = true;
-            sendButton.textContent = "Thinking...";
-
-            if (inScreeningMode) {
-                await handleScreeningAnswer(userInput);
-            } else {
-                const botReply = await sendToAI(userInput);
-                addChatMessage("assistant", botReply);
-                await saveChatMessage("assistant", botReply);
-
-                if (botReply.includes('ANANDA_START_SCREENING')) {
-                    await startScreening('PHQ-9');
-                }
-            }
-            
-            sendButton.disabled = false;
-            sendButton.textContent = "Send";
-        }
-
-        // --- REPORT GENERATION AND SAVING LOGIC ---
-        
-        /**
-         * Main function to handle closing the chat and generating a session report.
-         */
-        async function handleCloseChatAndGenerateReport() {
-            // Only generate a report if the user has sent at least 2 messages
-            const userMessagesCount = chatHistory.filter(m => m.role === 'user').length;
-            if (userMessagesCount < 2) {
-                showSection('dashboard-section'); // Just switch back if chat is too short
-                return;
-            }
-
-            showNotification('Generating your session summary... 📝', 'info');
-
-            try {
-                const reportData = await generateReportFromChat(chatHistory);
-                if (reportData) {
-                    await saveReportToSupabase(reportData);
-                } else {
-                    showNotification('Could not generate a summary for this session.', 'error');
-                }
-            } catch (error) {
-                console.error("Error during report generation/saving:", error);
-                showNotification('An error occurred while finalizing your session.', 'error');
-            } finally {
-                showSection('dashboard-section');
-            }
-        }
-
-        /**
-         * Sends chat history to your backend to get a structured report.
-         * @param {Array} history The chat history array.
-         * @returns {Object|null} The parsed report object or null on failure.
-         */
-        async function generateReportFromChat(history) {
-            try {
-                const response = await fetch(WEBHOOK_URL, { // Use the new WEBHOOK_URL
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: 'generate_report', // An identifier for your backend
-                        history: history // Send the history for the backend to process
-                    }),
-                });
-                if (!response.ok) throw new Error(`Webhook error! status: ${response.status}`);
-                
-                // Assume your backend forwards the clean JSON response from Gemini
-                return await response.json(); 
-            } catch (err) {
-                console.error("❌ Error generating report from webhook:", err);
-                return null;
-            }
-        }
-
-        /**
-         * Saves the generated report data to the Supabase 'session_reports' table.
-         * @param {Object} reportData The report data from the AI.
-         */
-        async function saveReportToSupabase(reportData) {
-            if (!currentUser) {
-                console.error("No current user found. Cannot save report.");
-                return;
-            }
-
-            const payload = {
-                user_id: currentUser.id,
-                summary: reportData.summary,
-                key_concerns: reportData.key_concerns,
-                sentiment: reportData.sentiment,
-                recommendations: reportData.recommendations,
-            };
-
-            try {
-                const { error } = await _supabase.from('session_reports').insert([payload]);
-                if (error) {
-                    throw error;
-                }
-                showNotification('Session summary saved! ✅', 'success');
-            } catch (error) {
-                console.error("Error saving session report to Supabase:", error);
-                showNotification('Failed to save your session summary. ❌', 'error');
-            }
-        }
-
     </script>
 </body>
 </html>
