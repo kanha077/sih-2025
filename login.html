@@ -1,528 +1,606 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Ananda Mental Health</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
-    <meta charset="UTF-8">
+        :root {
+            /* Colors from ANANDA logo */
+            --ananda-green-dark: #2F6C6D;
+            --ananda-green-light: #5ECB9E;
+            --ananda-purple: #81409F;
+            --ananda-gold: #D4A300;
+            
+            /* UI Colors */
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-light: #f0f0f0;
+            --text-muted: rgba(240, 240, 240, 0.7);
+            --error-color: #ff6b6b;
+        }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    <title>Login - Ananda Mental Health</title>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: var(--text-light);
+            padding: 1rem;
+            overflow: hidden;
+            background: linear-gradient(45deg, var(--ananda-green-dark), var(--ananda-purple), var(--ananda-green-dark), var(--ananda-purple));
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+        }
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    <link rel="icon" type="image/png" href="favicon.png">
+        .container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-    <link rel="stylesheet" href="style.css">
+        .back-link {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
 
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative; /* For loading overlay */
+            overflow: hidden; /* For loading overlay */
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px 10px 12px 40px; /* Space for icon */
+            font-size: 1rem;
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--glass-border);
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input:focus {
+            border-bottom-color: var(--ananda-gold);
+        }
+
+        /* Adjust select appearance */
+        select.input {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F0F0F0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsmsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: .65em auto;
+        }
+
+        .label {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: normal;
+            position: absolute;
+            pointer-events: none;
+            left: 40px; /* Align with input text */
+            top: 12px;
+            transition: 0.2s ease all;
+        }
+
+        .input:focus ~ .label,
+        .input:not(:placeholder-shown) ~ .label {
+            top: -18px;
+            font-size: 0.8rem;
+            color: var(--ananda-gold);
+        }
+        
+        /* Select label handling */
+        .input:valid ~ .label {
+            top: -18px;
+            font-size: 0.8rem;
+            color: var(--ananda-gold);
+        }
+        
+        .icon {
+            stroke: var(--text-muted);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .input:focus + .input-icon, .input:not(:placeholder-shown) + .input-icon {
+            stroke: var(--ananda-gold);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--ananda-purple), var(--ananda-green-light));
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background-size: 200% auto;
+        }
+
+        .btn-primary:hover {
+            background-position: right center;
+            box-shadow: 0 6px 20px rgba(129, 64, 159, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: var(--glass-bg);
+            color: var(--text-light);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            margin: 1.5rem 0;
+        }
+        .separator::before, .separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .separator-text {
+            padding: 0 1rem;
+        }
+
+        .card-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .link {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .link:hover {
+            text-decoration: underline;
+            color: var(--ananda-gold);
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+            text-align: left;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid var(--ananda-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-
 <body>
-
-    <div class="container">
-
-        <a href="index.html" class="back-link">← Back to Home</a>
-
-        <div class="card">
-
-             <div class="loading" id="login-loading">
-
-                <div class="spinner"></div>
-
-                <p>Signing you in...</p>
-
-            </div>
-
-            <div id="auth-container">
-
-                <div class="card-header">
-
-                    <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="logo">
-
-                    <h1 class="card-title">Welcome Back</h1>
-
-                    <p class="card-description">Sign in to continue your mental wellness journey</p>
-
-                </div>
-
-
-
-                <div class="card-content">
-
-                    <form id="login-form" class="space-y-4">
-
-                        <div class="form-group">
-
-                            <label class="label" for="email">Email</label>
-
-                            <div class="input-wrapper">
-
-                                <svg class="input-icon icon" viewBox="0 0 24 24">
-
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-
-                                    <polyline points="22,6 12,13 2,6"/>
-
-                                </svg>
-
-                                <input id="email" name="email" type="email" placeholder="Enter your email" class="input" required>
-
-                                <div class="error-message" id="email-error"></div>
-
-                            </div>
-
-                        </div>
-
-
-
-                        <div class="form-group">
-
-                            <label class="label" for="password">Password</label>
-
-                            <div class="input-wrapper">
-
-                                <svg class="input-icon icon" viewBox="0 0 24 24">
-
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-
-                                    <circle cx="12" cy="16" r="1"/>
-
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-
-                                </svg>
-
-                                <input id="password" name="password" type="password" placeholder="Enter your password" class="input" style="padding-right: 2.5rem;" required>
-
-                                <button type="button" class="password-toggle" onclick="togglePassword()">
-
-                                    <svg class="icon" id="eye-icon" viewBox="0 0 24 24">
-
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-
-                                    </svg>
-
-                                </button>
-
-                                <div class="error-message" id="password-error"></div>
-
-                            </div>
-
-                        </div>
-
-                       
-
-                        <div class="form-group">
-
-                            <label class="label" for="role">I am a</label>
-
-                             <div class="input-wrapper">
-
-                                <svg class="input-icon icon" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
-
-                                <select id="role" name="role" class="input">
-
-                                    <option value="student" selected>Student</option>
-
-                                    <option value="counselor">Counselor</option>
-
-                                    <option value="admin">Admin</option>
-
-                                </select>
-
-                             </div>
-
-                        </div>
-
-
-
-                        <div class="error-message" id="general-error"></div>
-
-                       
-
-                        <button type="submit" class="btn btn-primary" id="login-btn">
-
-                            Sign In
-
-                        </button>
-
-                    </form>
-
-
-
-                    <div class="separator">
-
-                        <span class="separator-text">Or continue with</span>
-
-                    </div>
-
-
-
-                    <button class="btn btn-outline" onclick="loginWithGoogle()">
-
-                        <svg class="icon" style="margin-right: 0.5rem;" viewBox="0 0 24 24">
-
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-
-                        </svg>
-
-                        Continue with Google
-
-                    </button>
-
-                </div>
-
-                <div class="card-footer">
-
-                    <p class="text-center text-sm text-muted">
-
-                        Don't have an account?
-
-                        <a href="signup.html" class="link" style="font-weight: 500;">Sign up now</a>
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <script>
-
-        // Failsafe in case the Supabase script doesn't load
-
-        if (typeof supabase === 'undefined' || typeof supabase.createClient !== 'function') {
-
-            document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif; color: #333;"><h1>Error</h1><p>Could not connect to the authentication service. Please check your internet connection and try again.</p></div>';
-
-            throw new Error("Supabase client not loaded.");
-
-        }
-
-
-
-        // Supabase Configuration
-
-        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
-
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
-
-
-
-        const { createClient } = supabase;
-
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-
-
-        // DOM elements
-
-        const loginForm = document.getElementById('login-form');
-
-        const emailInput = document.getElementById('email');
-
-        const passwordInput = document.getElementById('password');
-
-        const roleSelect = document.getElementById('role');
-
-        const loginBtn = document.getElementById('login-btn');
-
-        const loadingDiv = document.getElementById('login-loading');
-
-        const authContainer = document.getElementById('auth-container');
-
-       
-
-        const emailError = document.getElementById('email-error');
-
-        const passwordError = document.getElementById('password-error');
-
-        const generalError = document.getElementById('general-error');
-
-
-
-        // Utility Functions
-
-        function hideErrors() {
-
-            emailError.style.display = 'none';
-
-            passwordError.style.display = 'none';
-
-            generalError.style.display = 'none';
-
-        }
-
-
-
-        function showError(element, message) {
-
-            element.textContent = message;
-
-            element.style.display = 'block';
-
-        }
-
-       
-
-        function validateEmail(email) {
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            return emailRegex.test(email);
-
-        }
-
-
-
-        function showLoading() {
-
-            authContainer.style.display = 'none';
-
-            loadingDiv.style.display = 'block';
-
-        }
-
-
-
-        function hideLoading() {
-
-            authContainer.style.display = 'block';
-
-            loadingDiv.style.display = 'none';
-
-        }
-
-       
-
-        function handleRedirect() {
-
-            const selectedRole = roleSelect.value;
-
-            let redirectUrl = '/';
-
-
-
-            switch (selectedRole) {
-
-                case 'student':
-
-                    redirectUrl = 'student.html';
-
-                    break;
-
-                case 'counselor':
-
-                    redirectUrl = 'counselor.html';
-
-                    break;
-
-                case 'admin':
-
-                    redirectUrl = 'admin.html';
-
-                    break;
-
-            }
-
-            window.location.href = redirectUrl;
-
-        }
-
-
-
-        // Session Handling
-
-        (async () => {
-
-            const { data: { session } } = await _supabase.auth.getSession();
-
-            if (session) {
-
-                showLoading();
-
-                handleRedirect();
-
-            }
-
-        })();
-
-
-
-        _supabase.auth.onAuthStateChange(async (event, session) => {
-
-            if (event === "SIGNED_IN" && session) {
-
-                showLoading();
-
-                handleRedirect();
-
-            }
-
-        });
-
-
-
-        // Form Submission
-
-        loginForm.addEventListener('submit', async function(e) {
-
-            e.preventDefault();
-
-            hideErrors();
-
-
-
-            const email = emailInput.value.trim();
-
-            const password = passwordInput.value.trim();
-
-
-
-            let hasErrors = false;
-
-            if (!email) {
-
-                showError(emailError, 'Email is required');
-
-                hasErrors = true;
-
-            } else if (!validateEmail(email)) {
-
-                showError(emailError, 'Please enter a valid email address');
-
-                hasErrors = true;
-
-            }
-
-
-
-            if (!password) {
-
-                showError(passwordError, 'Password is required');
-
-                hasErrors = true;
-
-            }
-
-
-
-            if (hasErrors) return;
-
-
-
-            showLoading();
-
-
-
-            const { error } = await _supabase.auth.signInWithPassword({ email, password });
-
-
-
-            if (error) {
-
-                hideLoading();
-
-                let errorMessage = 'An error occurred during login';
-
-                if (error.message.includes('Invalid login credentials')) {
-
-                    errorMessage = 'Invalid email or password.';
-
-                } else if (error.message.includes('Email not confirmed')) {
-
-                    errorMessage = 'Please verify your email before signing in.';
-
-                }
-
-                showError(generalError, errorMessage);
-
-            }
-
-        });
-
-       
-
-        // Google Login
-
-        async function loginWithGoogle() {
-
-            const { error } = await _supabase.auth.signInWithOAuth({
-
-                provider: 'google',
-
-                options: {
-
-                    redirectTo: window.location.href
-
-                }
-
-            });
-
-            if (error) {
-
-                showError(generalError, `Google Sign-in Failed: ${error.message}`);
-
-            }
-
-        }
-
-
-
-        // Password visibility toggle
-
-        function togglePassword() {
-
-            const passwordInput = document.getElementById('password');
-
-            const eyeIcon = document.getElementById('eye-icon');
-
-           
-
-            if (passwordInput.type === 'password') {
-
-                passwordInput.type = 'text';
-
-                eyeIcon.innerHTML = `
-
-                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
-
-                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
-
-                    <path d="M2.18 12.87A18.5 18.5 0 0 1 1 12c0-4.42 4-8 11-8a10.47 10.47 0 0 1 2.34.36"></path>
-
-                    <path d="M2 2l20 20"></path>
-
-                `;
-
-            } else {
-
-                passwordInput.type = 'password';
-
-                eyeIcon.innerHTML = `
-
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-
-                    <circle cx="12" cy="12" r="3"></circle>
-
-                `;
-
-            }
-
-        }
-
-    </script>
-
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        <div class="card">
+            <div class="loading" id="login-loading">
+                <div class="spinner"></div>
+                <p>Signing you in...</p>
+            </div>
+            <div id="auth-container">
+                <div class="card-header">
+                    <img src="https://ik.imagekit.io/riqdruvej/WhatsApp%20Image%202025-09-11%20at%2021.07.16_ad53dd02.jpg?updatedAt=1757704066278" alt="Ananda Logo" class="logo">
+                    <h1 class="card-title">Welcome to ANANDA</h1>
+                    <p class="card-description">Sign in to your mental wellness journey</p>
+                </div>
+
+                <div class="card-content">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                 <svg class="input-icon icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                <input id="email" name="email" type="email" class="input" required placeholder=" ">
+                                <label class="label" for="email">Email</label>
+                            </div>
+                            <div class="error-message" id="email-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                 <svg class="input-icon icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <input id="password" name="password" type="password" class="input" required placeholder=" ">
+                                <label class="label" for="password">Password</label>
+                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <svg class="icon" id="eye-icon" viewBox="0 0 24 24">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="error-message" id="password-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                             <div class="input-wrapper">
+                                <svg class="input-icon icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                                <select id="role" name="role" class="input">
+                                    <option value="student" selected>Student</option>
+                                    <option value="counselor">Counselor</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <label class="label" for="role">I am a</label>
+                             </div>
+                        </div>
+
+                        <div class="error-message" id="general-error" style="text-align: center; margin-bottom: 1rem;"></div>
+                        
+                        <button type="submit" class="btn btn-primary" id="login-btn">
+                            Sign In
+                        </button>
+                    </form>
+
+                    <div class="separator">
+                        <span class="separator-text">Or</span>
+                    </div>
+
+                    <button class="btn btn-outline" onclick="loginWithGoogle()">
+                        <svg class="icon" style="margin-right: 0.5rem;" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+                </div>
+                <div class="card-footer">
+                    <p>
+                        Don't have an account?
+                        <a href="signup.html" class="link">Sign up now</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (typeof supabase === 'undefined' || typeof supabase.createClient !== 'function') {
+            document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif; color: #333;"><h1>Error</h1><p>Could not connect to the authentication service. Please check your internet connection and try again.</p></div>';
+            throw new Error("Supabase client not loaded.");
+        }
+
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://wraemxcqjycuddhfgjtt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ';
+
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // DOM elements
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const roleSelect = document.getElementById('role');
+        const loadingDiv = document.getElementById('login-loading');
+        const authContainer = document.getElementById('auth-container');
+        
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+        const generalError = document.getElementById('general-error');
+
+        // Utility Functions
+        function hideErrors() {
+            emailError.style.display = 'none';
+            passwordError.style.display = 'none';
+            generalError.style.display = 'none';
+        }
+
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function showLoading() {
+            authContainer.style.opacity = '0';
+            loadingDiv.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            authContainer.style.opacity = '1';
+            loadingDiv.style.display = 'none';
+        }
+        
+        function handleRedirect(role) {
+            const selectedRole = role || roleSelect.value;
+            let redirectUrl = 'student.html'; // Default redirect
+
+            switch (selectedRole) {
+                case 'student':
+                    redirectUrl = 'student.html'; 
+                    break;
+                case 'counselor':
+                    redirectUrl = 'counselor.html';
+                    break;
+                case 'admin':
+                    redirectUrl = 'admin.html';
+                    break;
+            }
+            window.location.href = redirectUrl;
+        }
+
+        // Session Handling
+        (async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                const { data: profile, error } = await _supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile) {
+                    showLoading();
+                    handleRedirect(profile.role);
+                }
+            }
+        })();
+
+        _supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === "SIGNED_IN" && session) {
+                 const { data: profile, error } = await _supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile) {
+                    showLoading();
+                    handleRedirect(profile.role);
+                } else {
+                    // This handles the case for new social logins that don't have a role yet
+                    showLoading();
+                    handleRedirect('student'); // Default to student
+                }
+            }
+        });
+
+        // Form Submission
+       // REPLACE your existing 'loginForm.addEventListener' with this one
+loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    hideErrors();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    const role = roleSelect.value; // Get the selected role
+
+    // --- Start Validation ---
+    let hasErrors = false;
+    if (!email) {
+        showError(emailError, 'Email is required');
+        hasErrors = true;
+    } else if (!validateEmail(email)) {
+        showError(emailError, 'Please enter a valid email address');
+        hasErrors = true;
+    }
+
+    if (!password) {
+        showError(passwordError, 'Password is required');
+        hasErrors = true;
+    }
+
+    if (hasErrors) return;
+    // --- End Validation ---
+
+    showLoading();
+
+    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        hideLoading();
+        let errorMessage = 'An error occurred during login. Please try again.';
+        if (error.message.includes('Invalid login credentials')) {
+            errorMessage = 'Invalid email or password.';
+        } else if (error.message.includes('Email not confirmed')) {
+            errorMessage = 'Please verify your email before signing in.';
+        }
+        showError(generalError, errorMessage);
+    } else if (data.user) {
+        // --- THIS IS THE FIX ---
+        // On successful login, check the user's role in the database
+        const { data: profile, error: profileError } = await _supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', data.user.id)
+            .single();
+
+        if (profileError || !profile) {
+            // If profile doesn't exist, we can't verify role.
+            // For security, you might want to sign them out and show an error.
+            // But for a better user experience, we can default to the role they selected.
+            // This also helps if the profile creation on signup failed.
+            console.warn('Could not fetch user profile, redirecting with selected role.');
+            handleRedirect(role);
+        } else if (profile.role !== role) {
+            // If the role in the database does not match the one they selected
+            hideLoading();
+            showError(generalError, `Login failed. Your account is not registered as a '${role}'.`);
+            _supabase.auth.signOut(); // Log them out
+        } else {
+            // Role matches, proceed with redirection
+            handleRedirect(profile.role);
+        }
+    }
+});
+        
+        // Google Login
+        async function loginWithGoogle() {
+            const { error } = await _supabase.auth.signInWithOAuth({ 
+                provider: 'google',
+            });
+            if (error) {
+                showError(generalError, `Google Sign-in Failed: ${error.message}`);
+            }
+        }
+
+        // Password visibility toggle
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
+                    <path d="M2.18 12.87A18.5 18.5 0 0 1 1 12c0-4.42 4-8 11-8a10.47 10.47 0 0 1 2.34.36"></path>
+                    <path d="M2 2l20 20"></path>
+                `;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+            }
+        }
+    </script>
 </body>
 </html>
