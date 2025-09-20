@@ -85,11 +85,11 @@
 
    <script type="module">
         // Import the initialized Supabase client
-        import { supabase } from './supBaseClient.js';
+        import { supabase } from './supabaseconfig.js';
 
         let currentUser = null;
         let userRole = null;
-        let activeChatId = null; // This will now be the UUID of the conversation
+        let activeChatId = null;
         let activeChatPartnerName = null;
         let messagePollingInterval = null;
 
@@ -109,9 +109,12 @@
         });
 
         async function initialize() {
-            const { data, error } = await supabase.from('users').select('role').eq('id', currentUser.id).single();
+            // CHANGED: Fetches from 'profiles' table
+            const { data, error } = await supabase.from('profiles').select('role').eq('id', currentUser.id).single();
+            
             if (error || !data) {
-                console.error('Error fetching user role:', error); return;
+                console.error('Error fetching user role from profiles table:', error); 
+                return;
             }
             userRole = data.role;
 
@@ -134,14 +137,13 @@
         }
 
         async function loadCounselorList() {
-            const { data: counselors, error } = await supabase.from('users').select('*').eq('role', 'counselor');
+            // CHANGED: Fetches from 'profiles' table
+            const { data: counselors, error } = await supabase.from('profiles').select('*').eq('role', 'counselor');
             if (error) { console.error("Error loading counselors:", error); return; }
             displayUserList(counselors);
         }
 
-        // UPDATED to work with your schema
         async function loadStudentListForCounselor() {
-            // 1. Get all conversations where the current user is the counselor
             const { data: convos, error: convosError } = await supabase
                 .from('conversations')
                 .select('student_id')
@@ -150,12 +152,11 @@
             if (convosError) { console.error("Error loading conversations:", convosError); return; }
             if (!convos || convos.length === 0) { return displayUserList([]); }
 
-            // 2. Extract the student IDs from these conversations
             const studentIds = convos.map(convo => convo.student_id);
 
-            // 3. Fetch the profiles of those students
             if (studentIds.length > 0) {
-                const { data: students, error: studentsError } = await supabase.from('users').select('*').in('id', studentIds);
+                 // CHANGED: Fetches from 'profiles' table
+                const { data: students, error: studentsError } = await supabase.from('profiles').select('*').in('id', studentIds);
                 if (studentsError) { console.error("Error fetching students:", studentsError); return; }
                 displayUserList(students);
             }
@@ -172,17 +173,20 @@
                 item.className = 'user-item';
                 item.dataset.userId = user.id;
                 const avatarColorClass = user.role === 'student' ? 'student' : 'counselor';
+                
+                // CHANGED: Uses 'first_name' column
+                const displayName = user.first_name || 'Unnamed User';
+
                 item.innerHTML = `
-                    <div class="user-avatar ${avatarColorClass}">${(user.full_name || '?').charAt(0)}</div>
+                    <div class="user-avatar ${avatarColorClass}">${displayName.charAt(0)}</div>
                     <div class="user-info">
-                        <div class="name">${user.full_name || 'Unnamed User'}</div>
+                        <div class="name">${displayName}</div>
                     </div>`;
-                item.addEventListener('click', () => openChatWith(user.id, user.full_name));
+                item.addEventListener('click', () => openChatWith(user.id, displayName));
                 userListEl.appendChild(item);
             }
         }
 
-        // UPDATED to work with your schema
         async function openChatWith(otherUserId, otherUserName) {
             if (messagePollingInterval) { clearInterval(messagePollingInterval); }
 
@@ -190,11 +194,9 @@
             document.querySelector(`.user-item[data-user-id='${otherUserId}']`).classList.add('active');
             activeChatPartnerName = otherUserName;
 
-            // 1. Determine who is the student and who is the counselor
             const studentId = userRole === 'student' ? currentUser.id : otherUserId;
             const counselorId = userRole === 'counselor' ? currentUser.id : otherUserId;
 
-            // 2. Look for an existing conversation
             let { data: conversation, error } = await supabase
                 .from('conversations')
                 .select('id')
@@ -202,7 +204,6 @@
                 .eq('counselor_id', counselorId)
                 .single();
 
-            // 3. If no conversation exists, create one
             if (error && !conversation) {
                 const { data: newConversation, error: insertError } = await supabase
                     .from('conversations')
@@ -214,7 +215,7 @@
                 conversation = newConversation;
             }
 
-            activeChatId = conversation.id; // This is now the UUID for the chat
+            activeChatId = conversation.id;
 
             await loadMessages(activeChatId, otherUserName);
             initialViewEl.style.display = 'none';
@@ -232,7 +233,7 @@
             const { data: messages, error } = await supabase
                 .from('messages')
                 .select('*')
-                .eq('conversation_id', chatId) // This now correctly queries using the UUID
+                .eq('conversation_id', chatId)
                 .order('created_at', { ascending: true });
 
             if (error) { console.error("Error loading messages:", error); return; }
@@ -261,7 +262,7 @@
                 const { error } = await supabase.from('messages').insert({
                     content: content,
                     sender_id: currentUser.id,
-                    conversation_id: activeChatId // This now correctly uses the UUID
+                    conversation_id: activeChatId
                 });
                 
                 input.value = '';
