@@ -553,7 +553,7 @@
             gap: 1.5rem;
         }
 
-        /* --- NEW: CHAT INTERFACE STYLES --- */
+        /* --- CHAT INTERFACE STYLES --- */
         #chat-section .card-content {
             display: flex;
             flex-direction: column;
@@ -621,6 +621,71 @@
             box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
         }
         
+        /* --- NEW: SCREENING TEST STYLES --- */
+        .question-group { 
+            margin-bottom: 2rem; 
+            padding-bottom: 2rem; 
+            border-bottom: 1px solid hsl(var(--border));
+        }
+        .question-group:last-of-type { 
+            border-bottom: none; 
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .question-text { 
+            font-weight: 600; 
+            margin-bottom: 1.25rem; 
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 1rem; 
+        }
+        .option-label { 
+            display: block; 
+            padding: 1rem; 
+            border: 2px solid hsl(var(--border)); 
+            border-radius: 0.75rem; 
+            cursor: pointer; 
+            transition: var(--transition-smooth); 
+            text-align: center; 
+            font-weight: 500;
+        }
+        .option-label:hover { 
+            background-color: hsl(var(--muted));
+            border-color: hsl(var(--primary) / 0.5);
+        }
+        .option-input { 
+            display: none; 
+        }
+        .option-input:checked + .option-label { 
+            background: var(--gradient-primary); 
+            color: hsl(var(--primary-foreground)); 
+            border-color: transparent; 
+            font-weight: 600;
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-2px);
+        }
+        .result-card { 
+            border-left-width: 5px; 
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            background: hsl(var(--muted)); 
+            margin-bottom: 1.5rem;
+        }
+        .result-card h3 { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: hsl(var(--foreground));
+        }
+        .result-card p { 
+            margin-top: 0.5rem; 
+            line-height: 1.6;
+            color: hsl(var(--muted-foreground));
+        }
+
         /* Enhanced Utilities */
         .hidden { display: none; }
         .icon { width: 1.5rem; height: 1.5rem; fill: currentColor; }
@@ -863,7 +928,7 @@
                             <div style="position: relative; z-index: 2;">
                                 <h4 style="margin-bottom: 0.75rem; font-weight: 700;">🎯 Complete Your Profile</h4>
                                 <p style="font-size: 0.875rem; margin-bottom: 1rem; opacity: 0.9;">Take a mental health screening to get personalized recommendations</p>
-                                <button class="btn" style="width: 100%; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; font-weight: 600;" onclick="window.location.href='screening1.html'">
+                                <button class="btn" style="width: 100%; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; font-weight: 600;" onclick="showSection('screening-section'); initializeScreening();">
                                     Take Screening Test
                                 </button>
                             </div>
@@ -966,7 +1031,7 @@
                         </div>
                     </div>
                     
-                    <div class="card card-accent action-card" onclick="window.location.href='screening1.html'">
+                    <div class="card card-accent action-card" onclick="showSection('screening-section'); initializeScreening();">
                         <div class="card-content">
                             <div class="action-icon" style="background: var(--gradient-accent);">
                                 <svg class="icon" style="color: white;" viewBox="0 0 24 24">
@@ -1090,6 +1155,30 @@
                 </div>
             </div>
         </div>
+
+        <div id="screening-section" class="content-section card hidden fade-in">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h3 class="card-title" style="background: var(--gradient-accent);-webkit-background-clip: text; background-clip: text;-webkit-text-fill-color: transparent;">🎯 Mental Health Assessment</h3>
+                    <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin-top: 0.5rem;">A confidential check on your well-being.</p>
+                </div>
+                <button class="btn btn-outline" onclick="showSection('dashboard-section')">
+                    <svg class="icon-sm" style="margin-right: 0.5rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                    Back to Dashboard
+                </button>
+            </div>
+            <div class="card-content">
+                <div id="screeningIntro" style="text-align: center;">
+                    <h2 class="card-title" style="font-size: 1.5rem; text-align: center; display: block; background: none; -webkit-text-fill-color: initial;">Confidential Well-being Check</h2>
+                    <p class="welcome-subtitle" style="max-width: 600px; margin: 1rem auto 2.5rem auto;">This assessment (PHQ-9 for depression & GAD-7 for anxiety) helps you understand your mental health. Please answer based on how you've felt over the **last 2 weeks**.</p>
+                    <button class="btn btn-primary" style="padding: 1rem 2rem;" onclick="startScreeningTest()">Begin Assessment</button>
+                </div>
+                <form id="screeningTestContainer" style="display: none;"></form>
+                <div id="screeningResultContainer" style="display: none;"></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1120,9 +1209,7 @@
             
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
-
-            // --- MERGED: CHAT FORM EVENT LISTENER ---
-            chatForm.addEventListener("submit", handleChatSubmit);
+            document.getElementById("chat-form").addEventListener("submit", handleChatSubmit);
         });
 
         // --- AUTH & DATA FUNCTIONS ---
@@ -1376,7 +1463,7 @@
             }, 3000);
         }
 
-        // Add some fun interactions
+        // Add fun interactions
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('btn')) {
                 // Create ripple effect
@@ -1419,17 +1506,179 @@
         document.head.appendChild(style);
 
         // =======================================================
-        // --- MERGED AI CHAT LOGIC ---
+        // --- SCREENING TEST LOGIC (INTEGRATED) ---
+        // =======================================================
+
+        async function initializeScreening() {
+            if (!currentUser) return;
+            const { data: profile } = await _supabase.from('profiles').select('screening_completed').eq('id', currentUser.id).single();
+            if (profile && profile.screening_completed) {
+                await showScreeningResults();
+            } else {
+                document.getElementById('screeningIntro').style.display = 'block';
+                document.getElementById('screeningTestContainer').style.display = 'none';
+                document.getElementById('screeningResultContainer').style.display = 'none';
+            }
+        }
+
+        async function startScreeningTest() {
+            document.getElementById('screeningIntro').style.display = 'none';
+            const container = document.getElementById('screeningTestContainer');
+            container.style.display = 'block';
+            container.innerHTML = '<p style="text-align:center;">Loading questions...</p>';
+
+            const { data: questions, error } = await _supabase.from('screening_questions').select('*').order('sort_order');
+            if (error) {
+                container.innerHTML = '<p style="text-align:center; color: red;">Could not load questions. Please try again later.</p>';
+                return;
+            }
+
+            const options = [
+                { text: "Not at all", value: 0 }, { text: "Several days", value: 1 },
+                { text: "More than half the days", value: 2 }, { text: "Nearly every day", value: 3 }
+            ];
+
+            let questionsHtml = `<h2 class="card-title" style="text-align: center; display: block; background: none; -webkit-text-fill-color: initial; margin-bottom: 2rem;">Over the last 2 weeks, how often have you been bothered by...</h2>`;
+            questions.forEach((q, index) => {
+                questionsHtml += `
+                    <div class="question-group" data-question-id="${q.id}" data-type="${q.questionnaire_type}">
+                        <p class="question-text">${index + 1}. ${q.question_text}</p>
+                        <div class="options-grid">`;
+                options.forEach(opt => {
+                    questionsHtml += `
+                        <div>
+                            <input type="radio" id="q${q.id}_opt${opt.value}" name="q_${q.id}" value="${opt.value}" class="option-input" required>
+                            <label for="q${q.id}_opt${opt.value}" class="option-label">${opt.text}</label>
+                        </div>`;
+                });
+                questionsHtml += `</div></div>`;
+            });
+            
+            questionsHtml += `<div style="text-align:center; margin-top: 2rem;"><button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Submit Answers</button></div>`;
+            container.innerHTML = questionsHtml;
+            container.addEventListener('submit', submitScreeningTest);
+        }
+
+        async function submitScreeningTest(event) {
+            event.preventDefault();
+            const questionGroups = document.querySelectorAll('.question-group');
+            if (Array.from(questionGroups).some(g => !g.querySelector('input[type="radio"]:checked'))) {
+                showNotification('Please answer all questions before submitting.', 'error');
+                return;
+            }
+
+            const button = event.target.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            const responsesToSave = [];
+            let phq9Score = 0, gad7Score = 0;
+
+            questionGroups.forEach(group => {
+                const selectedOption = group.querySelector('input[type="radio"]:checked');
+                const responseValue = parseInt(selectedOption.value);
+                responsesToSave.push({ user_id: currentUser.id, question_id: group.dataset.questionId, response_value: responseValue });
+                if (group.dataset.type === 'PHQ-9') phq9Score += responseValue;
+                if (group.dataset.type === 'GAD-7') gad7Score += responseValue;
+            });
+            
+            const phq9Result = getScreeningInterpretation('PHQ-9', phq9Score);
+            const gad7Result = getScreeningInterpretation('GAD-7', gad7Score);
+
+            const scoresToSave = [
+                { user_id: currentUser.id, questionnaire_type: 'PHQ-9', score: phq9Score, severity: phq9Result.severity },
+                { user_id: currentUser.id, questionnaire_type: 'GAD-7', score: gad7Score, severity: gad7Result.severity }
+            ];
+
+            const { error: responsesError } = await _supabase.from('screening_responses').insert(responsesToSave);
+            const { error: scoresError } = await _supabase.from('screening_scores').insert(scoresToSave);
+            const { error: profileError } = await _supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
+
+            if (responsesError || scoresError || profileError) {
+                showNotification('An error occurred while saving your results. Please try again.', 'error');
+                button.disabled = false;
+                button.textContent = 'Submit Answers';
+                return;
+            }
+
+            showNotification('Assessment submitted successfully!', 'success');
+            await showScreeningResults();
+            await loadUserData(currentUser); // Refresh the main dashboard UI
+        }
+
+        async function showScreeningResults() {
+            document.getElementById('screeningIntro').style.display = 'none';
+            document.getElementById('screeningTestContainer').style.display = 'none';
+            const resultContainer = document.getElementById('screeningResultContainer');
+            resultContainer.style.display = 'block';
+            resultContainer.innerHTML = '<p style="text-align:center;">Loading your results...</p>';
+
+            const { data, error } = await _supabase.from('screening_scores').select('questionnaire_type, score, severity').eq('user_id', currentUser.id).order('completed_at', { ascending: false }).limit(2);
+            if (error || !data || data.length < 2) {
+                resultContainer.innerHTML = '<p style="text-align:center; color: red;">Could not load results. Please complete the assessment first.</p>';
+                return;
+            }
+            
+            const phq9Data = data.find(r => r.questionnaire_type === 'PHQ-9');
+            const gad7Data = data.find(r => r.questionnaire_type === 'GAD-7');
+            const phq9Result = getScreeningInterpretation('PHQ-9', phq9Data.score);
+            const gad7Result = getScreeningInterpretation('GAD-7', gad7Data.score);
+
+            resultContainer.innerHTML = `
+                <h2 class="card-title" style="text-align: center; display: block; background: none; -webkit-text-fill-color: initial; margin-bottom: 2rem;">Your Assessment Results</h2>
+                <div style="max-width: 700px; margin: 0 auto;">
+                    <div class="result-card" style="border-color: ${phq9Result.color};">
+                        <h3>PHQ-9 (Depression) Score: ${phq9Data.score}</h3>
+                        <p><strong>Severity:</strong> ${phq9Data.severity}</p>
+                        <p>${phq9Result.recommendation}</p>
+                    </div>
+                     <div class="result-card" style="border-color: ${gad7Result.color};">
+                        <h3>GAD-7 (Anxiety) Score: ${gad7Data.score}</h3>
+                        <p><strong>Severity:</strong> ${gad7Data.severity}</p>
+                        <p>${gad7Result.recommendation}</p>
+                    </div>
+                </div>
+                <p style="margin-top: 2rem; font-size: 0.8rem; color: hsl(var(--muted-foreground)); text-align: center;"><strong>Disclaimer:</strong> This is a screening tool, not a diagnosis. Please consult a healthcare professional for an accurate diagnosis and treatment plan.</p>
+                <div style="text-align: center; margin-top: 2rem;"><button class="btn btn-outline" onclick="retakeTest()">Retake Assessment</button></div>
+            `;
+        }
+        
+        function retakeTest() {
+            if(confirm("Are you sure you want to retake the assessment? This will overwrite your previous results.")) {
+                startScreeningTest();
+            }
+        }
+
+        function getScreeningInterpretation(type, score) {
+            const levels = {
+                'PHQ-9': [
+                    { max: 4, severity: 'Minimal', color: '#2ecc71', recommendation: 'Your symptoms are minimal. Continue monitoring your mood.' },
+                    { max: 9, severity: 'Mild', color: '#f1c40f', recommendation: 'You may be experiencing mild depression. Lifestyle changes and self-help strategies may be beneficial.' },
+                    { max: 14, severity: 'Moderate', color: '#e67e22', recommendation: 'You have symptoms of moderate depression. It is recommended to speak with a doctor or mental health professional.' },
+                    { max: 19, severity: 'Moderately Severe', color: '#d35400', recommendation: 'Your symptoms suggest moderately severe depression. Professional help is strongly recommended.' },
+                    { max: 27, severity: 'Severe', color: '#c0392b', recommendation: 'Your symptoms are severe. Please seek professional help immediately.' }
+                ],
+                'GAD-7': [
+                    { max: 4, severity: 'Minimal', color: '#2ecc71', recommendation: 'Your anxiety symptoms are minimal.' },
+                    { max: 9, severity: 'Mild', color: '#f1c40f', recommendation: 'You may be experiencing mild anxiety. Consider self-help and relaxation techniques.' },
+                    { max: 14, severity: 'Moderate', color: '#e67e22', recommendation: 'Your symptoms suggest moderate anxiety. Speaking with a professional could be helpful.' },
+                    { max: 21, severity: 'Severe', color: '#c0392b', recommendation: 'You may have severe anxiety. It is highly recommended to consult with a mental health professional.' }
+                ]
+            };
+            return levels[type].find(level => score <= level.max);
+        }
+
+        // =======================================================
+        // --- AI CHAT LOGIC ---
         // =======================================================
 
         // --- AI Agent Configuration ---
         // ⚠️ IMPORTANT: Paste your new Gemini API key here.
-        const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ";
+        const GEMINI_API_KEY = "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ"; // REPLACE WITH YOUR ACTUAL KEY
         const GEMINI_MODEL = "gemini-1.5-flash-latest";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
         // DOM Elements for Chat
-        const chatForm = document.getElementById("chat-form");
         const messageInput = document.getElementById("message-input");
         const chatMessages = document.getElementById("chat-messages");
         const sendButton = document.getElementById("send-button");
@@ -1440,7 +1689,7 @@
         let currentQuestionIndex = 0;
         let screeningResponses = [];
         let screeningType = '';
-        let chatHistory = []; // <-- NEW: To store the conversation history
+        let chatHistory = []; 
 
         // --- Helper Functions ---
         function getInterpretation(type, score) {
@@ -1452,9 +1701,9 @@
 
         // --- Chat Initialization (called when chat is opened) ---
         async function loadUserContext() {
-            chatMessages.innerHTML = ''; // Clear previous messages
-            chatHistory = []; // <-- NEW: Reset chat history array
-            if (!currentUser) return; // Should not happen if logged in
+            chatMessages.innerHTML = ''; 
+            chatHistory = []; 
+            if (!currentUser) return; 
 
             const { data: scores, error } = await _supabase
                 .from('screening_scores')
@@ -1495,12 +1744,13 @@
             chatMessages.appendChild(bubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
-            // <-- MODIFIED: Add message to history array
             chatHistory.push({ role: sender, content: text });
         }
         
         async function sendToAI(userInput) {
-            if (!GEMINI_API_KEY) return "⚠️ Gemini API key is missing.";
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                return "⚠️ AI features are disabled. Please add a valid Gemini API key in the script to enable the AI chat.";
+            }
             
             const systemInstruction = {
                 role: 'user',
@@ -1646,9 +1896,7 @@
             sendButton.textContent = "Send";
         }
 
-        // =======================================================
-        // --- NEW: REPORT GENERATION AND SAVING LOGIC ---
-        // =======================================================
+        // --- REPORT GENERATION AND SAVING LOGIC ---
         
         /**
          * Main function to handle closing the chat and generating a session report.
@@ -1684,7 +1932,7 @@
          * @returns {Object|null} The parsed report object or null on failure.
          */
         async function generateReportFromChat(history) {
-            if (!GEMINI_API_KEY) {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
                 console.error("Gemini API key is missing. Cannot generate report.");
                 return null;
             }
