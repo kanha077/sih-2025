@@ -1,38 +1,38 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI-Powered Chat Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
-      <link rel="icon" type="image/png" href="favicon.png">
-
+  <link rel="icon" type="image/png" href="favicon.png">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; }
+    #send-button:disabled { cursor: not-allowed; background-color: #93c5fd; }
   </style>
 </head>
 <body class="bg-gray-100">
   <div class="flex h-screen flex-col items-center justify-center p-4">
-    <!-- Chat Interface -->
     <div class="h-full w-full max-w-3xl flex flex-col bg-white rounded-xl shadow-lg">
       <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl">
-        <h1 class="text-xl font-bold text-gray-800">AI Agent Chat</h1>
+        <h1 class="text-xl font-bold text-gray-800">Ananda AI Support</h1>
       </header>
-      <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+      <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4">
+          </div>
       <div class="p-4 bg-white border-t border-gray-200 rounded-b-xl">
         <form id="chat-form" class="flex items-center space-x-4">
-          <input 
-            type="text" 
-            id="message-input" 
-            placeholder="Type your message..." 
-            autocomplete="off" 
-            required 
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Type your message..."
+            autocomplete="off"
+            required
             class="flex-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <button 
-            type="submit" 
-            id="send-button" 
-            class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700">
+          <button
+            type="submit"
+            id="send-button"
+            class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
             Send
           </button>
         </form>
@@ -40,7 +40,7 @@
     </div>
   </div>
 
-  <script type="module">
+<script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
     // --- Supabase Client ---
@@ -49,25 +49,61 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- AI Agent Configuration ---
-    const AI_WEBHOOK_URL = "https://eo1ww3lidr9jhf7.m.pipedream.net";
+    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; // PASTE YOUR KEY HERE
+    const GEMINI_MODEL = "gemini-1.5-flash-latest";
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
     // DOM Elements
     const chatForm = document.getElementById("chat-form");
     const messageInput = document.getElementById("message-input");
     const chatMessages = document.getElementById("chat-messages");
+    const sendButton = document.getElementById("send-button");
 
     let currentUser = null;
+    let userScreeningContext = "The user has not completed a screening test.";
 
-    // Check for a logged-in user
-    async function checkSession() {
-      const { data } = await supabase.auth.getSession();
-      currentUser = data.session ? data.session.user : null;
-      console.log(currentUser ? `Logged in as: ${currentUser.email}` : "Anonymous user");
+    // --- NEW: State Management for In-Chat Screening ---
+    let inScreeningMode = false;
+    let screeningQuestions = [];
+    let currentQuestionIndex = 0;
+    let screeningResponses = [];
+    let screeningType = ''; // Will be 'PHQ-9' or 'GAD-7'
+
+    // --- Page Initialization ---
+    async function loadUserContext() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        addMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
+        return;
+      };
+      currentUser = session.user;
+
+      const { data: scores, error } = await supabase
+        .from('screening_scores')
+        .select('questionnaire_type, score, severity')
+        .eq('user_id', currentUser.id)
+        .order('completed_at', { ascending: false })
+        .limit(2);
+
+      if (error || !scores || scores.length === 0) {
+        addMessage("assistant", "Hello! I'm Ananda, your supportive AI assistant. How are you feeling today?");
+        return;
+      }
+      
+      const phq9 = scores.find(s => s.questionnaire_type === 'PHQ-9');
+      const gad7 = scores.find(s => s.questionnaire_type === 'GAD-7');
+      let context = "The user recently completed a mental health screening. Use this information to inform your responses compassionately.\n";
+      if (phq9) context += `Depression (PHQ-9) Result: Score ${phq9.score}, indicating ${phq9.severity} symptoms.\n`;
+      if (gad7) context += `Anxiety (GAD-7) Result: Score ${gad7.score}, indicating ${gad7.severity} symptoms.`;
+      userScreeningContext = context;
+
+      addMessage("assistant", "Hello! I'm Ananda. I've reviewed your recent screening results. Thank you for sharing. How are you feeling today?");
     }
-    await checkSession();
+    await loadUserContext();
+
 
     async function saveMessage(role, text) {
-      if (!currentUser) return; // Don't save for anonymous users
+      if (!currentUser || text === 'ANANDA_START_SCREENING') return; // Don't save the command
       try {
         await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
       } catch (err) {
@@ -75,62 +111,153 @@
       }
     }
 
-    // Display a message in the chat window
     function addMessage(sender, text) {
+      if (text === 'ANANDA_START_SCREENING') return; // Don't show the command to the user
       const bubble = document.createElement("div");
-
       const baseClasses = ["max-w-[75%]", "p-3", "rounded-lg", "break-words", "w-fit"];
       const userClasses = ["bg-blue-500", "text-white", "self-end", "ml-auto"];
-      const botClasses  = ["bg-gray-200", "text-gray-800", "self-start", "mr-auto"];
-
+      const botClasses = ["bg-gray-200", "text-gray-800", "self-start", "mr-auto"];
       bubble.classList.add(...baseClasses, ...(sender === "user" ? userClasses : botClasses));
       bubble.textContent = text;
-
       chatMessages.appendChild(bubble);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Directly call the AI webhook (with debug logs)
     async function sendToAI(userInput) {
-      try {
-        console.log("Sending to webhook:", userInput);
+      if (GEMINI_API_KEY === "AIzaSyDCpj8ZcLiHt1DbDiKX_7XDu4M-U8X0BuQ") return "⚠️ Please add your Gemini API key.";
+      
+      const systemInstruction = {
+        role: 'user',
+        parts: [{
+          text: `You are Ananda, a supportive AI assistant for mental health.
+          
+          **User Context:**
+          ${userScreeningContext}
 
-        const response = await fetch(AI_WEBHOOK_URL, {
+          **Your Core Directives:**
+          1. Be empathetic, listen, and offer encouragement.
+          2. **Crucially, if the user expresses significant distress or seems to be struggling, offer to do a "brief check-in" (the PHQ-9 screening).**
+          3. **If they agree to the check-in, your ENTIRE response and nothing else must be the special command: ANANDA_START_SCREENING**
+          4. You are not a therapist. Do not give diagnoses.
+          5. If the user mentions self-harm or crisis, advise them to contact emergency services.`
+        }],
+      };
+      
+      const modelPriming = { role: 'model', parts: [{ text: "I understand my role and directives. I will offer a check-in when appropriate and use the special command if they agree." }] };
+
+      try {
+        const response = await fetch(API_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ message: userInput })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [systemInstruction, modelPriming, { role: 'user', parts: [{ text: userInput }] }],
+            safetySettings: [ { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }, { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' } ],
+          }),
         });
 
-        console.log("Raw Response status:", response.status);
-
-        const text = await response.text(); // raw response
-        console.log("Webhook raw response:", text);
-
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (err) {
-          console.error("❌ Webhook did not return valid JSON:", text);
-          return "⚠️ Webhook did not return valid JSON.";
-        }
-
-        const reply = data.reply || data.output; // handle both keys
-        if (!reply) {
-          console.warn("⚠️ Webhook JSON missing 'reply' or 'output' key:", data);
-          return "⚠️ No valid reply found in webhook response.";
-        }
-
-        return reply;
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        if (!data.candidates || data.candidates.length === 0) return "I am unable to respond to that topic. Let's talk about something else.";
+        return data.candidates[0].content.parts[0].text;
       } catch (err) {
-        console.error("❌ Fetch failed:", err);
-        return "⚠️ Error contacting AI service.";
+        console.error("❌ Error calling Gemini API:", err);
+        return "⚠️ Error contacting the AI service.";
       }
     }
+    
+    // --- NEW: Functions to handle the in-chat screening ---
 
-    // Handle form submission
+    async function startScreening(type = 'PHQ-9') {
+        inScreeningMode = true;
+        screeningType = type;
+        currentQuestionIndex = 0;
+        screeningResponses = [];
+        
+        addMessage('assistant', `Of course. I'll ask you 9 questions about how you've felt over the last 2 weeks. Just answer naturally. Let's begin.`);
+        
+        const { data, error } = await supabase.from('screening_questions').select('*').eq('questionnaire_type', screeningType).order('sort_order');
+        if (error || !data) {
+            addMessage('assistant', 'I had trouble loading the questions. We can try again later.');
+            inScreeningMode = false;
+            return;
+        }
+        screeningQuestions = data;
+        askNextQuestion();
+    }
+    
+    function askNextQuestion() {
+        if (currentQuestionIndex < screeningQuestions.length) {
+            const question = screeningQuestions[currentQuestionIndex];
+            addMessage('assistant', question.question_text);
+        } else {
+            finishScreening();
+        }
+    }
+
+    async function handleScreeningAnswer(userInput) {
+        const currentQuestion = screeningQuestions[currentQuestionIndex];
+
+        // Use AI to interpret the natural language answer into a score
+        const prompt = `Your task is to classify a user's response to a mental health question into one of four categories and return ONLY a JSON object.
+        The question was: "${currentQuestion.question_text}"
+        The user's response was: "${userInput}"
+        The categories and their values are:
+        - Not at all (value: 0)
+        - Several days (value: 1)
+        - More than half the days (value: 2)
+        - Nearly every day (value: 3)
+        Your entire output must be a single JSON object like: {"score": 1}`;
+
+        const scoreResponse = await sendToAI(prompt); // We reuse sendToAI but with a different prompt
+        
+        let score = 0;
+        try {
+            // A simple regex to find the number in case the AI returns extra text
+            const scoreMatch = scoreResponse.match(/"score":\s*(\d)/);
+            if (scoreMatch) {
+                score = parseInt(scoreMatch[1]);
+            } else {
+                throw new Error("Could not parse score from AI response.");
+            }
+        } catch (e) {
+            console.error(e);
+            addMessage('assistant', "I had a little trouble understanding that. Could you try phrasing it as 'Not at all', 'Several days', 'More than half the days', or 'Nearly every day'?");
+            return; // Ask the same question again
+        }
+
+        screeningResponses.push({ user_id: currentUser.id, question_id: currentQuestion.id, response_value: score });
+        currentQuestionIndex++;
+        askNextQuestion();
+    }
+
+    async function finishScreening() {
+        addMessage('assistant', "Thank you. Let me calculate and save your results...");
+        const totalScore = screeningResponses.reduce((sum, res) => sum + res.response_value, 0);
+
+        // This function would be in your code from the previous screening page
+        function getInterpretation(type, score) {
+           const levels = {
+             'PHQ-9': [ { max: 4, severity: 'Minimal' }, { max: 9, severity: 'Mild' }, { max: 14, severity: 'Moderate' }, { max: 19, severity: 'Moderately Severe' }, { max: 27, severity: 'Severe' } ],
+           };
+           return levels[type].find(level => score <= level.max);
+        }
+
+        const result = getInterpretation(screeningType, totalScore);
+        const scoreToSave = { user_id: currentUser.id, questionnaire_type: screeningType, score: totalScore, severity: result.severity };
+
+        // Save everything to the database
+        await supabase.from('screening_responses').insert(screeningResponses);
+        await supabase.from('screening_scores').insert([scoreToSave]);
+        await supabase.from('profiles').update({ screening_completed: true }).eq('id', currentUser.id);
+
+        addMessage('assistant', `Your score is ${totalScore}, which indicates ${result.severity} symptoms of depression. Thank you for sharing this with me. This information will help me support you better.`);
+        
+        // Reset state and update context for future chats
+        inScreeningMode = false;
+        await loadUserContext(); // Reload context with the new score
+    }
+
+    // --- Main Chat Form Event Listener ---
     chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const userInput = messageInput.value.trim();
@@ -139,12 +266,28 @@
       addMessage("user", userInput);
       await saveMessage("user", userInput);
       messageInput.value = "";
+      
+      sendButton.disabled = true;
+      sendButton.textContent = "Thinking...";
 
-      const botReply = await sendToAI(userInput);
+      if (inScreeningMode) {
+          await handleScreeningAnswer(userInput);
+      } else {
+          const botReply = await sendToAI(userInput);
+          addMessage("assistant", botReply);
+          await saveMessage("assistant", botReply);
 
-      addMessage("assistant", botReply);
-      await saveMessage("assistant", botReply);
+          // Check if the AI has triggered the screening
+          if (botReply.includes('ANANDA_START_SCREENING')) {
+              await startScreening('PHQ-9');
+          }
+      }
+      
+      sendButton.disabled = false;
+      sendButton.textContent = "Send";
     });
   </script>
+</body>
+</html>
 </body>
 </html>
