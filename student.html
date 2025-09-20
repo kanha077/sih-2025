@@ -552,7 +552,7 @@
             gap: 1.5rem;
         }
         
-        /* --- NEW: SCREENING TEST STYLES --- */
+        /* --- SCREENING TEST STYLES --- */
         .question-group { 
             margin-bottom: 2rem; 
             padding-bottom: 2rem; 
@@ -1076,7 +1076,7 @@
             <div class="card-content">
                 <div id="screeningIntro" style="text-align: center;">
                     <h2 class="card-title" style="font-size: 1.5rem; text-align: center; display: block; background: none; -webkit-text-fill-color: initial;">Confidential Well-being Check</h2>
-                    <p class="welcome-subtitle" style="max-width: 600px; margin: 1rem auto 2.5rem auto;">This assessment (PHQ-9 for depression & GAD-7 for anxiety) helps you understand your mental health. Please answer based on how you've felt over the **last 2 weeks**.</p>
+                    <p class="welcome-subtitle" style="max-width: 600px; margin: 1rem auto 2.5rem auto;">This assessment (PHQ-9 for depression & GAD-7 for anxiety) helps you understand your mental health. Please answer based on how you've felt over the <strong>last 2 weeks</strong>.</p>
                     <button class="btn btn-primary" style="padding: 1rem 2rem;" onclick="startScreeningTest()">Begin Assessment</button>
                 </div>
                 <form id="screeningTestContainer" style="display: none;"></form>
@@ -1368,7 +1368,8 @@
 
         // Add fun interactions
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn')) {
+            if (e.target.closest('.btn')) {
+                const button = e.target.closest('.btn');
                 // Create ripple effect
                 const ripple = document.createElement('span');
                 ripple.style.cssText = `
@@ -1380,15 +1381,13 @@
                     pointer-events: none;
                 `;
                 
-                const rect = e.target.getBoundingClientRect();
+                const rect = button.getBoundingClientRect();
                 const size = Math.max(rect.width, rect.height);
                 ripple.style.width = ripple.style.height = size + 'px';
                 ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
                 ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
                 
-                e.target.style.position = 'relative';
-                e.target.style.overflow = 'hidden';
-                e.target.appendChild(ripple);
+                button.appendChild(ripple);
                 
                 setTimeout(() => {
                     ripple.remove();
@@ -1409,7 +1408,7 @@
         document.head.appendChild(style);
 
         // =======================================================
-        // --- SCREENING TEST LOGIC (INTEGRATED)-
+        // --- SCREENING TEST LOGIC (INTEGRATED) ---
         // =======================================================
 
         async function initializeScreening() {
@@ -1504,6 +1503,20 @@
                 return;
             }
 
+            // --- GOOGLE SHEETS INTEGRATION ---
+            // Prepare data payload for Google Sheets
+            const sheetData = {
+                userId: currentUser.id,
+                userEmail: currentUser.email,
+                phq9Score: phq9Score,
+                phq9Severity: phq9Result.severity,
+                gad7Score: gad7Score,
+                gad7Severity: gad7Result.severity
+            };
+
+            // Send data to Google Sheet (this happens in the background)
+            sendDataToGoogleSheet(sheetData);
+            
             showNotification('Assessment submitted successfully!', 'success');
             await showScreeningResults();
             await loadUserData(currentUser); // Refresh the main dashboard UI
@@ -1571,7 +1584,26 @@
             return levels[type].find(level => score <= level.max);
         }
 
+        // --- GOOGLE SHEETS INTEGRATION ---
+        async function sendDataToGoogleSheet(data) {
+            // !!! IMPORTANT !!! Paste your Web App URL from your Google Apps Script here
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxRCtRRWCSM5U3KrpSaZEC2nkcQbci5YCgK5qPK1EV8dBFbITNUr3fwkgQMJ78gkOacDg/exec';
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // This is important for this type of request
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error sending data to Google Sheet:', error);
+                // This error won't be shown to the user, as the primary save to Supabase was successful.
+            }
+        }
     </script>
 </body>
-
 </html>
