@@ -1,186 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Counselor - Ananda</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/png" href="favicon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Counselor - Ananda</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-  </style>
+body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #a5b4fc, #facc15); height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }
+
+.chat-container { width: 100%; max-width: 3xl; height: 90vh; background: #fff; border-radius: 1rem; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; }
+
+header { background: #6366f1; color: white; padding: 1rem 1.5rem; font-weight: 600; font-size: 1.25rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+#chat-messages { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; }
+
+input#message-input { padding: 0.75rem 1rem; border-radius: 9999px; border: 1px solid #d1d5db; outline: none; flex: 1; transition: all 0.2s; }
+input#message-input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.3); }
+
+button#send-button { padding: 0.75rem 1.5rem; background: #6366f1; color: white; font-weight: 600; border-radius: 9999px; transition: all 0.2s; }
+button#send-button:hover { background: #4f46e5; }
+
+.chat-bubble-user { background: #6366f1; color: white; align-self: flex-end; border-radius: 1.5rem 1.5rem 0.5rem 1.5rem; padding: 0.75rem 1rem; max-width: 75%; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.chat-bubble-bot { background: #f3f4f6; color: #1f2937; align-self: flex-start; border-radius: 1.5rem 1.5rem 1.5rem 0.5rem; padding: 0.75rem 1rem; max-width: 75%; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+.typing-indicator { display: inline-flex; gap: 4px; }
+.typing-indicator span { width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; animation: typing 1.2s infinite; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+</style>
 </head>
-<body class="bg-gray-100">
-  <div class="flex h-screen flex-col items-center justify-center p-4">
-    <div class="h-full w-full max-w-3xl flex flex-col bg-white rounded-xl shadow-lg">
-      <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl">
-        <h1 class="text-xl font-bold text-gray-800">Chat with Ananda</h1>
-      </header>
-      <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
-      <div class="p-4 bg-white border-t border-gray-200 rounded-b-xl">
-        <form id="chat-form" class="flex items-center space-x-4">
-          <input 
-            type="text" 
-            id="message-input" 
-            placeholder="Type your message..." 
-            autocomplete="off" 
-            required 
-            class="flex-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <button 
-            type="submit" 
-            id="send-button" 
-            class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700">
-            Send
-          </button>
-        </form>
-      </div>
-    </div>
+<body>
+
+<div class="chat-container">
+  <header>💛 Chat with Ananda</header>
+  <div id="chat-messages"></div>
+  <div class="p-4 border-t border-gray-200 bg-white">
+    <form id="chat-form" class="flex items-center gap-3">
+      <input type="text" id="message-input" placeholder="Type your message..." required autocomplete="off">
+      <button type="submit" id="send-button">Send</button>
+    </form>
   </div>
+</div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // --- Supabase Client ---
-    const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
 
-    // --- Gemini AI Configuration ---
-    // ⚠️ IMPORTANT: Replace with your actual Google Gemini API Key
-    const GEMINI_API_KEY = "AIzaSyDRCkF44qIHs9SmwIKlaR9clsShEJX9CkM"; 
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-    
-    // --- AI Persona (Ananda) ---
-    const systemPrompt = {
-      "parts": [{
-        "text": "You are **Ananda**, a personal AI counselor for students. make sure you message first  Your role is to create a safe, warm, and non-judgmental space. Start every conversation by gently asking the student about their mood and how they are feeling today. Be a good listener: acknowledge their emotions, reflect back what they share, and never rush to give solutions unless they ask. Your tone should always be **calm, positive, and supportive**, like a trusted mentor or friend. If the student seems upset, stressed, or negative, comfort them with empathy first, then slowly guide them toward hopeful and uplifting thoughts. If they are happy or excited, celebrate their joy with them. Throughout the conversation, try to **analyze their mood** based on their words, tone, and style of chatting. Use this analysis to adapt your responses: - If they sound sad, anxious, or lonely → listen more, show care, give emotional support. - If they sound neutral → keep the tone friendly, gently encourage positivity. - If they sound positive → encourage them, build on their happiness. Always focus on being a **good listener first, counselor second**. Avoid robotic or formal responses; instead, use natural, caring, and human-like communication. The goal is to help the student feel heard, valued, and uplifted by the end of the conversation."
-      }]
-    };
+// Export client
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // DOM Elements
-    const chatForm = document.getElementById("chat-form");
-    const messageInput = document.getElementById("message-input");
-    const chatMessages = document.getElementById("chat-messages");
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUser = null;
-    let conversationHistory = [];
+const GEMINI_API_KEY = "AIzaSyDRCkF44qIHs9SmwIKlaR9clsShEJX9CkM";
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
 
-    // Check for a logged-in user
-    async function checkSession() {
-      const { data } = await supabase.auth.getSession();
-      currentUser = data.session ? data.session.user : null;
-      console.log(currentUser ? `Logged in as: ${currentUser.email}` : "Anonymous user");
-    }
-    
-    // Save message to Supabase
-    async function saveMessage(role, text) {
-      if (!currentUser) return; // Don't save for anonymous users
-      try {
-        await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
-      } catch (err) {
-        console.error("❌ Failed to save message:", err);
-      }
-    }
+const systemPrompt = { "parts": [{ "text": "You are Ananda, a personal AI counselor for students..." }] };
 
-    // Display a message in the chat window
-    function addMessage(sender, text) {
-      const bubble = document.createElement("div");
+const chatForm = document.getElementById("chat-form");
+const messageInput = document.getElementById("message-input");
+const chatMessages = document.getElementById("chat-messages");
+const sendButton = document.getElementById("send-button");
 
-      const baseClasses = ["max-w-[75%]", "p-3", "rounded-lg", "break-words", "w-fit"];
-      const userClasses = ["bg-blue-500", "text-white", "self-end", "ml-auto"];
-      const botClasses  = ["bg-gray-200", "text-gray-800", "self-start", "mr-auto"];
+let currentUser = null;
+let conversationHistory = [];
 
-      bubble.classList.add(...baseClasses, ...(sender === "user" ? userClasses : botClasses));
-      // Using innerHTML to render Markdown for bolding, etc.
-      // A more robust solution would use a library like Marked.js
-      bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+async function checkSession() {
+  const { data } = await supabase.auth.getSession();
+  currentUser = data.session ? data.session.user : null;
+}
 
-      chatMessages.appendChild(bubble);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+async function saveMessage(role, text) {
+  if (!currentUser) return;
+  try { await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]); } 
+  catch (err) { console.error(err); }
+}
 
-    // Call the Gemini API
-    async function sendToAI(history) {
-      if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-          return "⚠️ Gemini API key is not set. Please update the script.";
-      }
-      
-      try {
-        const response = await fetch(GEMINI_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: history,
-            systemInstruction: systemPrompt,
-            generationConfig: {
-                temperature: 0.7,
-                topP: 1.0,
-                maxOutputTokens: 1024,
-            }
-          }),
-        });
+function addMessage(sender, text, isTyping=false) {
+  const bubble = document.createElement("div");
+  bubble.classList.add(sender==="user"?"chat-bubble-user":"chat-bubble-bot");
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("❌ Gemini API Error:", errorData);
-            return `⚠️ Error from AI service: ${errorData.error.message}`;
-        }
+  if (isTyping) {
+    bubble.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+  } else {
+    bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g,"<b>$1</b>");
+  }
+  chatMessages.appendChild(bubble);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return bubble;
+}
 
-        const data = await response.json();
-        
-        if (data.candidates && data.candidates.length > 0) {
-            const reply = data.candidates[0].content.parts[0].text;
-            return reply;
-        } else {
-            console.warn("⚠️ No valid reply found in Gemini response:", data);
-            return "⚠️ No valid reply found in the AI response.";
-        }
+async function sendToAI(history) {
+  sendButton.disabled = true;
+  const typingBubble = addMessage("assistant","",true);
 
-      } catch (err) {
-        console.error("❌ Fetch failed:", err);
-        return "⚠️ Error contacting the AI service. Please check your network connection.";
-      }
-    }
-
-    // Handle form submission
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const userInput = messageInput.value.trim();
-      if (!userInput) return;
-
-      // 1. Display user message and add to history
-      addMessage("user", userInput);
-      conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
-      await saveMessage("user", userInput);
-      messageInput.value = "";
-
-      // 2. Send history to AI and get response
-      const botReply = await sendToAI(conversationHistory);
-
-      // 3. Display bot message and add to history
-      addMessage("assistant", botReply);
-      conversationHistory.push({ role: "model", parts: [{ text: botReply }] });
-      await saveMessage("assistant", botReply);
+  try {
+    const response = await fetch(GEMINI_API_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ contents:history, systemInstruction:systemPrompt, generationConfig:{temperature:0.7,topP:1.0,maxOutputTokens:1024} })
     });
 
-    // --- Initial Setup ---
-    async function initializeChat() {
-        await checkSession();
-        
-        // Start conversation with Ananda's greeting
-        const initialGreeting = "Hello! it's ANANDA AI It's nice to see you. How are you feeling today?";
-        addMessage("assistant", initialGreeting);
-        conversationHistory.push({ role: "model", parts: [{ text: initialGreeting }] });
-        await saveMessage("assistant", initialGreeting);
-    }
-    
-    // Kick off the application
-    initializeChat();
+    const data = await response.json();
+    let reply = "⚠️ No valid reply from AI.";
+    if (data.candidates?.length > 0) reply = data.candidates[0].content.parts[0].text;
 
-  </script>
+    typingBubble.remove();
+    sendButton.disabled = false;
+    return reply;
+
+  } catch(err){
+    console.error(err);
+    typingBubble.remove();
+    sendButton.disabled = false;
+    return "⚠️ Error contacting AI service.";
+  }
+}
+
+chatForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const userInput = messageInput.value.trim();
+  if (!userInput) return;
+
+  addMessage("user", userInput);
+  conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
+  await saveMessage("user", userInput);
+  messageInput.value = "";
+
+  const botReply = await sendToAI(conversationHistory);
+  addMessage("assistant", botReply);
+  conversationHistory.push({ role: "model", parts: [{ text: botReply }] });
+  await saveMessage("assistant", botReply);
+});
+
+async function initializeChat() {
+  await checkSession();
+  const initialGreeting = "👋 Hello! I'm Ananda AI. How are you feeling today?";
+  addMessage("assistant", initialGreeting);
+  conversationHistory.push({ role: "model", parts: [{ text: initialGreeting }] });
+  await saveMessage("assistant", initialGreeting);
+}
+
+initializeChat();
+</script>
 </body>
 </html>
