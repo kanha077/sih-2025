@@ -397,8 +397,8 @@
                 <div>
                     <h3>Platform</h3>
                     <ul>
-                        <li><a href="chatbot.html">AI Chat Support</a></li>
-                        <li><a href="an-counselor">Professional Counseling</a></li>
+                        <li><a href="api-ai.html">AI Chat Support</a></li>
+                        <li><a href="">Professional Counseling</a></li>
                         <li><a href="screening.html">Mental Health Screening</a></li>
                         <li><a href="resources.html">Resources</a></li>
                     </ul>
@@ -515,60 +515,68 @@
         }
 
         // Contact Form
-        function initContactForm() {
-            const form = document.getElementById('contact-form');
-            const successAnimation = document.getElementById('success-animation');
-            
-            // ⬇️ PASTE THE WEB APP URL YOU COPIED FROM GOOGLE APPS SCRIPT HERE ⬇️
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzO9APm6FE7YWYrmNoVecoE5Fv9gTzBbWCFBB43WMIotqW-p-n6_PnoubZEe-_u_SquSQ/exec';
+       // Import the necessary functions from the Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-            if (!form) return;
+// Import your Firebase configuration from firebaseConfig.js
+import { firebaseConfig } from './firebaseconfig.js';
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+// Function to handle the contact form submission
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    const successAnimation = document.getElementById('success-animation');
+    
+    // The database reference where you want to store contact form submissions
+    const dbRef = ref(database, 'contacts');
+
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+
+        // Get the form data as a JavaScript object
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Add a server-side timestamp for when the message was received
+        data.timestamp = serverTimestamp();
+
+        // Push the data to Firebase Realtime Database
+        push(dbRef, data)
+            .then(() => {
+                // This block runs on successful submission
+                form.style.display = 'none';
+                successAnimation.classList.add('show');
                 
-                const submitButton = form.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Sending...';
-
-                // Get the form data as a JavaScript object
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-
-                // Send the data to your Google Apps Script
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(res => res.json())
-                .then(response => {
-                    if (response.result === 'success') {
-                        form.style.display = 'none';
-                        successAnimation.classList.add('show');
-                        
-                        setTimeout(() => {
-                            form.style.display = 'block';
-                            successAnimation.classList.remove('show');
-                            form.reset();
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Send Message';
-                        }, 4000);
-                    } else {
-                        // If the script returns an error, show it
-                        throw new Error(response.error || 'Something went wrong.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error!', error.message);
-                    alert('Error sending message: ' + error.message);
+                setTimeout(() => {
+                    form.style.display = 'block';
+                    successAnimation.classList.remove('show');
+                    form.reset();
                     submitButton.disabled = false;
                     submitButton.textContent = 'Send Message';
-                });
+                }, 4000);
+            })
+            .catch(error => {
+                // This block runs if there's an error
+                console.error('Error sending data to Firebase:', error);
+                alert('Error sending message: ' + error.message);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
             });
-        }
+    });
+}
+
+// Don't forget to call the function to initialize it!
+initContactForm();
 
         // Theme Toggle Logic
         function initThemeToggle() {
