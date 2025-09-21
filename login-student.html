@@ -445,32 +445,47 @@
             setupPasswordToggle('signup-password', 'toggle-signup-password');
 
             signupForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const username = signupForm.username.value.trim();
-                const password = signupForm.password.value;
-                const email = `${username}@studentforum.com`;
-                signupMessage.textContent = '';
-                signupMessage.className = 'message-area';
-                try {
-                    const usernameDoc = await db.collection('usernames').doc(username).get();
-                    if (usernameDoc.exists) {
-                        const suggestion1 = `${username}${Math.floor(Math.random() * 100)}`;
-                        const suggestion2 = `${username}_${new Date().getFullYear() % 100}`;
-                        signupMessage.innerHTML = `Username "${username}" already exists. <div class="suggestions">Try: ${suggestion1} or ${suggestion2}</div>`;
-                        signupMessage.className = 'message-area error';
-                        return;
-                    }
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    const user = userCredential.user;
-                    await db.collection('usernames').doc(username).set({ uid: user.uid });
-                    signupMessage.textContent = 'Account created! You can now log in.';
-                    signupMessage.className = 'message-area success';
-                    signupForm.reset();
-                } catch (error) {
-                    signupMessage.textContent = error.message;
-                    signupMessage.className = 'message-area error';
-                }
-            });
+    e.preventDefault();
+    const username = signupForm.username.value.trim();
+    const password = signupForm.password.value;
+    const email = `${username}@studentforum.com`;
+    signupMessage.textContent = '';
+    signupMessage.className = 'message-area';
+    try {
+        const usernameDoc = await db.collection('usernames').doc(username).get();
+        if (usernameDoc.exists) {
+            const suggestion1 = `${username}${Math.floor(Math.random() * 100)}`;
+            const suggestion2 = `${username}_${new Date().getFullYear() % 100}`;
+            signupMessage.innerHTML = `Username "${username}" already exists. <div class="suggestions">Try: ${suggestion1} or ${suggestion2}</div>`;
+            signupMessage.className = 'message-area error';
+            return;
+        }
+
+        // Create the user
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        await db.collection('usernames').doc(username).set({ uid: user.uid });
+        
+        // --- THIS IS THE FIX ---
+        // Instead of just showing a static message, show a welcome message
+        // and then trigger the guidelines modal, just like in the login function.
+        signupMessage.textContent = `Account created! Welcome, ${username}!`;
+        signupMessage.className = 'message-area success';
+        
+        setTimeout(() => { 
+            guidelinesModalOverlay.classList.add('visible');
+        }, 800); // Wait a moment before showing the modal
+
+    } catch (error) {
+        // Use a more user-friendly error message
+        if (error.code === 'auth/weak-password') {
+            signupMessage.textContent = 'Password should be at least 6 characters.';
+        } else {
+            signupMessage.textContent = error.message;
+        }
+        signupMessage.className = 'message-area error';
+    }
+});
 
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
