@@ -515,61 +515,64 @@
         }
 
         // Contact Form
-        function initContactForm() {
-            const form = document.getElementById('contact-form');
-            const successAnimation = document.getElementById('success-animation');
-            
-            // ⬇️ PASTE THE WEB APP URL YOU COPIED FROM GOOGLE APPS SCRIPT HERE ⬇️
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzO9APm6FE7YWYrmNoVecoE5Fv9gTzBbWCFBB43WMIotqW-p-n6_PnoubZEe-_u_SquSQ/exec';
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-            if (!form) return;
+// Import your Firebase configuration from your existing file
+import { firebaseConfig } from './firebaseConfig.js';
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                
-                const submitButton = form.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Sending...';
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
-                // Get the form data as a JavaScript object
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
+// The main function to initialize the contact form
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    const successAnimation = document.getElementById('success-animation');
 
-                // Send the data to your Google Apps Script
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(res => res.json())
-                .then(response => {
-                    if (response.result === 'success') {
-                        form.style.display = 'none';
-                        successAnimation.classList.add('show');
-                        
-                        setTimeout(() => {
-                            form.style.display = 'block';
-                            successAnimation.classList.remove('show');
-                            form.reset();
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Send Message';
-                        }, 4000);
-                    } else {
-                        // If the script returns an error, show it
-                        throw new Error(response.error || 'Something went wrong.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error!', error.message);
-                    alert('Error sending message: ' + error.message);
+    // Create a reference to the 'contacts' collection in your database
+    const dbRef = ref(database, 'contacts');
+
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+
+        // Get the form data as a JavaScript object
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Add a server-side timestamp for when the message was received
+        data.timestamp = serverTimestamp();
+
+        // Push the data to Firebase Realtime Database
+        push(dbRef, data)
+            .then(() => {
+                // This block runs on successful submission
+                form.style.display = 'none';
+                successAnimation.classList.add('show');
+
+                setTimeout(() => {
+                    form.style.display = 'block';
+                    successAnimation.classList.remove('show');
+                    form.reset();
                     submitButton.disabled = false;
                     submitButton.textContent = 'Send Message';
-                });
+                }, 4000);
+            })
+            .catch(error => {
+                // This block runs if there's an error sending data
+                console.error('Error sending data to Firebase:', error);
+                alert('Error sending message: ' + error.message);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
             });
-        }
-
+    });
+}
         // Theme Toggle Logic
         function initThemeToggle() {
             const themeToggleBtns = document.querySelectorAll('.theme-toggle');
