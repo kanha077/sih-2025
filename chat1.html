@@ -369,24 +369,23 @@
     </div>
   </main>
 
-  <script type="module">
+<script type="module">
   const AI_WEBHOOK_URL = "https://n8n-classroom1.onrender.com/webhook/a889d2ae-2159-402f-b326-5f61e90f602e/chat";
 
-  const chatBox = document.getElementById("chat-box");
-  const chatInput = document.getElementById("chat-input");
-  const sendBtn = document.getElementById("send-btn");
+  const chatBox = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("message-input");
+  const sendBtn = document.getElementById("send-button");
 
   async function sendMessage() {
     const userMessage = chatInput.value.trim();
     if (!userMessage) return;
 
     // Add user message to chat
-    appendMessage("You", userMessage);
+    appendMessage("You", userMessage, "user");
     chatInput.value = "";
 
     // Show typing indicator
-    const typingElement = appendMessage("AI", "...");
-    typingElement.classList.add("typing");
+    const typingElement = appendMessage("AI", "Typing...", "ai typing");
 
     try {
       const response = await fetch(AI_WEBHOOK_URL, {
@@ -397,27 +396,47 @@
 
       const data = await response.json();
       typingElement.remove();
-      appendMessage("AI", data.response || "No response from AI");
+      appendMessage("AI", data.response || "No response from AI", "ai");
     } catch (error) {
       typingElement.remove();
-      appendMessage("AI", "⚠️ Error connecting to server");
+      appendMessage("AI", "⚠️ Error connecting to server", "ai");
     }
   }
 
-  function appendMessage(sender, message) {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message", sender === "You" ? "user" : "ai");
-    messageElement.textContent = `${sender}: ${message}`;
-    chatBox.appendChild(messageElement);
+  function appendMessage(sender, message, type) {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("flex", "items-start", "space-x-3");
+
+    const bubble = document.createElement("div");
+    bubble.classList.add(
+      type === "user" ? "chat-bubble-user" : "chat-bubble-bot",
+      "max-w-[75%]",
+      "p-4",
+      "rounded-2xl",
+      type === "user" ? "rounded-tr-md ml-auto" : "rounded-tl-md"
+    );
+    bubble.textContent = message;
+
+    wrapper.appendChild(bubble);
+    chatBox.appendChild(wrapper);
     chatBox.scrollTop = chatBox.scrollHeight;
-    return messageElement;
+
+    return wrapper;
   }
 
-  sendBtn.addEventListener("click", sendMessage);
+  sendBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    sendMessage();
+  });
+
   chatInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   });
 </script>
+
 
 </body>
 </html>
