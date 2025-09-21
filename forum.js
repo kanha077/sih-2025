@@ -1,7 +1,7 @@
 // forum.js
 
 // IMPORTANT: Your existing firebase-config.js is still needed for the database!
-import { auth, db } from '../firebase-config.js';
+import { auth, db } from './firebase-config.js';
 
 // --- NEW: Add your Google AI API Key here ---
 // Get your free key from https://aistudio.google.com/
