@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Counselor - Ananda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="flex h-screen flex-col items-center justify-center p-4">
+    <div class="h-full w-full max-w-3xl flex flex-col bg-white rounded-xl shadow-lg">
+      <header class="bg-gray-50 p-4 border-b border-gray-200 rounded-t-xl">
+        <h1 class="text-xl font-bold text-gray-800">Chat with Ananda</h1>
+      </header>
+      <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+      <div class="p-4 bg-white border-t border-gray-200 rounded-b-xl">
+        <form id="chat-form" class="flex items-center space-x-4">
+          <input 
+            type="text" 
+            id="message-input" 
+            placeholder="Type your message..." 
+            autocomplete="off" 
+            required 
+            class="flex-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <button 
+            type="submit" 
+            id="send-button" 
+            class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700">
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // --- Supabase Client ---
+    const SUPABASE_URL = "https://wraemxcqjycuddhfgjtt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYWVteGNxanljdWRkaGZnanR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNDc2MTYsImV4cCI6MjA3MjkyMzYxNn0.QyBb8idQcPmWJUQ7sMorfmnGp7fZU6DpuA1U79KpgCQ";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- Gemini AI Configuration ---
+    // ⚠️ IMPORTANT: Replace with your actual Google Gemini API Key
+    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; 
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+    
+    // --- AI Persona (Ananda) ---
+    const systemPrompt = {
+      "parts": [{
+        "text": "You are **Ananda**, a personal AI counselor for students. Your role is to create a safe, warm, and non-judgmental space. Start every conversation by gently asking the student about their mood and how they are feeling today. Be a good listener: acknowledge their emotions, reflect back what they share, and never rush to give solutions unless they ask. Your tone should always be **calm, positive, and supportive**, like a trusted mentor or friend. If the student seems upset, stressed, or negative, comfort them with empathy first, then slowly guide them toward hopeful and uplifting thoughts. If they are happy or excited, celebrate their joy with them. Throughout the conversation, try to **analyze their mood** based on their words, tone, and style of chatting. Use this analysis to adapt your responses: - If they sound sad, anxious, or lonely → listen more, show care, give emotional support. - If they sound neutral → keep the tone friendly, gently encourage positivity. - If they sound positive → encourage them, build on their happiness. Always focus on being a **good listener first, counselor second**. Avoid robotic or formal responses; instead, use natural, caring, and human-like communication. The goal is to help the student feel heard, valued, and uplifted by the end of the conversation."
+      }]
+    };
+
+    // DOM Elements
+    const chatForm = document.getElementById("chat-form");
+    const messageInput = document.getElementById("message-input");
+    const chatMessages = document.getElementById("chat-messages");
+
+    let currentUser = null;
+    let conversationHistory = [];
+
+    // Check for a logged-in user
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+      currentUser = data.session ? data.session.user : null;
+      console.log(currentUser ? `Logged in as: ${currentUser.email}` : "Anonymous user");
+    }
+    
+    // Save message to Supabase
+    async function saveMessage(role, text) {
+      if (!currentUser) return; // Don't save for anonymous users
+      try {
+        await supabase.from("chats").insert([{ role, message: text, user_id: currentUser.id }]);
+      } catch (err) {
+        console.error("❌ Failed to save message:", err);
+      }
+    }
+
+    // Display a message in the chat window
+    function addMessage(sender, text) {
+      const bubble = document.createElement("div");
+
+      const baseClasses = ["max-w-[75%]", "p-3", "rounded-lg", "break-words", "w-fit"];
+      const userClasses = ["bg-blue-500", "text-white", "self-end", "ml-auto"];
+      const botClasses  = ["bg-gray-200", "text-gray-800", "self-start", "mr-auto"];
+
+      bubble.classList.add(...baseClasses, ...(sender === "user" ? userClasses : botClasses));
+      // Using innerHTML to render Markdown for bolding, etc.
+      // A more robust solution would use a library like Marked.js
+      bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+      chatMessages.appendChild(bubble);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Call the Gemini API
+    async function sendToAI(history) {
+      if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+          return "⚠️ Gemini API key is not set. Please update the script.";
+      }
+      
+      try {
+        const response = await fetch(GEMINI_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: history,
+            systemInstruction: systemPrompt,
+            generationConfig: {
+                temperature: 0.7,
+                topP: 1.0,
+                maxOutputTokens: 1024,
+            }
+          }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("❌ Gemini API Error:", errorData);
+            return `⚠️ Error from AI service: ${errorData.error.message}`;
+        }
+
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates.length > 0) {
+            const reply = data.candidates[0].content.parts[0].text;
+            return reply;
+        } else {
+            console.warn("⚠️ No valid reply found in Gemini response:", data);
+            return "⚠️ No valid reply found in the AI response.";
+        }
+
+      } catch (err) {
+        console.error("❌ Fetch failed:", err);
+        return "⚠️ Error contacting the AI service. Please check your network connection.";
+      }
+    }
+
+    // Handle form submission
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const userInput = messageInput.value.trim();
+      if (!userInput) return;
+
+      // 1. Display user message and add to history
+      addMessage("user", userInput);
+      conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
+      await saveMessage("user", userInput);
+      messageInput.value = "";
+
+      // 2. Send history to AI and get response
+      const botReply = await sendToAI(conversationHistory);
+
+      // 3. Display bot message and add to history
+      addMessage("assistant", botReply);
+      conversationHistory.push({ role: "model", parts: [{ text: botReply }] });
+      await saveMessage("assistant", botReply);
+    });
+
+    // --- Initial Setup ---
+    async function initializeChat() {
+        await checkSession();
+        
+        // Start conversation with Ananda's greeting
+        const initialGreeting = "Hello! It's nice to see you. How are you feeling today?";
+        addMessage("assistant", initialGreeting);
+        conversationHistory.push({ role: "model", parts: [{ text: initialGreeting }] });
+        await saveMessage("assistant", initialGreeting);
+    }
+    
+    // Kick off the application
+    initializeChat();
+
+  </script>
+</body>
+</html>
