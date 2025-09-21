@@ -247,51 +247,6 @@
             margin-top: 5px;
         }
         
-        /* --- GUIDELINES MODAL STYLES --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; justify-content: center; align-items: center;
-            z-index: 1000; opacity: 0;
-            transition: opacity 0.3s ease;
-            padding: 1rem;
-        }
-
-        .modal-overlay.visible {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            padding: 2rem 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            color: var(--text-light);
-            width: 100%;
-            max-width: 500px;
-            text-align: left;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.visible .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-content h2, .modal-content p, .modal-content li {
-            color: var(--text-light);
-        }
-
-        .modal-content h2 { text-align: center; margin-bottom: 1.5rem; }
-        .modal-content p { margin-bottom: 1rem; line-height: 1.6; }
-        .modal-content ul { list-style-position: inside; margin-bottom: 1.5rem; padding-left: 10px; }
-        .modal-content li { margin-bottom: 0.75rem; }
-
         /* --- ANIMATIONS & RESPONSIVENESS --- */
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
@@ -305,7 +260,6 @@
         @media (max-width: 480px) {
             .page-header h1 { font-size: 1.5rem; }
             .form-view { padding: 2rem 1.5rem; }
-            .modal-content { padding: 1.5rem; }
             .page-header .logo { width: 60px; }
         }
     </style>
@@ -330,8 +284,7 @@
                     <div class="input-group">
                         <input type="password" id="login-password" name="password" required autocomplete="current-password" placeholder=" ">
                         <label for="login-password">Password</label>
-                        <span class="password-toggle-icon" id="toggle-login-password">
-                            </span>
+                        <span class="password-toggle-icon" id="toggle-login-password"></span>
                         <div class="bar"></div>
                     </div>
                     <button type="submit">Login</button>
@@ -351,8 +304,7 @@
                     <div class="input-group">
                         <input type="password" id="signup-password" name="password" required autocomplete="new-password" placeholder=" ">
                         <label for="signup-password">Choose a Password</label>
-                        <span class="password-toggle-icon" id="toggle-signup-password">
-                           </span>
+                        <span class="password-toggle-icon" id="toggle-signup-password"></span>
                         <div class="bar"></div>
                     </div>
                     <button type="submit">Create</button>
@@ -363,7 +315,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="guidelines-modal-overlay">
+    <div class="modal-overlay" id="guidelines-modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>Welcome to the Student Forum!</h2>
             <p>Before you enter, please take a moment to read our community guidelines:</p>
@@ -407,9 +359,7 @@
             const signupMessage = document.getElementById('signup-message');
             const showSignupLink = document.getElementById('show-signup');
             const showLoginLink = document.getElementById('show-login');
-            const guidelinesModalOverlay = document.getElementById('guidelines-modal-overlay');
-            const proceedToForumBtn = document.getElementById('proceed-to-forum-btn');
-
+            
             showSignupLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 mainContainer.classList.add('show-signup');
@@ -481,19 +431,18 @@
                 loginMessage.className = 'message-area';
                 try {
                    await auth.signInWithEmailAndPassword(email, password);
-                    loginMessage.textContent = `Welcome back, ${username}!`;
+                    loginMessage.textContent = `Welcome back, ${username}! Redirecting...`;
                     loginMessage.className = 'message-area success';
+                    
+                    // **MODIFIED PART: Redirect directly to the forum page**
                     setTimeout(() => { 
-                        guidelinesModalOverlay.classList.add('visible');
-                    }, 800);
+                        window.location.href = 'studentforum.html';
+                    }, 800); // A small delay to let the user read the welcome message
+
                 } catch (error) {
                     loginMessage.textContent = 'Invalid username or password.';
                     loginMessage.className = 'message-area error';
                 }
-            });
-
-            proceedToForumBtn.addEventListener('click', () => {
-                window.location.href = 'studentforum.html';
             });
         });
     </script>
