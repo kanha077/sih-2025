@@ -1,8 +1,423 @@
-<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-<script type="module">
-	import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+@@ -0,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Powered Chat Platform | Spark Guidance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    :root {
+      --primary: 222.2 84% 4.9%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96%;
+      --secondary-foreground: 222.2 84% 4.9%;
+      --muted: 210 40% 96%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96%;
+      --accent-foreground: 222.2 84% 4.9%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --gradient-primary: linear-gradient(135deg, hsl(222.2, 84%, 4.9%), hsl(215, 100%, 20%));
+      --gradient-secondary: linear-gradient(135deg, hsl(210, 40%, 96%), hsl(210, 40%, 90%));
+    }
+    
+    .dark {
+      --primary: 210 40% 98%;
+      --primary-foreground: 222.2 84% 4.9%;
+      --secondary: 222.2 84% 4.9%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 222.2 84% 4.9%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 222.2 84% 4.9%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 212.7 26.8% 83.9%;
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --gradient-primary: linear-gradient(135deg, hsl(210, 40%, 98%), hsl(215, 100%, 60%));
+      --gradient-secondary: linear-gradient(135deg, hsl(222.2, 84%, 4.9%), hsl(217.2, 32.6%, 17.5%));
+    }
+    
+    body { 
+      font-family: 'Inter', sans-serif;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+    }
+    
+    .bg-gradient-primary {
+      background: var(--gradient-primary);
+    }
+    
+    .bg-gradient-secondary {
+      background: var(--gradient-secondary);
+    }
+    
+    .chat-bubble-user {
+      background: var(--gradient-primary);
+      color: hsl(var(--primary-foreground));
+    }
+    
+    .chat-bubble-bot {
+      background: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+    }
+    
+    .floating-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .pulse-glow {
+      box-shadow: 0 0 20px hsla(var(--primary), 0.3);
+      animation: pulse-glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes pulse-glow {
+      from { box-shadow: 0 0 20px hsla(var(--primary), 0.2); }
+      to { box-shadow: 0 0 25px hsla(var(--primary), 0.4); }
+    }
+    
+    .typing-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: hsl(var(--muted-foreground));
+      animation: typing 1.4s infinite;
+    }
+    
+    .typing-indicator:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-10px); opacity: 1; }
+    }
+    
+    .scroll-smooth { scroll-behavior: smooth; }
+    
+    /* Custom scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+      border-radius: 3px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground));
+      border-radius: 3px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--primary));
+    }
+  </style>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: 'hsl(var(--primary))',
+            'primary-foreground': 'hsl(var(--primary-foreground))',
+            secondary: 'hsl(var(--secondary))',
+            'secondary-foreground': 'hsl(var(--secondary-foreground))',
+            muted: 'hsl(var(--muted))',
+            'muted-foreground': 'hsl(var(--muted-foreground))',
+            accent: 'hsl(var(--accent))',
+            'accent-foreground': 'hsl(var(--accent-foreground))',
+            destructive: 'hsl(var(--destructive))',
+            'destructive-foreground': 'hsl(var(--destructive-foreground))',
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            card: 'hsl(var(--card))',
+            'card-foreground': 'hsl(var(--card-foreground))',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-background">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary-foreground">
+              <path d="m9 9 3 3-3 3"/>
+              <path d="m14 12h7"/>
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-foreground">Spark AI Assistant</h1>
+            <p class="text-sm text-muted-foreground">Your AI-powered guidance companion</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <button 
+          id="theme-toggle" 
+          class="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+          title="Toggle theme"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon hidden">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        
+        <div class="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span>AI Online</span>
+        </div>
+        
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+          New Chat
+        </button>
+      </div>
+    </div>
+  </header>
 
-	createChat({
-		webhookUrl: 'https://n8n-classroom1.onrender.com/webhook/a889d2ae-2159-402f-b326-5f61e90f602e/chat'
-	});
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-6 max-w-4xl">
+    <!-- Welcome Section -->
+    <div class="mb-8 text-center">
+      <div class="floating-animation inline-block mb-4">
+        <div class="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center pulse-glow">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary-foreground">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="text-2xl font-bold text-foreground mb-2">Welcome to Your AI Assistant</h2>
+      <p class="text-muted-foreground">Ask me anything about your studies, career guidance, or get personalized advice!</p>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+      <!-- Chat Header -->
+      <div class="bg-muted/50 p-4 border-b border-border">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary-foreground">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M20.188 10.934c.388.472.582.707.582 1.066 0 .359-.194.594-.582 1.066a9.859 9.859 0 01-1.616 1.923C16.744 16.747 14.542 18 12 18s-4.744-1.253-6.572-2.011a9.859 9.859 0 01-1.616-1.923c-.388-.472-.582-.707-.582-1.066 0-.359.194-.594.582-1.066a9.859 9.859 0 011.616-1.923C7.256 7.253 9.458 6 12 6s4.744 1.253 6.572 2.011a9.859 9.859 0 011.616 1.923z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-card-foreground">AI Assistant</h3>
+              <p class="text-xs text-muted-foreground">Always ready to help</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-xs text-muted-foreground">Online</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Messages Container -->
+      <div id="chat-messages" class="h-96 p-6 overflow-y-auto space-y-4 custom-scrollbar scroll-smooth bg-background/50">
+        <!-- Welcome Message -->
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary-foreground">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <div class="chat-bubble-bot max-w-[75%] p-4 rounded-2xl rounded-tl-md">
+            <p class="text-sm">👋 Hello! I'm your AI assistant. I'm here to help you with academic guidance, career advice, study tips, and answer any questions you might have. How can I assist you today?</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input Area -->
+      <div class="p-4 bg-muted/30 border-t border-border">
+        <form id="chat-form" class="flex items-end space-x-3">
+          <div class="flex-1 relative">
+            <textarea 
+              id="message-input" 
+              placeholder="Type your message here..." 
+              autocomplete="off" 
+              required 
+              rows="1"
+              class="w-full p-3 pr-12 border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none max-h-32"
+            ></textarea>
+            <button 
+              type="button"
+              id="attach-btn"
+              class="absolute right-3 top-3 p-1 text-muted-foreground hover:text-foreground transition-colors"
+              title="Attach file"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+          </div>
+          <button 
+            type="submit" 
+            id="send-button" 
+            class="bg-primary text-primary-foreground font-medium py-3 px-6 rounded-lg hover:bg-primary/90 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+          </button>
+        </form>
+        
+        <div class="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+          <div class="flex items-center space-x-4">
+            <span>Press Enter to send • Shift+Enter for new line</span>
+          </div>
+          <div id="user-status" class="flex items-center space-x-2">
+            <div class="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+            <span>Anonymous</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <button class="p-4 bg-card border border-border rounded-lg hover:bg-accent transition-colors text-left group">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-600 dark:text-blue-400">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-medium text-card-foreground">Study Help</h4>
+            <p class="text-sm text-muted-foreground">Get academic assistance</p>
+          </div>
+        </div>
+      </button>
+      
+      <button class="p-4 bg-card border border-border rounded-lg hover:bg-accent transition-colors text-left group">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-600 dark:text-green-400">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-medium text-card-foreground">Career Advice</h4>
+            <p class="text-sm text-muted-foreground">Plan your future</p>
+          </div>
+        </div>
+      </button>
+      
+      <button class="p-4 bg-card border border-border rounded-lg hover:bg-accent transition-colors text-left group">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-600 dark:text-purple-400">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <path d="M12 17h.01"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-medium text-card-foreground">Ask Questions</h4>
+            <p class="text-sm text-muted-foreground">Get instant answers</p>
+          </div>
+        </div>
+      </button>
+    </div>
+  </main>
+
+  <script type="module">
+  const AI_WEBHOOK_URL = "https://n8n-classroom1.onrender.com/webhook/a889d2ae-2159-402f-b326-5f61e90f602e/chat";
+
+  const chatBox = document.getElementById("chat-box");
+  const chatInput = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("send-btn");
+
+  async function sendMessage() {
+    const userMessage = chatInput.value.trim();
+    if (!userMessage) return;
+
+    // Add user message to chat
+    appendMessage("You", userMessage);
+    chatInput.value = "";
+
+    // Show typing indicator
+    const typingElement = appendMessage("AI", "...");
+    typingElement.classList.add("typing");
+
+    try {
+      const response = await fetch(AI_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      const data = await response.json();
+      typingElement.remove();
+      appendMessage("AI", data.response || "No response from AI");
+    } catch (error) {
+      typingElement.remove();
+      appendMessage("AI", "⚠️ Error connecting to server");
+    }
+  }
+
+  function appendMessage(sender, message) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message", sender === "You" ? "user" : "ai");
+    messageElement.textContent = `${sender}: ${message}`;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return messageElement;
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  chatInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
 </script>
+
+</body>
+</html>
