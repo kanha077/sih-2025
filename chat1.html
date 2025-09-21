@@ -404,25 +404,26 @@
   }
 
   function appendMessage(sender, message, type) {
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("flex", "items-start", "space-x-3");
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("flex", "items-start", "space-x-3");
 
-    const bubble = document.createElement("div");
-    bubble.classList.add(
-      type === "user" ? "chat-bubble-user" : "chat-bubble-bot",
-      "max-w-[75%]",
-      "p-4",
-      "rounded-2xl",
-      type === "user" ? "rounded-tr-md ml-auto" : "rounded-tl-md"
-    );
-    bubble.textContent = message;
+  const bubble = document.createElement("div");
+  bubble.classList.add(
+    type === "user" ? "chat-bubble-user" : "chat-bubble-bot",
+    "max-w-[75%]",
+    "p-4",
+    "rounded-2xl",
+    ...(type === "user" ? ["rounded-tr-md", "ml-auto"] : ["rounded-tl-md"])
+  );
+  bubble.textContent = message;
 
-    wrapper.appendChild(bubble);
-    chatBox.appendChild(wrapper);
-    chatBox.scrollTop = chatBox.scrollHeight;
+  wrapper.appendChild(bubble);
+  chatBox.appendChild(wrapper);
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-    return wrapper;
-  }
+  return wrapper;
+}
+
 
   sendBtn.addEventListener("click", (e) => {
     e.preventDefault();
