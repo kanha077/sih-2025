@@ -113,15 +113,15 @@
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            contents: history,
-            systemInstruction: systemPrompt,
-            generationConfig: {
-                temperature: 0.7,
-                topP: 1.0,
-                maxOutputTokens: 1024,
-            }
-          }),
+     body: JSON.stringify({
+            contents: history,
+            // The systemInstruction is now part of the 'history' array
+            generationConfig: {
+                temperature: 0.7,
+                topP: 1.0,
+                maxOutputTokens: 1024,
+            }
+          }),
         });
 
         if (!response.ok) {
@@ -168,15 +168,21 @@
     });
 
     // --- Initial Setup ---
-    async function initializeChat() {
-        await checkSession();
-        
-        // Start conversation with Ananda's greeting
-        const initialGreeting = "Hello! it's ANANDA AI It's nice to see you. How are you feeling today?";
-        addMessage("assistant", initialGreeting);
-        conversationHistory.push({ role: "model", parts: [{ text: initialGreeting }] });
-        await saveMessage("assistant", initialGreeting);
-    }
+   // --- Initial Setup ---
+    async function initializeChat() {
+        await checkSession();
+        
+        // 1. Add the system instructions as the FIRST message in the history.
+        // We give it the role 'user' as if the user is setting the instructions.
+        const instruction = { role: "user", parts: systemPrompt.parts };
+        conversationHistory.push(instruction);
+
+        // 2. Start conversation with Ananda's greeting (as a response to the instruction)
+        const initialGreeting = "Hello! it's ANANDA AI It's nice to see you. How are you feeling today?";
+        addMessage("assistant", initialGreeting);
+        conversationHistory.push({ role: "model", parts: [{ text: initialGreeting }] });
+        await saveMessage("assistant", initialGreeting);
+    }
     
     // Kick off the application
     initializeChat();
