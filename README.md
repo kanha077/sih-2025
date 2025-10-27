@@ -260,9 +260,7 @@ We welcome contributions! Please see our contributing guidelines:
 - **Code Examples**: Sample implementations
 - **Community Forum**: Developer discussions and support
 
-## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -276,7 +274,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Project Maintainer**: [Yash vijayvargiya]
 - **Email**: [yashvijayvergiya911@gmail.com]
-- **GitHub**: [@yourusername](https://github.com/kanha077)
+- **GitHub**: [kanha077]
+
 ---
 
 **⚠️ Important Disclaimer**: This platform is designed to provide mental health support and screening tools, but it is not a replacement for professional medical advice, diagnosis, or treatment. Always consult with qualified healthcare professionals for serious mental health concerns.
@@ -284,5 +283,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **🆘 Crisis Support**: If you're experiencing a mental health crisis, please contact your local emergency services or a crisis hotline immediately.
 
 ---
+
 
 Made with ❤️ for mental health awareness and support
